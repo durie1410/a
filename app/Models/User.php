@@ -26,6 +26,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'google_id',
         'avatar',
+        'phone',
+        'province',
+        'district',
+        'address',
+        'so_cccd',
     ];
 
     /**
@@ -48,15 +53,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Book::class, 'favorites');
     }
 
-    public function reservations()
-    {
-        return $this->hasMany(Reservation::class);
-    }
-
-    public function activeReservations()
-    {
-        return $this->hasMany(Reservation::class)->whereIn('status', ['pending', 'confirmed', 'ready']);
-    }
 
     public function reader()
     {
@@ -96,7 +92,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' || $this->hasRole('admin');
     }
 
     /**
@@ -104,22 +100,84 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isLibrarian()
     {
-        return $this->role === 'librarian' || $this->role === 'staff';
+        return $this->role === 'librarian' || $this->hasRole('librarian');
     }
 
     /**
-     * Check if user is reader
+     * Check if user is warehouse staff
      */
-    public function isReader()
+    public function isWarehouse()
     {
-        return $this->role === 'reader';
+        return $this->role === 'warehouse' || $this->hasRole('warehouse');
     }
 
     /**
-     * Check if user is staff
+     * Check if user is staff (librarian or warehouse)
      */
     public function isStaff()
     {
-        return $this->role === 'staff';
+        return $this->isLibrarian() || $this->isWarehouse();
     }
+
+    /**
+     * Check if user is reader/user
+     */
+    public function isReader()
+    {
+        return $this->role === 'reader' || $this->role === 'user' || $this->hasRole('user');
+    }
+
+    /**
+     * Check if user is regular user (not admin, not staff)
+     */
+    public function isUser()
+    {
+        return $this->role === 'user' || $this->hasRole('user');
+    }
+
+    /**
+     * Check if user has any of the given roles
+     * Wrapper để kiểm tra cả role attribute và Spatie roles
+     */
+    public function hasAnyOfRoles($roles)
+    {
+        if (is_string($roles)) {
+            $roles = [$roles];
+        }
+        
+        // Check role attribute first
+        if ($this->role && in_array($this->role, $roles)) {
+            return true;
+        }
+        
+        // Check Spatie roles (sử dụng method từ HasRoles trait)
+        return parent::hasAnyRole($roles);
+    }
+
+    /**
+     * Check if user can perform action (wrapper for permission check)
+     */
+    public function canDo($permission)
+    {
+        // Admin has all permissions
+        if ($this->isAdmin()) {
+            return true;
+        }
+        
+        return $this->can($permission);
+    }
+
+    /**
+     * Get user role name (with fallback)
+     */
+    public function getRoleName()
+    {
+        if ($this->role) {
+            return $this->role;
+        }
+        
+        $roles = $this->getRoleNames();
+        return $roles->first() ?? 'user';
+    }
+
 }

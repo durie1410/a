@@ -193,10 +193,6 @@
             <span>Danh mục</span>
         </a>
         @auth
-        <a href="{{ route('cart.index') }}" class="mobile-nav-item {{ request()->routeIs('cart.*') ? 'active' : '' }}">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Giỏ hàng</span>
-        </a>
         <a href="{{ route('dashboard') }}" class="mobile-nav-item {{ request()->routeIs('dashboard') || request()->routeIs('admin.dashboard') || request()->routeIs('staff.dashboard') ? 'active' : '' }}">
             <i class="fas fa-user"></i>
             <span>Tài khoản</span>

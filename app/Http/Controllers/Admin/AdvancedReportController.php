@@ -350,7 +350,7 @@ class AdvancedReportController extends Controller
             'active_borrows' => \App\Models\Borrow::where('trang_thai', 'Dang muon')->count(),
             'overdue_borrows' => \App\Models\Borrow::where('trang_thai', 'Dang muon')
                 ->where('ngay_hen_tra', '<', $today)->count(),
-            'pending_reservations' => \App\Models\Reservation::where('status', 'pending')->count(),
+            'pending_reservations' => 0, // Reservation model đã bị xóa
             'pending_fines' => \App\Models\Fine::where('status', 'pending')->sum('amount'),
         ];
 

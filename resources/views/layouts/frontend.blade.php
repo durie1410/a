@@ -1733,16 +1733,6 @@
                 </ul>
                 
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ route('cart.index') }}">
-                            <i class="fas fa-shopping-cart"></i> Giỏ hàng
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                  id="cart-count" 
-                                  style="display: none;">
-                                0
-                            </span>
-                        </a>
-                    </li>
                     
                     @auth
                         <li class="nav-item dropdown">
@@ -1750,11 +1740,6 @@
                                 <i class="fas fa-user"></i> {{ Auth::user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                @if(Auth::user()->role === 'admin')
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">
-                                        <i class="fas fa-cog"></i> Quản trị
-                                    </a></li>
-                                @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -2047,28 +2032,4 @@
             window.scrollTo(0, 0);
         });
         
-        // Load cart count on page load
-        function loadCartCount() {
-            fetch('/cart/count')
-                .then(response => response.json())
-                .then(data => {
-                    const cartCountElement = document.getElementById('cart-count');
-                    if (cartCountElement) {
-                        if (data.count > 0) {
-                            cartCountElement.textContent = data.count;
-                            cartCountElement.style.display = 'block';
-                        } else {
-                            cartCountElement.style.display = 'none';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading cart count:', error);
-                });
-        }
-        
-        // Load cart count when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCartCount();
-        });
     </script>

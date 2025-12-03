@@ -586,18 +586,15 @@
             </div>
             <div class="user-actions">
                 @auth
-                    @php
-                        $cartCount = \App\Models\Cart::where('user_id', auth()->id())->count();
-                    @endphp
-                    <a href="{{ route('cart.index') }}" class="action-button cart-button">
-                        <i class="fas fa-shopping-cart"></i>
+                    <a href="{{ route('borrow-cart.index') }}" class="action-button cart-button" id="borrow-cart-link" title="Giỏ sách">
+                        <i class="fas fa-book"></i>
                         <span>Giỏ sách</span>
-                        <span class="cart-count">{{ $cartCount }}</span>
+                        <span class="cart-count" id="borrow-cart-count" style="display: none;">0</span>
                     </a>
                     <a href="{{ route('dashboard') }}" class="action-button login-button">{{ auth()->user()->name }}</a>
                 @else
-                    <a href="{{ route('cart.index') }}" class="action-button cart-button">
-                        <i class="fas fa-shopping-cart"></i>
+                    <a href="{{ route('borrow-cart.index') }}" class="action-button cart-button" title="Giỏ sách">
+                        <i class="fas fa-book"></i>
                         <span>Giỏ sách</span>
                         <span class="cart-count">0</span>
                     </a>
@@ -735,8 +732,6 @@
                 <div class="filter-format">
                     <button class="active-filter">Tất cả</button>
                     <button>Sách giấy</button>
-                    <button>Có ebook</button>
-                    <button>Có audio</button>
                 </div>
                 <div class="sort-dropdown">
                     <label for="sort-by">Sắp xếp theo:</label>
@@ -820,5 +815,30 @@
 
         </main>
     </div>
+
+@auth
+<script>
+// Load số lượng giỏ sách khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    loadBorrowCartCount();
+});
+
+function loadBorrowCartCount() {
+    fetch('{{ route('borrow-cart.count') }}')
+        .then(response => response.json())
+        .then(data => {
+            const cartCountElement = document.getElementById('borrow-cart-count');
+            if (cartCountElement) {
+                const count = data.count || 0;
+                cartCountElement.textContent = count;
+                cartCountElement.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cart count:', error);
+        });
+}
+</script>
+@endauth
 </body>
 </html>

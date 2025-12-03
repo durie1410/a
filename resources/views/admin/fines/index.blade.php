@@ -156,14 +156,15 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if($fine->borrow && $fine->borrow->book)
-                                        <div>
-                                            <strong>{{ $fine->borrow->book->ten_sach }}</strong><br>
-                                            <small class="text-muted">{{ $fine->borrow->book->ma_sach }}</small>
-                                        </div>
-                                    @else
-                                        <span class="text-muted">Không có thông tin</span>
-                                    @endif
+@if($fine->borrowItem && $fine->borrowItem->book)
+    <strong>{{ $fine->borrowItem->book->ten_sach }}</strong><br>
+    <small class="text-muted">{{ $fine->borrowItem->book->ma_sach }}</small>
+@else
+    <span class="text-muted">Không có thông tin</span>
+@endif
+
+
+
                                 </td>
                                 <td>
                                     @switch($fine->type)
@@ -233,6 +234,10 @@
                                                     <i class="fas fa-gift"></i>
                                                 </button>
                                             </form>
+                                            @if($fine->status == 'waived')
+    <a href="{{ route('admin.fines.restore', $fine->id) }}" class="btn btn-sm btn-success">Khôi phục</a>
+@endif
+
                                         @endif
                                     </div>
                                 </td>

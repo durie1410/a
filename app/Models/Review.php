@@ -43,11 +43,6 @@ class Review extends Model
         return $this->hasMany(Comment::class)->where('is_approved', true);
     }
 
-    public function reports()
-    {
-        return $this->hasMany(ReviewReport::class);
-    }
-
     // Scope để lấy đánh giá đã phê duyệt
     public function scopeApproved($query)
     {

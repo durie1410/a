@@ -244,7 +244,8 @@ class RealTimeNotificationService
      */
     public static function notifyReservationReady($reservationId, $userId)
     {
-        $reservation = \App\Models\Reservation::with('book')->find($reservationId);
+        // Reservation model đã bị xóa
+        $reservation = null;
         if (!$reservation) return false;
 
         return self::sendToUser($userId, 'reservation_ready',

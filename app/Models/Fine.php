@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class Fine extends Model
 {
-    use HasFactory;
-
+    use HasFactory,SoftDeletes; 
     protected $fillable = [
         'borrow_id',
         'reader_id',
-        'amount',
+ 'borrow_item_id',        
+ 'amount',
         'type',
         'description',
         'status',
@@ -28,7 +29,10 @@ class Fine extends Model
         'due_date' => 'date',
         'paid_date' => 'date',
     ];
-
+public function borrowItem()
+    {
+        return $this->belongsTo(BorrowItem::class);
+    }
     public function borrow()
     {
         return $this->belongsTo(Borrow::class);

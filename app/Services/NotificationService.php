@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Reader;
 use App\Models\Borrow;
-use App\Models\Reservation;
+// use App\Models\Reservation; // Model đã bị xóa
 use App\Models\Fine;
 use App\Models\NotificationLog;
 use App\Models\NotificationTemplate;
@@ -115,10 +115,8 @@ class NotificationService
      */
     public function sendReservationReadyNotifications()
     {
-        $readyReservations = Reservation::with(['reader.user', 'book'])
-            ->where('status', 'ready')
-            ->where('notified_at', null)
-            ->get();
+        // Reservation model đã bị xóa
+        $readyReservations = collect();
 
         foreach ($readyReservations as $reservation) {
             $data = [
@@ -145,10 +143,8 @@ class NotificationService
      */
     public function sendReservationExpiryNotifications()
     {
-        $expiringReservations = Reservation::with(['reader.user', 'book'])
-            ->where('status', 'ready')
-            ->where('expiry_date', '=', Carbon::tomorrow())
-            ->get();
+        // Reservation model đã bị xóa
+        $expiringReservations = collect();
 
         foreach ($expiringReservations as $reservation) {
             $data = [

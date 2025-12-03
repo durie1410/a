@@ -27,10 +27,21 @@
     @endif
     
     <div class="book-cover">
-        @if($book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh)))
-            <img src="{{ asset('storage/' . $book->hinh_anh) }}" 
+        @if($book->hinh_anh)
+            @php
+                $imagePath = ltrim(str_replace('\\', '/', $book->hinh_anh), '/');
+                $imageUrl = asset('storage/' . $imagePath) . '?t=' . ($book->updated_at ? $book->updated_at->timestamp : time());
+            @endphp
+            <img src="{{ $imageUrl }}" 
                  alt="{{ $book->ten_sach }}" 
-                 style="width: 160px; height: 240px; object-fit: cover; border-radius: 8px;">
+                 style="width: 160px; height: 240px; object-fit: cover; border-radius: 8px;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <svg width="160" height="240" viewBox="0 0 160 240" style="display: none;">
+                <rect width="160" height="240" fill="{{ $randomColor }}" rx="8"/>
+                <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="14" font-family="Poppins" font-weight="600">
+                    {{ Str::limit($book->ten_sach, 30) }}
+                </text>
+            </svg>
         @else
             <svg width="160" height="240" viewBox="0 0 160 240">
                 <rect width="160" height="240" fill="{{ $randomColor }}" rx="8"/>

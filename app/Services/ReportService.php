@@ -7,7 +7,7 @@ use App\Models\Reader;
 use App\Models\Borrow;
 use App\Models\Category;
 use App\Models\Fine;
-use App\Models\Reservation;
+// use App\Models\Reservation; // Model đã bị xóa
 use App\Models\Review;
 use App\Models\AuditLog;
 use Carbon\Carbon;
@@ -53,10 +53,10 @@ class ReportService
                     ->where('updated_at', '>=', $thisMonth)->sum('amount'),
             ],
             'reservations' => [
-                'total' => Reservation::count(),
-                'pending' => Reservation::where('status', 'pending')->count(),
-                'ready' => Reservation::where('status', 'ready')->count(),
-                'this_month' => Reservation::where('created_at', '>=', $thisMonth)->count(),
+                'total' => 0, // Reservation model đã bị xóa
+                'pending' => 0,
+                'ready' => 0,
+                'this_month' => 0,
             ],
             'reviews' => [
                 'total' => Review::count(),
@@ -281,9 +281,8 @@ class ReportService
                     ->whereBetween('updated_at', [$startDate, $endDate])->sum('amount'),
             ],
             'reservations' => [
-                'total' => Reservation::whereBetween('created_at', [$startDate, $endDate])->count(),
-                'completed' => Reservation::where('status', 'completed')
-                    ->whereBetween('updated_at', [$startDate, $endDate])->count(),
+                'total' => 0, // Reservation model đã bị xóa
+                'completed' => 0,
             ],
             'reviews' => [
                 'total' => Review::whereBetween('created_at', [$startDate, $endDate])->count(),

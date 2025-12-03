@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Reader;
 use App\Models\Borrow;
 use App\Models\Fine;
-use App\Models\Reservation;
+// use App\Models\Reservation; // Model đã bị xóa
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -64,6 +64,7 @@ class ReaderController extends Controller
             'ho_ten' => 'required|max:255',
             'email' => 'required|email|unique:readers',
             'so_dien_thoai' => 'required|max:20',
+            'so_cccd' => 'required|max:20',
             'ngay_sinh' => 'required|date|before:today',
             'gioi_tinh' => 'required|in:Nam,Nu,Khac',
             'dia_chi' => 'required|max:500',
@@ -114,6 +115,7 @@ class ReaderController extends Controller
             'ho_ten' => 'required|max:255',
             'email' => 'required|email|unique:readers,email,' . $id,
             'so_dien_thoai' => 'required|max:20',
+            'so_cccd' => 'required|max:20',
             'ngay_sinh' => 'required|date|before:today',
             'gioi_tinh' => 'required|in:Nam,Nu,Khac',
             'dia_chi' => 'required|max:500',

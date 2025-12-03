@@ -47,7 +47,18 @@
 
         <div class="mb-3">
             <label class="form-label">Ảnh bìa</label>
-            <input type="file" name="hinh_anh" class="form-control">
+            <div id="image-preview-container" class="mb-2" style="display: none;">
+                <img id="book-cover-preview" 
+                     src="" 
+                     width="120" height="160" 
+                     style="object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                     alt="Preview">
+            </div>
+            <input type="file" name="hinh_anh" id="hinh_anh_input" class="form-control @error('hinh_anh') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
+            <small class="form-text text-muted">Chọn ảnh bìa sách (tối đa 2MB, định dạng: JPG, PNG)</small>
+            @error('hinh_anh')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
@@ -60,18 +71,6 @@
                 <div class="mb-3">
                     <label class="form-label">Giá (VNĐ)</label>
                     <input type="number" name="gia" class="form-control" min="0" step="1000" placeholder="Để trống nếu miễn phí">
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="mb-3">
-                    <label class="form-label">Định dạng</label>
-                    <select name="dinh_dang" class="form-control" required>
-                        <option value="Sách giấy">Sách giấy</option>
-                        <option value="PDF">PDF</option>
-                        <option value="EPUB">EPUB</option>
-                        <option value="MOBI">MOBI</option>
-                    </select>
                 </div>
             </div>
         </div>
@@ -98,6 +97,51 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('hinh_anh_input');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImage = document.getElementById('book-cover-preview');
+    
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            
+            if (file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Vui lòng chọn file ảnh định dạng JPG hoặc PNG');
+                    imageInput.value = '';
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Validate file size (2MB)
+                if (file.size > 2048 * 1024) {
+                    alert('Kích thước ảnh không được vượt quá 2MB');
+                    imageInput.value = '';
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection
 
 

@@ -16,6 +16,7 @@ class Reader extends Model
         'ho_ten',
         'email',
         'so_dien_thoai',
+        'so_cccd',
         'ngay_sinh',
         'gioi_tinh',
         'dia_chi',
@@ -30,7 +31,10 @@ class Reader extends Model
         'ngay_cap_the' => 'date',
         'ngay_het_han' => 'date',
     ];
-
+public function borrowItems()
+{
+    return $this->hasManyThrough(BorrowItem::class, Borrow::class);
+}
     public function borrows()
     {
         return $this->hasMany(Borrow::class);
@@ -51,15 +55,6 @@ class Reader extends Model
         return $this->pendingFines()->sum('amount');
     }
 
-    public function reservations()
-    {
-        return $this->hasMany(Reservation::class);
-    }
-
-    public function activeReservations()
-    {
-        return $this->hasMany(Reservation::class)->whereIn('status', ['pending', 'confirmed', 'ready']);
-    }
 
     public function activeBorrows()
     {

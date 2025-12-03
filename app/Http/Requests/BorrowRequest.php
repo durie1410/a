@@ -13,7 +13,7 @@ class BorrowRequest extends FormRequest
      */
     public function authorize()
     {
-        return auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->role === 'staff');
+        return auth()->check() && auth()->user()->role === 'admin';
     }
 
     /**

@@ -4,6 +4,10 @@ return [
 	// Rental fee per book (flat, in VND) for MVP
 	'rental_flat' => env('LIB_RENTAL_FLAT', 10000),
 
+	// Rental fee daily rate (percentage of book price per day)
+	'rental_daily_rate' => env('LIB_RENTAL_DAILY_RATE', 0.01), // 1% of book price per day
+	'rental_daily_rate_with_card' => env('LIB_RENTAL_DAILY_RATE_WITH_CARD', 0.005), // 0.5% of book price per day (with reader card)
+
 	// Deposit per book depending on KYC status (in VND)
 	'deposit_verified' => env('LIB_DEPOSIT_VERIFIED', 50000),
 	'deposit_unverified' => env('LIB_DEPOSIT_UNVERIFIED', 100000),

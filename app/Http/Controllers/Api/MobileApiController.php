@@ -7,7 +7,7 @@ use App\Models\Book;
 use App\Models\Reader;
 use App\Models\Borrow;
 use App\Models\Category;
-use App\Models\Reservation;
+// use App\Models\Reservation; // Model đã bị xóa
 use App\Models\Review;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
@@ -49,8 +49,7 @@ class MobileApiController extends Controller
                 'overdue_books' => Borrow::where('reader_id', $reader->id)
                     ->where('trang_thai', 'Dang muon')
                     ->where('ngay_hen_tra', '<', $today)->count(),
-                'pending_reservations' => Reservation::where('reader_id', $reader->id)
-                    ->whereIn('status', ['pending', 'confirmed', 'ready'])->count(),
+                'pending_reservations' => 0, // Reservation model đã bị xóa
                 'total_fines' => \App\Models\Fine::where('reader_id', $reader->id)
                     ->where('status', 'pending')->sum('amount'),
             ],
@@ -146,12 +145,8 @@ class MobileApiController extends Controller
             ];
         }
 
-        // Expiring reservations
-        $expiringReservations = Reservation::with(['book'])
-            ->where('reader_id', $readerId)
-            ->where('status', 'ready')
-            ->where('expiry_date', '<=', now()->addDays(2))
-            ->get();
+        // Expiring reservations - Reservation model đã bị xóa
+        $expiringReservations = collect();
 
         foreach ($expiringReservations as $reservation) {
             $notifications[] = [
@@ -216,7 +211,6 @@ class MobileApiController extends Controller
                 'is_available' => $book->isAvailable(),
                 'can_reserve' => $book->canBeReserved(),
                 'published_year' => $book->nam_xuat_ban,
-                'format' => $book->dinh_dang,
             ];
         });
 
@@ -254,7 +248,6 @@ class MobileApiController extends Controller
             'rating' => $book->danh_gia_trung_binh,
             'reviews_count' => $book->reviews->count(),
             'published_year' => $book->nam_xuat_ban,
-            'format' => $book->dinh_dang,
             'price' => $book->gia,
             'is_available' => $book->isAvailable(),
             'can_reserve' => $book->canBeReserved(),
@@ -387,24 +380,8 @@ class MobileApiController extends Controller
             ], 404);
         }
 
-        $reservations = Reservation::with(['book.category'])
-            ->where('reader_id', $reader->id)
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function($reservation) {
-                return [
-                    'id' => $reservation->id,
-                    'book_title' => $reservation->book->ten_sach,
-                    'book_author' => $reservation->book->tac_gia,
-                    'category' => $reservation->book->category->ten_the_loai ?? 'N/A',
-                    'status' => $reservation->status,
-                    'reservation_date' => $reservation->reservation_date,
-                    'expiry_date' => $reservation->expiry_date,
-                    'priority' => $reservation->priority,
-                    'notes' => $reservation->notes,
-                    'is_expired' => $reservation->expiry_date < now()->toDateString(),
-                ];
-            });
+        // Reservation model đã bị xóa
+        $reservations = collect();
 
         return response()->json([
             'success' => true,
@@ -530,48 +507,11 @@ class MobileApiController extends Controller
 
         $book = Book::findOrFail($request->book_id);
 
-        if (!$book->canBeReserved()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Book cannot be reserved'
-            ], 400);
-        }
-
-        // Check if already reserved
-        $existingReservation = Reservation::where('book_id', $book->id)
-            ->where('reader_id', $reader->id)
-            ->whereIn('status', ['pending', 'confirmed', 'ready'])
-            ->first();
-
-        if ($existingReservation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You already have a reservation for this book'
-            ], 400);
-        }
-
-        $reservation = Reservation::create([
-            'book_id' => $book->id,
-            'reader_id' => $reader->id,
-            'user_id' => $user->id,
-            'priority' => 1,
-            'reservation_date' => now()->toDateString(),
-            'expiry_date' => now()->addDays(7)->toDateString(),
-            'notes' => $request->notes,
-        ]);
-
-        // Log reservation
-        AuditService::logReservation($reservation, "Book '{$book->ten_sach}' reserved via mobile app");
-
+        // Reservation model đã bị xóa
         return response()->json([
-            'success' => true,
-            'message' => 'Reservation created successfully',
-            'data' => [
-                'id' => $reservation->id,
-                'book_title' => $book->ten_sach,
-                'expiry_date' => $reservation->expiry_date,
-            ]
-        ], 201);
+            'success' => false,
+            'message' => 'Reservation feature has been removed'
+        ], 410);
     }
 
     /**
@@ -589,33 +529,11 @@ class MobileApiController extends Controller
             ], 404);
         }
 
-        $reservation = Reservation::where('id', $id)
-            ->where('reader_id', $reader->id)
-            ->first();
-
-        if (!$reservation) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Reservation not found'
-            ], 404);
-        }
-
-        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot cancel this reservation'
-            ], 400);
-        }
-
-        $reservation->update(['status' => 'cancelled']);
-
-        // Log cancellation
-        AuditService::log('reservation_cancelled', $reservation, [], [], "Reservation cancelled via mobile app");
-
+        // Reservation model đã bị xóa
         return response()->json([
-            'success' => true,
-            'message' => 'Reservation cancelled successfully'
-        ]);
+            'success' => false,
+            'message' => 'Reservation feature has been removed'
+        ], 410);
     }
 }
 

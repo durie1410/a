@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Services\AuditService;
 use App\Notifications\WelcomeNotification;
@@ -20,45 +22,30 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // SECURITY FIX: Rate limiting cho login attempts
+        // Validation
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // Throttle login attempts
-        $key = 'login.attempts.' . $request->ip();
-        $attempts = cache()->get($key, 0);
-        
-        if ($attempts >= 5) {
-            return back()->withErrors([
-                'email' => 'Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 15 phút.',
-            ])->onlyInput('email');
-        }
-
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials)) {
-            // Reset attempts counter on successful login
-            cache()->forget($key);
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
             
             // Log successful login
             AuditService::logLogin('User logged in successfully');
             
-            // Redirect based on user role
+            // Get the authenticated user
             $user = Auth::user();
+            
+            // Redirect based on user role
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
-            } elseif ($user->role === 'staff') {
-                return redirect()->route('staff.dashboard');
             } else {
                 return redirect()->route('home');
             }
         }
-
-        // Increment failed attempts
-        cache()->put($key, $attempts + 1, now()->addMinutes(15));
 
         return back()->withErrors([
             'email' => 'Thông tin đăng nhập không chính xác.',
@@ -105,6 +92,9 @@ class AuthController extends Controller
             }
 
             Auth::login($user);
+            
+            // Regenerate session sau khi login
+            $request->session()->regenerate();
 
             return redirect()->route('home')->with('success', 'Đăng ký thành công! Email chào mừng đã được gửi đến hộp thư của bạn.');
             
@@ -127,5 +117,111 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         
         return redirect()->route('home');
+    }
+
+    /**
+     * Display the password reset link request form.
+     */
+    public function showLinkRequestForm()
+    {
+        return view('auth.passwords.email');
+    }
+
+    /**
+     * Send a reset link to the given user.
+     */
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === Password::RESET_LINK_SENT) {
+            return back()->with('status', __($status));
+        }
+
+        return back()->withErrors(['email' => __($status)]);
+    }
+
+    /**
+     * Display the password reset form.
+     */
+    public function showResetForm(Request $request, $token = null)
+    {
+        return view('auth.passwords.reset')->with(
+            ['token' => $token, 'email' => $request->email]
+        );
+    }
+
+    /**
+     * Reset the user's password.
+     */
+    public function reset(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = Hash::make($password);
+                $user->setRememberToken(Str::random(60));
+                $user->save();
+
+                event(new \Illuminate\Auth\Events\PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            AuditService::log('password_reset', User::class, null, null, 'User reset password');
+            return redirect()->route('login')->with('status', __($status));
+        }
+
+        return back()->withErrors(['email' => [__($status)]]);
+    }
+
+    /**
+     * Show the email verification notice.
+     */
+    public function showVerificationNotice()
+    {
+        return auth()->user()->hasVerifiedEmail()
+            ? redirect()->route('home')
+            : view('auth.verify-email');
+    }
+
+    /**
+     * Mark the user's email address as verified.
+     */
+    public function verifyEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('home');
+        }
+
+        if ($request->user()->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($request->user()));
+        }
+
+        return redirect()->route('home')->with('verified', true);
+    }
+
+    /**
+     * Resend the email verification notification.
+     */
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('home');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('status', 'verification-link-sent');
     }
 }

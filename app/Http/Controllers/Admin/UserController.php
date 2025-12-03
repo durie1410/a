@@ -39,16 +39,19 @@ class UserController extends Controller
         // Get statistics
         $totalUsers = User::count();
         $adminUsers = User::where('role', 'admin')->count();
-        $staffUsers = User::where('role', 'staff')->count();
         $regularUsers = User::where('role', 'user')->count();
         
         return view('admin.users.index', compact(
             'users', 
             'totalUsers', 
             'adminUsers', 
-            'staffUsers', 
             'regularUsers'
         ));
+    }
+    
+    public function create()
+    {
+        return view('admin.users.create');
     }
     
     public function show(User $user)
@@ -64,13 +67,18 @@ class UserController extends Controller
         ]);
     }
     
+    public function edit(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,staff,user',
+            'role' => 'required|in:admin,user',
         ]);
         
         if ($validator->fails()) {
@@ -79,12 +87,22 @@ class UserController extends Controller
                 ->withInput();
         }
         
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => $request->password, // Let the model's setPasswordAttribute handle hashing
+                'role' => $request->role,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle duplicate entry or other database errors
+            if ($e->getCode() == 23000) {
+                return redirect()->back()
+                    ->withErrors(['email' => 'Email này đã được sử dụng hoặc có lỗi xảy ra khi tạo người dùng.'])
+                    ->withInput();
+            }
+            throw $e;
+        }
         
         // Assign role using Spatie Permission if you're using it
         if (method_exists($user, 'assignRole')) {
@@ -101,7 +119,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,staff,user',
+            'role' => 'required|in:admin,user',
         ]);
         
         if ($validator->fails()) {
@@ -198,6 +216,9 @@ class UserController extends Controller
                         'message' => 'Không thể xóa tất cả quản trị viên'
                     ], 400);
                 }
+                
+                // Chuyển các user có role 'staff' thành 'user' trước khi xóa
+                User::whereIn('id', $userIds)->where('role', 'staff')->update(['role' => 'user']);
                 
                 User::whereIn('id', $userIds)->delete();
                 $message = 'Đã xóa ' . count($userIds) . ' người dùng';
