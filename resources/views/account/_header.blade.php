@@ -30,32 +30,30 @@
                         <span>{{ auth()->user()->name }}</span>
                     </a>
                     <div class="user-dropdown-menu">
-                        <div class="dropdown-header" style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">
+                        <div class="dropdown-header"
+                            style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">
                             <span class="user-icon">👤</span>
                             {{ auth()->user()->name }}
                         </div>
                         @if(auth()->user()->reader)
-                        <a href="{{ route('account.borrowed-books') }}" class="dropdown-item">
-                            <span>📚</span> Sách đang mượn
-                        </a>
-                        <a href="{{ route('account.reader-info') }}" class="dropdown-item">
-                            <span>👥</span> Thông tin độc giả
-                        </a>
+                            <a href="{{ route('account.borrowed-books') }}" class="dropdown-item">
+                                <span>📚</span> Sách đang mượn
+                            </a>
                         @endif
                         <a href="{{ route('account') }}" class="dropdown-item">
-                            <span>👤</span> Thông tin tài khoản
+                            <span>👤</span> Thông tin cá nhân
                         </a>
                         <a href="{{ route('account.change-password') }}" class="dropdown-item">
                             <span>🔒</span> Đổi mật khẩu
                         </a>
                         <a href="{{ route('orders.index') }}" class="dropdown-item">
-                            <span>⏰</span> Lịch sử mua hàng
+                            <span>📋</span> Lịch sử đơn mượn
                         </a>
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'staff')
-                        <div style="border-top: 1px solid #eee; margin-top: 5px;"></div>
-                        <a href="{{ route('dashboard') }}" class="dropdown-item">
-                            <span>📊</span> Dashboard
-                        </a>
+                            <div style="border-top: 1px solid #eee; margin-top: 5px;"></div>
+                            <a href="{{ route('dashboard') }}" class="dropdown-item">
+                                <span>📊</span> Dashboard
+                            </a>
                         @endif
                         <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                             @csrf
@@ -69,6 +67,7 @@
                     .user-menu-dropdown {
                         position: relative;
                     }
+
                     .user-menu-dropdown .user-dropdown-menu {
                         display: none;
                         position: absolute;
@@ -77,14 +76,16 @@
                         background: white;
                         border: 1px solid #ddd;
                         border-radius: 8px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
                         min-width: 220px;
                         z-index: 1000;
                         overflow: hidden;
                     }
+
                     .user-menu-dropdown:hover .user-dropdown-menu {
                         display: block;
                     }
+
                     .user-menu-dropdown .dropdown-item {
                         display: block;
                         padding: 10px 15px;
@@ -94,9 +95,11 @@
                         transition: background-color 0.2s;
                         cursor: pointer;
                     }
+
                     .user-menu-dropdown .dropdown-item:hover {
                         background-color: #f5f5f5;
                     }
+
                     .user-menu-dropdown .dropdown-item.logout-btn {
                         border: none;
                         background: none;
@@ -106,9 +109,11 @@
                         border-top: 1px solid #eee;
                         margin-top: 5px;
                     }
+
                     .user-menu-dropdown .dropdown-item.logout-btn:hover {
                         background-color: #ffebee;
                     }
+
                     .user-menu-dropdown .dropdown-item span {
                         margin-right: 8px;
                     }
@@ -121,7 +126,8 @@
     <div class="header-nav">
         <div class="search-bar">
             <form action="{{ route('books.public') }}" method="GET" class="search-form">
-                <input type="text" name="keyword" placeholder="Tìm sách, tác giả, sản phẩm mong muốn..." value="{{ request('keyword') }}" class="search-input">
+                <input type="text" name="keyword" placeholder="Tìm sách, tác giả, sản phẩm mong muốn..."
+                    value="{{ request('keyword') }}" class="search-input">
                 <button type="submit" class="search-button">🔍 Tìm kiếm</button>
             </form>
         </div>
@@ -129,36 +135,35 @@
 </header>
 
 @auth
-<script>
-// Load số lượng giỏ sách khi trang load
-document.addEventListener('DOMContentLoaded', function() {
-    loadBorrowCartCount();
-});
+    <script>
+        // Load số lượng giỏ sách khi trang load
+        document.addEventListener('DOMContentLoaded', function () {
+            loadBorrowCartCount();
+        });
 
-function loadBorrowCartCount() {
-    fetch('{{ route('borrow-cart.count') }}')
-        .then(response => response.json())
-        .then(data => {
+        function loadBorrowCartCount() {
+            fetch('{{ route('borrow-cart.count') }}')
+                .then(response => response.json())
+                .then(data => {
+                    const cartCountElement = document.getElementById('borrow-cart-count');
+                    if (cartCountElement) {
+                        const count = data.count || 0;
+                        cartCountElement.textContent = count;
+                        cartCountElement.style.display = count > 0 ? 'flex' : 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading cart count:', error);
+                });
+        }
+
+        // Hàm để cập nhật số lượng giỏ sách (có thể gọi từ các trang khác)
+        function updateBorrowCartCount(count) {
             const cartCountElement = document.getElementById('borrow-cart-count');
             if (cartCountElement) {
-                const count = data.count || 0;
                 cartCountElement.textContent = count;
                 cartCountElement.style.display = count > 0 ? 'flex' : 'none';
             }
-        })
-        .catch(error => {
-            console.error('Error loading cart count:', error);
-        });
-}
-
-// Hàm để cập nhật số lượng giỏ sách (có thể gọi từ các trang khác)
-function updateBorrowCartCount(count) {
-    const cartCountElement = document.getElementById('borrow-cart-count');
-    if (cartCountElement) {
-        cartCountElement.textContent = count;
-        cartCountElement.style.display = count > 0 ? 'flex' : 'none';
-    }
-}
-</script>
+        }
+    </script>
 @endauth
-

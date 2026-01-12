@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\InventoryFlowController;
 use App\Http\Controllers\Api\PricingController as ApiPricingController;
+use App\Http\Controllers\Api\ShippingController;
 use App\Http\Controllers\Api\LoanFlowController;
 use App\Http\Controllers\Api\ReservationFlowController;
 use App\Http\Controllers\Api\UserVerificationController;
@@ -100,6 +101,9 @@ Route::middleware(['auth:sanctum', 'role:warehouse,admin'])->prefix('inventory')
 // Pricing quote for rental & deposit
 Route::get('/pricing/quote', [ApiPricingController::class, 'quote']);
 
+// Shipping calculation API
+Route::post('/shipping/calculate', [ShippingController::class, 'calculate']);
+
 // Online loans (guest/member)
 Route::prefix('loans')->group(function () {
     Route::post('/', [LoanFlowController::class, 'create']); // public (guest allowed)
@@ -133,7 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Reports (admin-only)
-Route::middleware(['auth:sanctum','role:admin'])->prefix('reports')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('reports')->group(function () {
     Route::get('/stock', [ReportController::class, 'stock']);
     Route::get('/loans', [ReportController::class, 'loans']);
     Route::get('/utilization', [ReportController::class, 'utilization']);
@@ -144,10 +148,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/user', [AuthApiController::class, 'user']);
     Route::post('/auth/logout', [AuthApiController::class, 'logout']);
     Route::get('/auth/reader-profile', [AuthApiController::class, 'readerProfile']);
-    
+
     // Admin only borrow operations
     Route::post('/borrows', [BorrowApiController::class, 'createBorrow'])->middleware('admin');
-    
+
     // Backup API routes (Admin only)
     Route::prefix('backups')->middleware('admin')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\BackupController::class, 'list']);
@@ -155,7 +159,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/restore', [\App\Http\Controllers\Admin\BackupController::class, 'apiRestore']);
         Route::get('/statistics', [\App\Http\Controllers\Admin\BackupController::class, 'statistics']);
     });
-    
+
     // Advanced Reports API routes (Admin only)
     Route::prefix('reports')->middleware('admin')->group(function () {
         Route::get('/dashboard-stats', [\App\Http\Controllers\Admin\AdvancedReportController::class, 'dashboardStats']);
@@ -169,7 +173,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/yearly-report', [\App\Http\Controllers\Admin\AdvancedReportController::class, 'yearlyReport']);
         Route::get('/real-time-stats', [\App\Http\Controllers\Admin\AdvancedReportController::class, 'realTimeStats']);
     });
-    
+
     // Mobile API routes
     Route::prefix('mobile')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\MobileApiController::class, 'dashboard']);
@@ -183,7 +187,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reservations', [\App\Http\Controllers\Api\MobileApiController::class, 'createReservation']);
         Route::delete('/reservations/{id}', [\App\Http\Controllers\Api\MobileApiController::class, 'cancelReservation']);
     });
-    
+
     // Real-time Notifications API routes
     Route::prefix('notifications')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
@@ -194,7 +198,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/offline', [\App\Http\Controllers\Api\NotificationController::class, 'markOffline']);
         Route::post('/test', [\App\Http\Controllers\Api\NotificationController::class, 'sendTest']);
     });
-    
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

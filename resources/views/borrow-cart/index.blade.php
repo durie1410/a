@@ -8,341 +8,426 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --cart-primary: #2563eb;
+            --cart-bg: #f8fafc;
+            --cart-border: #e2e8f0;
+            --cart-text: #1e293b;
+            --cart-muted: #64748b;
+            --cart-danger: #ef4444;
+            --cart-success: #10b981;
+            --cart-warning: #f59e0b;
+            --radius-xl: 16px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+        }
+
+        body {
+            background-color: var(--cart-bg);
+            color: var(--cart-text);
+        }
+
         .cart-page-container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
-            padding: 30px 40px;
+            padding: 40px 20px;
         }
-        
+
+        /* Breadcrumb & Title */
         .page-header {
-            margin-bottom: 25px;
+            margin-bottom: 32px;
         }
-        
-        .page-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #1a1a1a;
-            margin-bottom: 10px;
-            margin-top: 15px;
-        }
-        
+
         .breadcrumb {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .breadcrumb a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
-        
-        
-        /* Content Wrapper: Items and Summary Side by Side */
-        .cart-content-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
-        }
-        
-        /* Cart Items Container (Left) */
-        .cart-items-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border: 1px solid #e0e0e0;
-            overflow: hidden;
-        }
-        
-        /* Header Section inside card */
-        .cart-header-section {
-            padding: 25px 30px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .cart-title-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .cart-main-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin: 0;
-            letter-spacing: 0.5px;
-        }
-        
-        .buy-more-link {
-            color: #ff9800;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        
-        .buy-more-link:hover {
-            color: #f57c00;
-            text-decoration: underline;
-        }
-        
-        .cart-select-all-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .select-all-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .select-all-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #ff9800;
-        }
-        
-        .select-all-label {
-            font-weight: 500;
-            color: #333;
-            cursor: pointer;
-            font-size: 15px;
-        }
-        
-        .cart-column-headers {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .column-header {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            min-width: 100px;
-            text-align: center;
-        }
-        
-        .column-header:nth-child(1) {
-            min-width: 120px;
-        }
-        
-        .column-header:nth-child(2) {
-            min-width: 200px;
-        }
-        
-        .column-header:nth-child(3) {
-            min-width: 160px;
-        }
-        
-        .column-header:nth-child(4) {
-            min-width: 60px;
-        }
-        
-        /* Cart Items List */
-        .cart-items-list {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Summary Container (Right) */
-        .cart-summary-container {
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .summary-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border: 1px solid #e0e0e0;
-        }
-        
-        .summary-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #1a1a1a;
-        }
-        
-        .summary-subtitle {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        
-        .fee-details-section {
-            background: #e3f2fd;
-            padding: 18px;
-            border-radius: 8px;
-            border-left: 4px solid #2196F3;
-            margin-bottom: 20px;
-        }
-        
-        .fee-details-header {
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--cart-muted);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .breadcrumb a {
+            color: var(--cart-primary);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            opacity: 0.8;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--cart-text);
+            margin: 0;
+        }
+
+        /* Layout Grid */
+        .cart-content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 32px;
+            align-items: start;
+        }
+
+        /* Left Column: Items List */
+        .cart-main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Selection Bar */
+        .selection-bar {
+            background: white;
+            padding: 16px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--cart-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .select-all-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-weight: 600;
-            color: #1565C0;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--cart-primary);
+        }
+
+        .btn-clear-cart {
+            color: var(--cart-danger);
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+
+        .btn-clear-cart:hover {
+            background: #fef2f2;
+        }
+
+        /* Cart Item Card */
+        .cart-item {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--cart-border);
+            padding: 24px;
+            display: grid;
+            grid-template-columns: auto 120px 1fr auto;
+            gap: 24px;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart-item-image-box {
+            width: 110px;
+            height: 154px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .cart-item-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .item-title a {
+            color: var(--cart-text);
+            text-decoration: none;
+        }
+
+        .item-meta {
+            font-size: 14px;
+            color: var(--cart-muted);
+            display: flex;
+            gap: 16px;
+        }
+
+        .item-price-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eff6ff;
+            color: var(--cart-primary);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Controls Column */
+        .item-controls-grid {
+            display: grid;
+            grid-template-columns: 140px 140px;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--cart-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Quantity Inputs */
+        .modern-quantity {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--cart-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            width: fit-content;
+        }
+
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--cart-text);
+            transition: background 0.2s;
+        }
+
+        .qty-btn:hover { background: #f1f5f9; }
+
+        .qty-input {
+            width: 48px;
+            height: 36px;
+            border: none;
+            border-left: 1px solid var(--cart-border);
+            border-right: 1px solid var(--cart-border);
+            text-align: center;
+            font-weight: 700;
+            -moz-appearance: textfield;
+        }
+
+        .qty-input::-webkit-outer-spin-button,
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Right Column: Summary */
+        .cart-sidebar {
+            position: sticky;
+            top: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--cart-border);
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--cart-border);
+        }
+
+        /* Shipping Estimate Module */
+        .shipping-estimate {
+            background: #f8fafc;
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--cart-border);
+        }
+
+        .estimate-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: var(--cart-primary);
+        }
+
+        .estimate-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .compact-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--cart-border);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .compact-input:focus { border-color: var(--cart-primary); }
+
+        .btn-estimate {
+            width: 100%;
+            padding: 10px;
+            background: white;
+            border: 1px solid var(--cart-primary);
+            color: var(--cart-primary);
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-estimate:hover {
+            background: var(--cart-primary);
+            color: white;
+        }
+
+        /* Summary Breakdown */
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 12px;
             font-size: 14px;
+            color: var(--cart-muted);
         }
-        
-        .fee-details-header i {
-            font-size: 14px;
-        }
-        
-        .fee-detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-        
-        .fee-label {
-            color: #333;
-        }
-        
-        .fee-value {
-            color: #2196F3;
-            font-weight: 600;
-        }
-        
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            font-size: 14px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .summary-row.final-row {
-            border-bottom: none;
-            padding-top: 15px;
-            margin-top: 10px;
-            border-top: 2px solid #e0e0e0;
-        }
-        
-        .summary-label-text {
-            color: #333;
-        }
-        
-        .summary-value-text {
-            color: #2196F3;
-            font-weight: 600;
-        }
-        
-        .summary-label-bold {
-            font-weight: 700;
-            color: #1a1a1a;
-            font-size: 16px;
-        }
-        
-        .summary-value-final {
-            color: #ff9800;
-            font-weight: 700;
+
+        .breakdown-row.total {
+            border-top: 1px solid var(--cart-border);
+            margin-top: 16px;
+            padding-top: 16px;
+            color: var(--cart-text);
+            font-weight: 800;
             font-size: 18px;
         }
-        
-        .discount-code-section {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
+
+        .final-price {
+            color: var(--cart-danger);
         }
-        
-        .discount-input-wrapper {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            background: #f5f5f5;
-            border-radius: 6px;
-            padding: 0 12px;
-        }
-        
-        .discount-input-wrapper i {
-            color: #ffc107;
-            margin-right: 8px;
-            font-size: 14px;
-        }
-        
-        .discount-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 10px 0;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        .discount-input::placeholder {
-            color: #999;
-        }
-        
-        .btn-apply-discount {
-            padding: 10px 20px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        
-        .btn-apply-discount:hover {
-            background: #45a049;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-        }
-        
-        .btn-checkout-new {
+
+        .btn-checkout-primary {
             width: 100%;
-            padding: 14px;
-            background: #ff9800;
+            background: var(--cart-primary);
             color: white;
+            padding: 16px;
+            border-radius: 50px;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 16px;
+            cursor: pointer;
+            margin-top: 24px;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-            margin-top: 20px;
         }
-        
-        .btn-checkout-new:hover {
-            background: #f57c00;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+
+        .btn-checkout-primary:hover {
+            transform: scale(1.02);
+            background: #1d4ed8;
         }
-        
-        .btn-checkout-new i {
-            font-size: 16px;
+
+        /* Empty State */
+        .empty-cart-view {
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--cart-border);
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            opacity: 0.2;
+        }
+
+        .btn-back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--cart-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-top: 32px;
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+
+        @media (max-width: 1024px) {
+            .cart-content-wrapper { grid-template-columns: 1fr; }
+            .cart-sidebar { position: static; }
+        }
+
+        @media (max-width: 768px) {
+            .cart-item {
+                grid-template-columns: auto 1fr;
+                padding: 16px;
+            }
+            .cart-item-checkbox-box { grid-row: 1 / 3; }
+            .item-controls-grid { 
+                grid-template-columns: 1fr;
+                grid-column: 1 / -1; 
+            }
         }
     </style>
 </head>
@@ -352,309 +437,178 @@
     <div class="cart-page-container">
         <div class="page-header">
             <div class="breadcrumb">
-                <a href="{{ route('home') }}"><i class="fas fa-home"></i> Trang chủ</a> / Giỏ sách
+                <a href="{{ route('home') }}">Trang chủ</a>
+                <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+                <span>Giỏ sách</span>
             </div>
+            <h1 class="page-title">Giỏ sách của bạn</h1>
         </div>
         
         @if(!$cart || $cart->items->count() === 0)
-            <div class="empty-state" style="text-align: center; padding: 60px 20px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <div style="font-size: 64px; margin-bottom: 20px;">🛒</div>
-                <h3 style="font-size: 24px; margin-bottom: 10px; color: #333;">Giỏ sách của bạn đang trống</h3>
-                <p style="color: #666; margin-bottom: 30px;">Hãy thêm sách vào giỏ sách để mượn!</p>
-                <a href="{{ route('books.public') }}" class="btn-primary" style="display: inline-block; padding: 12px 30px; background: #e51d2e; color: white; text-decoration: none; border-radius: 4px; font-weight: 500;">Xem danh sách sách</a>
+            <div class="empty-cart-view">
+                <div class="empty-icon"><i class="fas fa-shopping-basket"></i></div>
+                <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">Giỏ sách trống trơn!</h2>
+                <p style="color: var(--cart-muted);">Có vẻ như bạn chưa chọn cuốn sách nào để mượn.</p>
+                <a href="{{ route('books.public') }}" class="btn-back-home">
+                    <i class="fas fa-book"></i> Khám phá kho sách
+                </a>
             </div>
         @else
             <div class="cart-content-wrapper">
-                <!-- Cart Items Container (Left) -->
-                <div class="cart-items-container">
-                    <!-- Header Section inside card -->
-                    <div class="cart-header-section">
-                        <div class="cart-title-section">
-                            <h2 class="cart-main-title">GIỎ SÁCH CỦA BẠN</h2>
-                            <a href="{{ route('books.public') }}" class="buy-more-link">
-                                Mua thêm >
-                            </a>
+                <div class="cart-main-content">
+                    <div class="selection-bar">
+                        <div class="select-all-wrapper">
+                            <input type="checkbox" id="select-all-items" class="custom-checkbox" onchange="toggleSelectAllItems()">
+                            <label for="select-all-items">Chọn tất cả ({{ $cart->getTotalItemsAttribute() }} sách)</label>
                         </div>
-                        <div class="cart-select-all-row">
-                            <div class="select-all-wrapper">
-                                <input type="checkbox" id="select-all-items" class="select-all-checkbox" onchange="toggleSelectAllItems()">
-                                <label for="select-all-items" class="select-all-label">
-                                    Tất cả ( {{ $cart->getTotalItemsAttribute() }} sản phẩm )
-                                </label>
-                            </div>
-                        <div class="cart-column-headers">
-                            <span class="column-header">Giá sách</span>
-                            <span class="column-header">Số lượng</span>
-                            <span class="column-header">Thành tiền</span>
-                            <span class="column-header">Xóa</span>
-                        </div>
-                        </div>
+                        <button type="button" class="btn-clear-cart" onclick="clearCart()">
+                            <i class="fas fa-trash-alt"></i> Xóa tất cả
+                        </button>
                     </div>
-                    
-                    <!-- Cart Items List -->
-                    <div class="cart-items-list">
-                        @foreach($cart->items as $item)
+
+                    @foreach($cart->items as $item)
                         @php
                             $book = $item->book;
+                            if (!$book) continue;
                             $availableCopies = \App\Models\Inventory::where('book_id', $book->id)
                                 ->where('status', 'Co san')
                                 ->count();
-                            
-                            // Sử dụng giá đã lưu trong database thay vì tính lại
-                            $itemFees = [
-                                'tien_coc' => $item->tien_coc ?? 0,
-                                'tien_thue' => $item->tien_thue ?? 0,
-                            ];
-                            $borrowDays = $item->borrow_days ?? 14;
-                            $itemTienShip = 0;
-                            if ($loop->first && $item->distance > 5) {
-                                $extraKm = $item->distance - 5;
-                                $itemTienShip = (int) ($extraKm * 5000);
-                            }
                         @endphp
-                        <div class="cart-item" 
-                             data-item-id="{{ $item->id }}"
-                             data-tien-thue="{{ $itemFees['tien_thue'] * $item->quantity }}"
-                             data-tien-coc="{{ $itemFees['tien_coc'] * $item->quantity }}"
-                             data-tien-ship="{{ $itemTienShip }}"
-                             data-borrow-days="{{ $borrowDays }}"
-                             data-is-first="{{ $loop->first ? '1' : '0' }}">
-                            <div class="cart-item-checkbox-wrapper">
-                                <input type="checkbox" class="item-checkbox" data-item-id="{{ $item->id }}" {{ $item->is_selected ? 'checked' : '' }} onchange="handleCheckboxChange(this)">
+                        <div class="cart-item" data-item-id="{{ $item->id }}"
+                             data-tien-thue="{{ ($item->tien_thue ?? 0) * $item->quantity }}"
+                             data-tien-coc="{{ ($item->tien_coc ?? 0) * $item->quantity }}">
+                            
+                            <div class="cart-item-checkbox-box">
+                                <input type="checkbox" class="item-checkbox custom-checkbox" 
+                                       data-item-id="{{ $item->id }}" 
+                                       {{ $item->is_selected ? 'checked' : '' }} 
+                                       onchange="handleCheckboxChange(this)">
                             </div>
-                            <div class="cart-item-image">
+
+                            <div class="cart-item-image-box">
                                 @if($book->hinh_anh)
                                     <img src="{{ asset('storage/' . $book->hinh_anh) }}" alt="{{ $book->ten_sach }}">
                                 @else
-                                    <div class="book-placeholder">📖</div>
+                                    <div class="book-placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; background: #e2e8f0;">📖</div>
                                 @endif
                             </div>
-                            <div class="cart-item-info">
-                                <h3 class="cart-item-title">
+
+                            <div class="cart-item-details">
+                                <h3 class="item-title">
                                     <a href="{{ route('books.show', $book->id) }}">{{ $book->ten_sach }}</a>
                                 </h3>
-                                <p class="cart-item-author">{{ $book->tac_gia ?? 'N/A' }}</p>
-                                <p class="cart-item-category">{{ $book->category->ten_the_loai ?? 'N/A' }}</p>
-                            </div>
-                            <div class="cart-item-price-column">
-                                <span class="item-original-price">
-                                    {{ number_format($book->gia ?? 0, 0, ',', '.') }}₫
-                                </span>
-                            </div>
-                            <div class="cart-item-quantity-column">
-                                <div class="quantity-controls">
-                                    <button type="button" class="btn-quantity" onclick="updateQuantity({{ $item->id }}, -1)">-</button>
-                                    <input type="number" 
-                                           id="quantity-{{ $item->id }}" 
-                                           value="{{ $item->quantity }}" 
-                                           min="1" 
-                                           max="{{ $availableCopies }}"
-                                           onchange="updateQuantityInput({{ $item->id }})"
-                                           class="quantity-input">
-                                    <button type="button" class="btn-quantity" onclick="updateQuantity({{ $item->id }}, 1)">+</button>
+                                <div class="item-meta">
+                                    <span>Tác giả: <strong>{{ $book->tac_gia ?? 'N/A' }}</strong></span>
+                                    <span>Thể loại: <strong>{{ $book->category->ten_the_loai ?? 'N/A' }}</strong></span>
                                 </div>
-                                <span class="quantity-max">/ {{ $availableCopies }} cuốn có sẵn</span>
+                                <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+                                    <div class="item-price-tag" title="Giá trị sách">
+                                        <i class="fas fa-tag"></i> {{ number_format($book->gia ?? 0, 0, ',', '.') }}₫
+                                    </div>
+                                    <span style="font-size: 12px; color: var(--cart-muted);">* Phí cọc = 100% giá trị sách</span>
+                                </div>
+                            </div>
+
+                            <div class="item-controls-grid">
+                                <div class="control-group">
+                                    <span class="control-label">Số lượng</span>
+                                    <div class="modern-quantity">
+                                        <button type="button" class="qty-btn" onclick="updateQuantity({{ $item->id }}, -1)">-</button>
+                                        <input type="number" id="quantity-{{ $item->id }}" value="{{ $item->quantity }}" 
+                                               min="1" max="{{ $availableCopies }}" class="qty-input"
+                                               onchange="updateQuantityInput({{ $item->id }})">
+                                        <button type="button" class="qty-btn" onclick="updateQuantity({{ $item->id }}, 1)">+</button>
+                                    </div>
+                                    <span style="font-size: 11px; color: var(--cart-muted);">Sẵn có: {{ $availableCopies }}</span>
+                                </div>
                                 
-                                <div class="detail-row-inline">
-                                    <label>Số ngày mượn:</label>
-                                    <select id="borrow-days-{{ $item->id }}" 
-                                            onchange="updateBorrowDays({{ $item->id }})"
-                                            class="form-select borrow-days-select">
-                                        @for($i = 7; $i <= 30; $i++)
-                                            <option value="{{ $i }}" {{ $item->borrow_days == $i ? 'selected' : '' }}>
-                                                {{ $i }} ngày
-                                            </option>
-                                        @endfor
-                                    </select>
+                                <div class="control-group">
+                                    <span class="control-label">Thành tiền</span>
+                                    @php
+                                        $itemTotal = (($item->tien_thue ?? 0) + ($item->tien_coc ?? 0)) * $item->quantity;
+                                    @endphp
+                                    <div style="font-weight: 800; color: var(--cart-danger); font-size: 16px;" id="subtotal-{{ $item->id }}">
+                                        {{ number_format($itemTotal, 0, ',', '.') }}₫
+                                    </div>
+                                    <button type="button" style="background: none; border: none; color: var(--cart-muted); font-size: 12px; text-align: left; cursor: pointer; padding: 0;" onclick="removeItem({{ $item->id }})">
+                                        <i class="fas fa-times-circle"></i> Loại bỏ
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="cart-item-subtotal-column">
-                                @php
-                                    // Sử dụng giá đã lưu trong database
-                                    $tienCoc = $item->tien_coc ?? 0;
-                                    $tienThue = $item->tien_thue ?? 0;
-                                    $tienShip = 0;
-                                    if ($item->distance > 5) {
-                                        $extraKm = $item->distance - 5;
-                                        $tienShip = (int) ($extraKm * 5000);
-                                    }
-                                    $itemTotal = ($tienThue + $tienCoc) * $item->quantity;
-                                    if ($loop->first) {
-                                        $itemTotal += $tienShip;
-                                    }
-                                @endphp
-                                <span class="item-subtotal" id="subtotal-{{ $item->id }}">
-                                    {{ number_format($itemTotal, 0, ',', '.') }}₫
-                                </span>
-                                
-                                <div class="detail-row-inline">
-                                    <label>Khoảng cách (km):</label>
-                                    <input type="number" 
-                                           id="distance-{{ $item->id }}" 
-                                           value="{{ $item->distance }}" 
-                                           min="0" 
-                                           step="0.1"
-                                           onchange="updateDistance({{ $item->id }})"
-                                           class="form-control distance-input"
-                                           placeholder="Nhập khoảng cách">
-                                </div>
-                            </div>
-                            <div class="cart-item-delete-column">
-                                <button type="button" 
-                                        class="btn-delete-item" 
-                                        onclick="removeItem({{ $item->id }})"
-                                        title="Xóa khỏi giỏ sách">
-                                    <i class="fas fa-trash"></i>
-                                </button>
                             </div>
                         </div>
-                        @endforeach
-                    </div>
+                    @endforeach
                 </div>
-                
-                <!-- Summary Section (Right) -->
-                <div class="cart-summary-container">
+
+                <div class="cart-sidebar">
                     <div class="summary-card">
                         <h3 class="summary-title">Tóm tắt đơn hàng</h3>
-                        <div class="summary-subtitle">(Mode: borrow)</div>
                         
-                        @php
-                            $reader = auth()->user()->reader ?? null;
-                            $hasCard = $reader ? true : false;
-                            
-                            $totalTienThue = 0;
-                            $totalTienCoc = 0;
-                            $totalTienShip = 0;
-                            $totalBorrowDays = 0;
-                            $itemCount = 0;
-                            $isFirstSelectedItem = true;
-                            
-                            // CHỈ TÍNH CHO CÁC ITEMS ĐÃ ĐƯỢC CHỌN
-                            $selectedItems = $cart->items->where('is_selected', true);
-                            
-                            foreach($selectedItems as $index => $item) {
-                                $book = $item->book;
-                                
-                                $borrowDays = $item->borrow_days ?? 14;
-                                $totalBorrowDays = max($totalBorrowDays, $borrowDays);
-                                
-                                // Sử dụng giá đã lưu trong database thay vì tính lại
-                                $totalTienThue += ($item->tien_thue ?? 0) * $item->quantity;
-                                $totalTienCoc += ($item->tien_coc ?? 0) * $item->quantity;
-                                
-                                // Calculate shipping fee (only once for the first SELECTED item with distance > 5)
-                                if ($isFirstSelectedItem && $item->distance > 5) {
-                                    $extraKm = $item->distance - 5;
-                                    $totalTienShip = (int) ($extraKm * 5000);
-                                    $isFirstSelectedItem = false;
-                                }
-                                
-                                $itemCount += $item->quantity;
-                            }
-                            
-                            $tongTien = $totalTienThue + $totalTienCoc + $totalTienShip;
-                            $giamGiaSP = 0;
-                            $tamTinh = $tongTien - $giamGiaSP;
-                            $giamGiaDon = 0;
-                            $thanhToan = $tamTinh - $giamGiaDon;
-                        @endphp
-                        
-                        <!-- Fee Details Section -->
-                        <div class="fee-details-section">
-                            <div class="fee-details-header">
-                                <i class="fas fa-file-alt"></i>
-                                <span>Chi tiết phí</span>
+                        <div class="shipping-estimate">
+                            <div class="estimate-header">
+                                <i class="fas fa-truck-fast"></i>
+                                <span>Giao hàng (Chỉ áp dụng Hà Nội)</span>
                             </div>
-                            <div id="rental-fees-container">
-                                @php
-                                    // Nhóm items theo số ngày mượn - CHỈ TÍNH CHO CÁC ITEMS ĐÃ ĐƯỢC CHỌN
-                                    $groupedByDays = [];
-                                    $selectedItemsForFees = $cart->items->where('is_selected', true);
-                                    foreach($selectedItemsForFees as $item) {
-                                        $borrowDays = $item->borrow_days ?? 14;
-                                        
-                                        // Sử dụng giá đã lưu trong database
-                                        $tienThue = $item->tien_thue ?? 0;
-                                        
-                                        if (!isset($groupedByDays[$borrowDays])) {
-                                            $groupedByDays[$borrowDays] = 0;
-                                        }
-                                        $groupedByDays[$borrowDays] += $tienThue * $item->quantity;
-                                    }
-                                    // Sắp xếp theo số ngày giảm dần
-                                    krsort($groupedByDays);
-                                @endphp
-                                @foreach($groupedByDays as $days => $fee)
-                                <div class="fee-detail-row rental-fee-row" data-days="{{ $days }}">
-                                    <span class="fee-label">Tiền thuê ({{ $days }} ngày):</span>
-                                    <span class="fee-value">{{ number_format($fee, 0, ',', '.') }}₫</span>
+                            <div class="estimate-grid">
+                                <select class="compact-input" id="shipping-xa-cart" required>
+                                    <option value="">-- Chọn Phường / Xã * --</option>
+                                    @php
+                                        $wards = [
+                                            'Phường Cửa Đông', 'Phường Cửa Nam', 'Phường Đồng Xuân', 'Phường Hàng Bạc', 'Phường Hàng Bồ', 'Phường Hàng Bông', 'Phường Hàng Buồm', 'Phường Hàng Đào', 'Phường Hàng Gai', 'Phường Hàng Mã', 'Phường Hàng Trống', 'Phường Lý Thái Tổ', 'Phường Phan Chu Trinh', 'Phường Phúc Tân', 'Phường Trần Hưng Đạo', 'Phường Chương Dương Độ', 'Phường Cổ Dương', 'Phường Đông Mác', 'Phường Đồng Nhân', 'Phường Đồng Tâm', 'Phường Lê Đại Hành', 'Phường Minh Khai', 'Phường Ngô Thì Nhậm', 'Phường Nguyễn Du', 'Phường Phố Huế', 'Phường Phúc Đồng', 'Phường Quỳnh Lôi', 'Phường Quỳnh Mai', 'Phường Thanh Lương', 'Phường Thanh Nhàn', 'Phường Trương Định', 'Phường Vĩnh Tuy', 'Phường Bạch Đằng', 'Phường Bách Khoa', 'Phường Bồ Đề', 'Phường Cự Khối', 'Phường Đức Giang', 'Phường Gia Thụy', 'Phường Giang Biên', 'Phường Long Biên', 'Phường Ngọc Lâm', 'Phường Ngọc Thụy', 'Phường Phúc Đồng', 'Phường Phúc Lợi', 'Phường Sài Đồng', 'Phường Thạch Bàn', 'Phường Thượng Thanh', 'Phường Việt Hưng', 'Phường Cát Linh', 'Phường Hàng Bột', 'Phường Khâm Thiên', 'Phường Khương Thượng', 'Phường Kim Liên', 'Phường Láng Hạ', 'Phường Láng Thượng', 'Phường Nam Đồng', 'Phường Ngã Tư Sở', 'Phường Ô Chợ Dừa', 'Phường Phương Liên', 'Phường Phương Mai', 'Phường Quang Trung', 'Phường Quốc Tử Giám', 'Phường Thịnh Quang', 'Phường Thổ Quan', 'Phường Trung Liệt', 'Phường Trung Phụng', 'Phường Văn Chương', 'Phường Văn Miếu', 'Phường Bưởi', 'Phường Nhật Tân', 'Phường Phú Thượng', 'Phường Quảng An', 'Phường Thụy Khuê', 'Phường Tứ Liên', 'Phường Xuân La', 'Phường Yên Phụ', 'Phường Cầu Dền', 'Phường Đống Mác', 'Phường Đồng Tâm', 'Phường Láng Hạ', 'Phường Láng Thượng', 'Phường Ngã Tư Sở', 'Phường Ô Chợ Dừa', 'Phường Phương Liên', 'Phường Phương Mai', 'Phường Thịnh Quang', 'Phường Trung Liệt', 'Phường Văn Chương', 'Phường Bạch Mai', 'Phường Bùi Thị Xuân', 'Phường Cầu Dền', 'Phường Đống Mác', 'Phường Giáp Bát', 'Phường Láng Hạ', 'Phường Láng Thượng', 'Phường Mai Động', 'Phường Minh Khai', 'Phường Ngã Tư Sở', 'Phường Nguyễn Du', 'Phường Phố Huế', 'Phường Quỳnh Lôi', 'Phường Quỳnh Mai', 'Phường Thanh Lương', 'Phường Thanh Nhàn', 'Phường Trương Định', 'Phường Vĩnh Tuy', 'Phường Bạch Đằng', 'Phường Bách Khoa', 'Phường Bồ Đề', 'Phường Cự Khối', 'Phường Đức Giang', 'Phường Gia Thụy', 'Phường Giang Biên', 'Phường Long Biên', 'Phường Ngọc Lâm', 'Phường Ngọc Thụy', 'Phường Phúc Đồng', 'Phường Phúc Lợi', 'Phường Sài Đồng', 'Phường Thạch Bàn', 'Phường Thượng Thanh', 'Phường Việt Hưng'
+                                        ];
+                                    @endphp
+                                    @foreach($wards as $ward)
+                                        <option value="{{ $ward }}">{{ $ward }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="text" class="compact-input" id="shipping-sonha-cart" placeholder="Số nhà, tên đường *" required>
+                                
+                                <div id="hanoi-ship-notice" style="padding: 12px; border-radius: var(--radius-md); font-size: 13px; line-height: 1.5; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;">
+                                    <i class="fas fa-info-circle"></i> Phí ship nội thành Hà Nội: <strong>20.000₫</strong>
                                 </div>
-                                @endforeach
-                            </div>
-                            <div class="fee-detail-row">
-                                <span class="fee-label">Tiền cọc:</span>
-                                <span class="fee-value" id="summary-tien-coc">{{ number_format($totalTienCoc, 0, ',', '.') }}₫</span>
-                            </div>
-                            <div class="fee-detail-row">
-                                <span class="fee-label">Phí ship:</span>
-                                <span class="fee-value" id="summary-tien-ship">{{ number_format($totalTienShip, 0, ',', '.') }}₫</span>
                             </div>
                         </div>
-                        
-                        <!-- Thông báo phí ship -->
-                        <div class="shipping-info-box mb-3" style="background: #fef3c7; border: 1.5px dashed #fbbf24; border-radius: 8px; padding: 12px 15px; margin-top: 15px;">
-                            <small style="color: #92400e; line-height: 1.5;">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Phí ship tính theo đơn (không giới hạn số lượng sách) cứ sau 5km mỗi 1km tăng thêm 5 nghìn.
-                            </small>
+
+                        <div class="control-group" style="margin-bottom: 24px; background: #f1f5f9; padding: 16px; border-radius: var(--radius-md);">
+                            <span class="control-label" style="margin-bottom: 8px; display: block;">Số ngày mượn</span>
+                            <select id="common-borrow-days" onchange="updateCommonBorrowDays()" class="compact-input" style="background: white;">
+                                <option value="">-- Chọn số ngày mượn --</option>
+                                @for($i = 7; $i <= 30; $i++)
+                                    <option value="{{ $i }}">{{ $i }} ngày</option>
+                                @endfor
+                            </select>
                         </div>
-                        
-                        <!-- Total and Discount Section -->
-                        <div class="summary-row">
-                            <span class="summary-label-text">Tổng tiền:</span>
-                            <span class="summary-value-text" id="summary-tong-tien">{{ number_format($tongTien, 0, ',', '.') }}₫</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label-text">Giảm giá SP:</span>
-                            <span class="summary-value-text">-{{ number_format($giamGiaSP, 0, ',', '.') }}₫</span>
-                        </div>
-                        
-                        <!-- Discount Code Section -->
-                        <div class="discount-code-section">
-                            <div class="discount-input-wrapper">
-                                <i class="fas fa-tag"></i>
-                                <input type="text" 
-                                       id="discount-code" 
-                                       placeholder="Nhập mã giảm giá" 
-                                       class="discount-input">
+
+                        <div id="rental-summary-results">
+                            <div class="breakdown-row">
+                                <span>Tiền thuê sách:</span>
+                                <span id="summary-tien-thue">0₫</span>
                             </div>
-                            <button type="button" 
-                                    class="btn-apply-discount" 
-                                    onclick="applyDiscountCode()">
-                                Áp dụng
-                            </button>
+                            <div class="breakdown-row">
+                                <span>Tiền cọc sách:</span>
+                                <span id="summary-tien-coc">0₫</span>
+                            </div>
+                            <div class="breakdown-row">
+                                <span>Phí vận chuyển:</span>
+                                <span id="summary-tien-ship">0₫</span>
+                            </div>
+                            
+                            <div class="breakdown-row total">
+                                <span>Tổng cộng:</span>
+                                <span class="final-price" id="final-payment">0₫</span>
+                            </div>
                         </div>
-                        
-                        <!-- Final Calculation Section -->
-                        <div class="summary-row">
-                            <span class="summary-label-text">Tạm tính:</span>
-                            <span class="summary-value-text" id="summary-tam-tinh">{{ number_format($tamTinh, 0, ',', '.') }}₫</span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label-text">Giảm giá đơn:</span>
-                            <span class="summary-value-text" id="summary-giam-gia-don">-{{ number_format($giamGiaDon, 0, ',', '.') }}₫</span>
-                        </div>
-                        <div class="summary-row final-row">
-                            <span class="summary-label-bold">Thanh toán:</span>
-                            <span class="summary-value-final" id="final-payment">{{ number_format($thanhToan, 0, ',', '.') }}₫</span>
-                        </div>
-                        
-                        <!-- Checkout Button -->
-                        <button type="button" 
-                                class="btn-checkout-new" 
-                                onclick="checkout()">
-                            <i class="fas fa-book-open"></i> Đặt mượn sách
+
+                        <button type="button" class="btn-checkout-primary" id="btn-checkout-main" onclick="checkout()">
+                            XÁC NHẬN MƯỢN SÁCH <i class="fas fa-arrow-right"></i>
                         </button>
+                    </div>
+
+                    <div class="summary-card" style="padding: 16px;">
+                        <span class="control-label" style="display: block; margin-bottom: 12px;">Mã giảm giá</span>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="discount-code" class="compact-input" placeholder="Nhập mã...">
+                            <button type="button" class="btn-estimate" style="width: auto; padding: 0 16px;" onclick="applyDiscountCode()">Áp dụng</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -663,695 +617,231 @@
 
     @include('components.footer')
 
-<style>
-.cart-item {
-    display: grid;
-    grid-template-columns: 40px 100px 2fr 120px 200px 160px 60px;
-    gap: 15px;
-    padding: 25px 30px;
-    background: white;
-    border-bottom: 1px solid #f0f0f0;
-    align-items: start;
-    transition: background 0.2s;
-    position: relative;
-}
-
-.cart-item:hover {
-    background: #fafafa;
-}
-
-.cart-item:last-child {
-    border-bottom: none;
-}
-
-.cart-item-checkbox-wrapper {
-    display: flex;
-    align-items: flex-start;
-    padding-top: 5px;
-}
-
-.cart-item-checkbox-wrapper .item-checkbox {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: #ff9800;
-}
-
-.cart-item-price-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 5px;
-}
-
-.item-original-price {
-    color: #333;
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.cart-item-quantity-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 5px;
-}
-
-.cart-item-subtotal-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 5px;
-}
-
-.quantity-controls {
-    height: 35px;
-}
-
-.quantity-max {
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.item-subtotal {
-    height: 63px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #e51d2e;
-    font-weight: 700;
-    font-size: 17px;
-}
-
-.cart-item-delete-column {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 5px;
-}
-
-.btn-delete-item {
-    background: #fff;
-    border: 2px solid #e0e0e0;
-    color: #999;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 10px;
-    border-radius: 6px;
-    transition: all 0.2s;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-delete-item:hover {
-    color: #e51d2e;
-    border-color: #e51d2e;
-    background: #fff5f5;
-}
-
-.cart-item-image {
-    width: 100px;
-    height: 140px;
-    overflow: hidden;
-    border-radius: 8px;
-    background: #f5f5f5;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.cart-item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.book-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    background: #e0e0e0;
-}
-
-.cart-item-info {
-    flex: 1;
-}
-
-.cart-item-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    line-height: 1.4;
-}
-
-.cart-item-title a {
-    color: #333;
-    text-decoration: none;
-}
-
-.cart-item-title a:hover {
-    color: #6C63FF;
-}
-
-.cart-item-author {
-    color: #666;
-    margin-bottom: 4px;
-}
-
-.cart-item-category {
-    color: #999;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-
-.detail-row {
-    margin-bottom: 15px;
-}
-
-.detail-row label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.detail-row-inline {
-    width: 100%;
-    margin-top: 8px;
-}
-
-.detail-row-inline label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: #555;
-    font-size: 12px;
-    text-align: center;
-}
-
-.cart-item-quantity-column .detail-row-inline,
-.cart-item-subtotal-column .detail-row-inline {
-    align-self: stretch;
-}
-
-.quantity-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.btn-quantity {
-    width: 35px;
-    height: 35px;
-    border: 2px solid #ddd;
-    background: white;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-}
-
-.btn-quantity:hover {
-    background: #f5f5f5;
-    border-color: #ff9800;
-    color: #ff9800;
-}
-
-.quantity-input {
-    width: 60px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.quantity-max {
-    color: #999;
-    font-size: 14px;
-}
-
-.borrow-days-select,
-.distance-input,
-.note-textarea {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.detail-row-inline .borrow-days-select,
-.detail-row-inline .distance-input {
-    width: 100%;
-    padding: 8px 10px;
-    font-size: 13px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-
-
-@media (max-width: 968px) {
-    .cart-page-container {
-        padding: 20px;
-    }
-    
-    .cart-content-wrapper {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .cart-summary-container {
-        position: static;
-    }
-    
-    .cart-header-section {
-        padding: 15px;
-    }
-    
-    .cart-title-section {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    
-    .cart-select-all-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    
-    .cart-column-headers {
-        display: none;
-    }
-    
-    .cart-item {
-        grid-template-columns: 30px 80px 1fr;
-        gap: 10px;
-        padding: 15px;
-    }
-    
-    .cart-item-price-column,
-    .cart-item-quantity-column,
-    .cart-item-subtotal-column,
-    .cart-item-delete-column {
-        grid-column: 1 / -1;
-        justify-content: flex-start;
-        align-items: flex-start;
-        margin-top: 10px;
-    }
-    
-    .detail-row-inline {
-        margin-top: 10px;
-    }
-    
-    .detail-row-inline label {
-        text-align: left;
-    }
-}
-</style>
-
 <script>
-function toggleSelectAllItems() {
-    const selectAll = document.getElementById('select-all-items');
-    const checkboxes = document.querySelectorAll('.item-checkbox');
-    checkboxes.forEach(cb => {
-        cb.checked = selectAll.checked;
-        updateItemSelected(cb.getAttribute('data-item-id'), selectAll.checked);
-    });
-    recalculateSummary();
-}
+    function toggleSelectAllItems() {
+        const selectAll = document.getElementById('select-all-items');
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+            updateItemSelected(cb.getAttribute('data-item-id'), selectAll.checked);
+        });
+        recalculateSummary();
+    }
 
-function handleCheckboxChange(checkbox) {
-    const itemId = checkbox.getAttribute('data-item-id');
-    const isSelected = checkbox.checked;
-    updateItemSelected(itemId, isSelected);
-    recalculateSummary();
-}
-
-function updateItemSelected(itemId, isSelected) {
-    fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            is_selected: isSelected
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            console.error('Failed to update selection:', data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error updating selection:', error);
-    });
-}
-
-function recalculateSummary() {
-    let totalTienCoc = 0;
-    let totalTienShip = 0;
-    let hasSelectedItems = false;
-    
-    // Nhóm tiền thuê theo số ngày
-    let rentalFeesByDays = {};
-    
-    // Lấy tất cả các item được chọn
-    const checkedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
-    
-    checkedCheckboxes.forEach((checkbox) => {
-        hasSelectedItems = true;
-        const itemId = checkbox.getAttribute('data-item-id');
-        const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+    function handleCheckboxChange(checkbox) {
+        updateItemSelected(checkbox.getAttribute('data-item-id'), checkbox.checked);
+        recalculateSummary();
         
-        if (cartItem) {
-            const tienThue = parseFloat(cartItem.getAttribute('data-tien-thue')) || 0;
-            const tienCoc = parseFloat(cartItem.getAttribute('data-tien-coc')) || 0;
-            const tienShip = parseFloat(cartItem.getAttribute('data-tien-ship')) || 0;
-            const borrowDays = parseInt(cartItem.getAttribute('data-borrow-days')) || 0;
-            
-            // Nhóm tiền thuê theo số ngày
-            if (!rentalFeesByDays[borrowDays]) {
-                rentalFeesByDays[borrowDays] = 0;
+        // Nếu đã chọn sách và đã có số ngày mượn được chọn, tự động áp dụng
+        const selectedDays = document.getElementById('common-borrow-days').value;
+        if (checkbox.checked && selectedDays && selectedDays !== '') {
+            // Tự động áp dụng số ngày mượn cho sách vừa chọn
+            const itemId = checkbox.getAttribute('data-item-id');
+            fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ borrow_days: selectedDays })
+            });
+        }
+    }
+
+    function updateItemSelected(itemId, isSelected) {
+        fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ is_selected: isSelected })
+        });
+    }
+
+    function recalculateSummary() {
+        let totalTienThue = 0;
+        let totalTienCoc = 0;
+        let totalTienShip = window.manualShippingFee || 0;
+        let hasSelection = false;
+
+        document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
+            hasSelection = true;
+            const item = cb.closest('.cart-item');
+            totalTienThue += parseFloat(item.getAttribute('data-tien-thue')) || 0;
+            totalTienCoc += parseFloat(item.getAttribute('data-tien-coc')) || 0;
+        });
+
+        if (!hasSelection) {
+            totalTienThue = 0; totalTienCoc = 0; totalTienShip = 0;
+        }
+
+        document.getElementById('summary-tien-thue').textContent = formatCurrency(totalTienThue);
+        document.getElementById('summary-tien-coc').textContent = formatCurrency(totalTienCoc);
+        document.getElementById('summary-tien-ship').textContent = formatCurrency(totalTienShip);
+        document.getElementById('final-payment').textContent = formatCurrency(totalTienThue + totalTienCoc + totalTienShip);
+    }
+
+    function updateQuantity(itemId, change) {
+        const input = document.getElementById('quantity-' + itemId);
+        const currentValue = parseInt(input.value) || 1;
+        const newValue = currentValue + change;
+        
+        // Nếu trừ và giá trị mới sẽ <= 0, hỏi xác nhận xóa
+        if (change < 0 && newValue <= 0) {
+            if (confirm('Bạn có muốn xóa sách này khỏi giỏ hàng không?')) {
+                // Xóa item khỏi giỏ hàng
+                removeItem(itemId);
             }
-            rentalFeesByDays[borrowDays] += tienThue;
-            
-            totalTienCoc += tienCoc;
-            
-            // Chỉ tính ship fee cho item đầu tiên (data-is-first="1")
-            if (cartItem.getAttribute('data-is-first') === '1') {
-                totalTienShip += tienShip;
+            return; // Không làm gì nếu hủy
+        }
+        
+        // Đảm bảo số lượng tối thiểu là 1
+        input.value = Math.max(1, newValue);
+        updateQuantityInput(itemId);
+    }
+
+    function updateQuantityInput(itemId) {
+        const qty = document.getElementById('quantity-' + itemId).value;
+        fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ quantity: qty })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else {
+                if(window.showGlobalModal) window.showGlobalModal('Thông báo', data.message, 'error');
+                else alert(data.message);
             }
-        }
-    });
-    
-    // Nếu không có item nào được chọn, reset
-    if (!hasSelectedItems) {
-        rentalFeesByDays = {};
-        totalTienCoc = 0;
-        totalTienShip = 0;
+        });
     }
-    
-    // Cập nhật phần tiền thuê theo từng nhóm ngày
-    const rentalFeesContainer = document.getElementById('rental-fees-container');
-    rentalFeesContainer.innerHTML = '';
-    
-    // Sắp xếp theo số ngày giảm dần
-    const sortedDays = Object.keys(rentalFeesByDays).sort((a, b) => b - a);
-    sortedDays.forEach(days => {
-        const fee = rentalFeesByDays[days];
-        const feeRow = document.createElement('div');
-        feeRow.className = 'fee-detail-row rental-fee-row';
-        feeRow.setAttribute('data-days', days);
-        feeRow.innerHTML = `
-            <span class="fee-label">Tiền thuê (${days} ngày):</span>
-            <span class="fee-value">${formatCurrency(fee)}</span>
-        `;
-        rentalFeesContainer.appendChild(feeRow);
-    });
-    
-    // Tính tổng tiền thuê
-    const totalTienThue = Object.values(rentalFeesByDays).reduce((sum, fee) => sum + fee, 0);
-    
-    const tongTien = totalTienThue + totalTienCoc + totalTienShip;
-    const giamGiaSP = 0;
-    const tamTinh = tongTien - giamGiaSP;
-    const giamGiaDon = 0;
-    const thanhToan = tamTinh - giamGiaDon;
-    
-    // Cập nhật UI
-    document.getElementById('summary-tien-coc').textContent = formatCurrency(totalTienCoc);
-    document.getElementById('summary-tien-ship').textContent = formatCurrency(totalTienShip);
-    document.getElementById('summary-tong-tien').textContent = formatCurrency(tongTien);
-    document.getElementById('summary-tam-tinh').textContent = formatCurrency(tamTinh);
-    document.getElementById('summary-giam-gia-don').textContent = '-' + formatCurrency(giamGiaDon);
-    document.getElementById('final-payment').textContent = formatCurrency(thanhToan);
-}
 
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('vi-VN', {
-        style: 'currency',
-        currency: 'VND',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount).replace('₫', '₫');
-}
-
-function updateQuantity(itemId, change) {
-    const input = document.getElementById('quantity-' + itemId);
-    const currentValue = parseInt(input.value) || 1;
-    const newValue = Math.max(1, currentValue + change);
-    input.value = newValue;
-    updateQuantityInput(itemId);
-}
-
-function updateQuantityInput(itemId) {
-    const input = document.getElementById('quantity-' + itemId);
-    const quantity = parseInt(input.value) || 1;
-    
-    fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            quantity: quantity
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Đã cập nhật số lượng, đang tải lại trang...', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
-            location.reload();
+    function updateCommonBorrowDays() {
+        const days = document.getElementById('common-borrow-days').value;
+        const selected = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(cb => cb.dataset.itemId);
+        
+        // Nếu chưa chọn số ngày, không làm gì cả (cho phép khách chọn trước)
+        if (!days || days === '') {
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi cập nhật số lượng');
-    });
-}
-
-function updateBorrowDays(itemId) {
-    const select = document.getElementById('borrow-days-' + itemId);
-    const borrowDays = parseInt(select.value);
-    
-    fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            borrow_days: borrowDays
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Đã cập nhật số ngày mượn, đang tải lại trang...', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
+        
+        // Nếu chưa chọn sách nào, chỉ lưu giá trị đã chọn, không hiển thị cảnh báo
+        if (selected.length === 0) {
+            // Cho phép khách chọn số ngày trước, sau đó khi chọn sách sẽ tự động áp dụng
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi cập nhật số ngày mượn');
-    });
-}
 
-function updateDistance(itemId) {
-    const input = document.getElementById('distance-' + itemId);
-    const distance = parseFloat(input.value) || 0;
-    
-    fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            distance: distance
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Đã cập nhật khoảng cách, đang tải lại trang...', 'success');
-            setTimeout(() => {
-                location.reload();
-            }, 500);
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi cập nhật khoảng cách');
-    });
-}
-
-function removeItem(itemId) {
-    if (!confirm('Bạn có chắc muốn xóa sách này khỏi giỏ sách?')) {
-        return;
+        // Cập nhật số ngày mượn cho các sách đã chọn (không reload trang)
+        Promise.all(selected.map(id => 
+            fetch(`{{ route('borrow-cart.update', '') }}/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ borrow_days: days })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.item) {
+                    // Cập nhật lại data attributes của item để tính lại tổng tiền
+                    const itemElement = document.querySelector(`[data-item-id="${id}"]`);
+                    if (itemElement) {
+                        const quantity = parseInt(document.getElementById(`quantity-${id}`).value) || 1;
+                        const tienThue = (data.item.tien_thue || 0) * quantity;
+                        const tienCoc = (data.item.tien_coc || 0) * quantity;
+                        itemElement.setAttribute('data-tien-thue', tienThue);
+                        itemElement.setAttribute('data-tien-coc', tienCoc);
+                        
+                        // Cập nhật thành tiền của item
+                        const itemTotal = tienThue + tienCoc;
+                        const subtotalElement = document.getElementById(`subtotal-${id}`);
+                        if (subtotalElement) {
+                            subtotalElement.textContent = formatCurrency(itemTotal);
+                        }
+                    }
+                }
+                return data;
+            })
+        ))
+        .then(() => {
+            // Tính lại tổng tiền sau khi cập nhật
+            recalculateSummary();
+        });
     }
-    
-    fetch(`{{ route('borrow-cart.remove', '') }}/${itemId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+
+    function removeItem(itemId) {
+        if (!confirm('Xóa sách này?')) return;
+        fetch(`{{ route('borrow-cart.remove', '') }}/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        }).then(() => location.reload());
+    }
+
+    function clearCart() {
+        if (!confirm('Xóa toàn bộ giỏ?')) return;
+        fetch('{{ route('borrow-cart.clear') }}', {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        }).then(() => location.reload());
+    }
+
+    function updateShippingFeeHanoi() {
+        // 固定为Hà Nội，运费20000
+        window.manualShippingFee = 20000;
+        recalculateSummary();
+    }
+
+    function formatCurrency(n) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+    }
+
+    function checkout() {
+        const xa = document.getElementById('shipping-xa-cart').value.trim();
+        const soNha = document.getElementById('shipping-sonha-cart').value.trim();
+
+        if (!xa) {
+            showToast('⚠️ Vui lòng chọn Phường/Xã!', 'warning');
+            return;
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.querySelector(`[data-item-id="${itemId}"]`).remove();
-            document.getElementById('total-items').textContent = data.cart_count;
-            updateBorrowCartCount(data.cart_count);
-            
-            if (data.cart_count == 0) {
-                location.reload();
-            }
-            
-            showToast('Đã xóa sách khỏi giỏ sách', 'success');
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
+
+        if (!soNha) {
+            showToast('⚠️ Vui lòng nhập số nhà, tên đường!', 'warning');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi xóa sách');
+
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCount === 0) {
+            showToast('⚠️ Vui lòng chọn ít nhất một quyển sách!', 'warning');
+            return;
+        }
+
+        // Truyền phí ship và địa chỉ sang checkout
+        const params = new URLSearchParams({
+            manual_shipping_fee: 20000,
+            address_tinh: 'Hà Nội',
+            address_xa: xa,
+            address_sonha: soNha
+        });
+
+        window.location.href = `{{ route('borrow-cart.checkout') }}?${params.toString()}`;
+    }
+
+    function showToast(msg, type) {
+        if(window.showGlobalModal) window.showGlobalModal('Thông báo', msg, type || 'info');
+        else alert(msg);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        recalculateSummary();
+        // 初始化运费
+        updateShippingFeeHanoi();
     });
-}
-
-function clearCart() {
-    if (!confirm('Bạn có chắc muốn xóa toàn bộ giỏ sách?')) {
-        return;
-    }
-    
-    fetch('{{ route('borrow-cart.clear') }}', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Có lỗi xảy ra');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi xóa giỏ sách');
-    });
-}
-
-function applyDiscountCode() {
-    const discountInput = document.getElementById('discount-code');
-    const code = discountInput.value.trim();
-    
-    if (!code) {
-        showToast('Vui lòng nhập mã giảm giá', 'error');
-        return;
-    }
-    
-    // TODO: Implement discount code validation API call
-    // For now, show a message that this feature is coming soon
-    showToast('Tính năng mã giảm giá đang được phát triển', 'info');
-}
-
-function checkout() {
-    // Redirect đến trang checkout thay vì gọi API trực tiếp
-    window.location.href = '{{ route('borrow-cart.checkout') }}';
-}
-
-function showToast(message, type = 'success') {
-    const colors = {
-        'success': '#4caf50',
-        'error': '#ff5252',
-        'info': '#2196F3',
-        'warning': '#ff9800'
-    };
-    
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        background: ${colors[type] || colors['success']};
-        color: white;
-        border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Cập nhật số lượng giỏ sách trên header
-function updateBorrowCartCount(count) {
-    const cartCountElement = document.getElementById('borrow-cart-count');
-    if (cartCountElement) {
-        cartCountElement.textContent = count;
-        cartCountElement.style.display = count > 0 ? 'flex' : 'none';
-    }
-    
-    // Gọi hàm global nếu có
-    if (typeof window.updateBorrowCartCount === 'function') {
-        window.updateBorrowCartCount(count);
-    }
-}
-
-// Gọi recalculateSummary() khi trang load để đảm bảo summary hiển thị đúng
-document.addEventListener('DOMContentLoaded', function() {
-    recalculateSummary();
-});
 </script>
 </body>
 </html>

@@ -35,7 +35,7 @@
                 <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" 
                    class="status-tab {{ request('status') == 'pending' ? 'active' : '' }}"
                    style="text-decoration: none;">
-                    Chờ xác nhận
+                    Đang chờ duyệt
                     @if($stats['pending'] > 0)
                         <span class="status-count">{{ $stats['pending'] }}</span>
                     @endif
@@ -111,7 +111,6 @@
                             <th style="padding: 15px; text-align: left; font-weight: 600; color: #333; font-size: 14px;">Phương Thức Thanh Toán</th>
                             <th style="padding: 15px; text-align: left; font-weight: 600; color: #333; font-size: 14px;">Trạng Thái Thanh Toán</th>
                             <th style="padding: 15px; text-align: left; font-weight: 600; color: #333; font-size: 14px;">Trạng Thái Đơn Hàng</th>
-                            <th style="padding: 15px; text-align: left; font-weight: 600; color: #333; font-size: 14px;">Lý do hủy</th>
                             <th style="padding: 15px; text-align: left; font-weight: 600; color: #333; font-size: 14px;">Hành Động</th>
                         </tr>
                     </thead>
@@ -144,7 +143,7 @@
                                 </td>
                                 <td style="padding: 15px;">
                                     @if(in_array($order->status, ['pending']))
-                                        <span class="status-badge" style="background-color: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">Chờ xác nhận</span>
+                                        <span class="status-badge" style="background-color: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">Đang chờ duyệt</span>
                                     @elseif(in_array($order->status, ['confirmed', 'processing']))
                                         <span class="status-badge" style="background-color: #cfe2ff; color: #084298; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">Đã xác nhận</span>
                                     @elseif($order->status === 'preparing')
@@ -163,13 +162,6 @@
                                         <span class="status-badge" style="background-color: #e2e3e5; color: #383d41; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;">{{ $order->status }}</span>
                                     @endif
                                 </td>
-                                <td style="padding: 15px; color: #555; font-size: 14px;">
-                                    @if(in_array($order->status, ['delivery_failed']) && $order->notes)
-                                        {{ $order->notes }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
                                 <td style="padding: 15px;">
                                     <div style="display: flex; gap: 8px;">
                                         <a href="{{ route('admin.orders.show', $order->id) }}" 
@@ -182,7 +174,7 @@
                                            class="action-btn edit-btn"
                                            style="background-color: #ff9800; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
                                             <i class="fas fa-edit"></i>
-                                            SỬA
+                                            CẬP NHẬT
                                         </a>
                                     </div>
                                 </td>

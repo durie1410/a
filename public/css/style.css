@@ -1,28 +1,44 @@
 /* --- Cài đặt cơ bản --- */
 :root {
-    --primary-color: #d9534f; /* Màu đỏ nổi bật */
-    --secondary-color: #337ab7; /* Màu xanh dương */
-    --text-color: #333;
-    --border-color: #eee;
-    --gold-color: #f7b731; /* Màu vàng cam */
-    --light-blue: #3498db; /* Màu xanh nhẹ */
+    --primary-color: #2563eb;
+    /* Modern Royal Blue */
+    --primary-hover: #1d4ed8;
+    --secondary-color: #64748b;
+    /* Slate */
+    --text-color: #1e293b;
+    /* Deep Slate */
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --background-color: #f8fafc;
+    --card-bg: #ffffff;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif; /* Thay bằng font chữ phù hợp */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
-    background-color: #f8f8f8; /* Nền nhẹ */
+    background-color: #f8f8f8;
+    /* Nền nhẹ */
     color: var(--text-color);
 }
 
 .container {
     width: 90%;
-    max-width: 1200px; /* Giới hạn chiều rộng trang */
+    max-width: 1200px;
+    /* Giới hạn chiều rộng trang */
     margin: 0 auto;
     padding: 20px 0;
 }
@@ -30,16 +46,19 @@ body {
 /* --- 1. Bố cục chính (Sidebar + Main Content) --- */
 .main-layout {
     display: flex;
-    gap: 20px; /* Khoảng cách giữa sidebar và nội dung chính */
-    align-items: flex-start; /* Quan trọng để sidebar không bị kéo dài hết chiều cao */
+    gap: 20px;
+    /* Khoảng cách giữa sidebar và nội dung chính */
+    align-items: flex-start;
+    /* Quan trọng để sidebar không bị kéo dài hết chiều cao */
 }
 
 .sidebar {
-    flex: 0 0 250px; /* Chiều rộng cố định cho Sidebar */
-    background-color: white;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    flex: 0 0 250px;
+    /* Chiều rộng cố định cho Sidebar */
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
     margin-top: 0;
     padding-top: 15px;
     align-self: flex-start;
@@ -52,8 +71,10 @@ body {
 }
 
 .main-content {
-    flex-grow: 1; /* Cho phép Main Content chiếm hết không gian còn lại */
-    min-width: 0; /* Cho phép nội dung bên trong co lại */
+    flex-grow: 1;
+    /* Cho phép Main Content chiếm hết không gian còn lại */
+    min-width: 0;
+    /* Cho phép nội dung bên trong co lại */
     margin-top: 0;
     padding-top: 0;
     display: flex;
@@ -66,13 +87,13 @@ body {
     font-size: 1.1em;
     padding: 15px;
     margin-bottom: 0;
-    background-color: #f7b731;
-    color: white;
-    font-weight: bold;
+    background-color: #f1f5f9;
+    color: var(--text-color);
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 10px;
-    border-radius: 5px 5px 0 0;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .hamburger-icon {
@@ -89,7 +110,8 @@ body {
     margin: 0;
     flex: 1;
     overflow-y: auto;
-    max-height: calc(400px + 20px + 180px - 15px - 15px - 50px - 10px); /* Tổng chiều cao trừ padding, title, button */
+    max-height: calc(400px + 20px + 180px - 15px - 15px - 50px - 10px);
+    /* Tổng chiều cao trừ padding, title, button */
 }
 
 .category-list li {
@@ -284,7 +306,7 @@ body {
     right: -8px;
     min-width: 20px;
     padding: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .auth-link {
@@ -307,8 +329,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 5%;
-    background-color: #f7b731;
+    padding: 16px 5%;
+    background-color: #f1f5f9;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .search-bar {
@@ -358,7 +381,7 @@ body {
     align-items: start;
 }
 
-.main-banner-section > .banner-carousel-wrapper {
+.main-banner-section>.banner-carousel-wrapper {
     grid-column: 1;
     grid-row: 1;
 }
@@ -553,7 +576,7 @@ body {
     justify-content: flex-start;
 }
 
-.right-panels > .panel-card {
+.right-panels>.panel-card {
     flex: 0 0 auto;
 }
 
@@ -840,7 +863,8 @@ body {
     flex-grow: 1;
 }
 
-.vip-title, .top-selling-title {
+.vip-title,
+.top-selling-title {
     font-size: 1.2em;
     font-weight: bold;
     margin-bottom: 15px;
@@ -869,7 +893,8 @@ body {
 }
 
 .vip-package {
-    flex: 0 0 120px; /* Kích thước cố định cho thẻ VIP */
+    flex: 0 0 120px;
+    /* Kích thước cố định cho thẻ VIP */
     height: 150px;
     border-radius: 8px;
     padding: 10px;
@@ -887,24 +912,29 @@ body {
 }
 
 /* Gradient background mô phỏng các thẻ VIP */
-.bg-vip-10 { 
-    background: linear-gradient(135deg, #f7d794, #f3a68c); /* Vàng Cam */
+.bg-vip-10 {
+    background: linear-gradient(135deg, #f7d794, #f3a68c);
+    /* Vàng Cam */
 }
 
-.bg-vip-01 { 
-    background: linear-gradient(135deg, #a4b0be, #7f8fa6); /* Xám */
+.bg-vip-01 {
+    background: linear-gradient(135deg, #a4b0be, #7f8fa6);
+    /* Xám */
 }
 
-.bg-vip-03 { 
-    background: linear-gradient(135deg, #5f27cd, #341f97); /* Tím */
+.bg-vip-03 {
+    background: linear-gradient(135deg, #5f27cd, #341f97);
+    /* Tím */
 }
 
-.bg-vip-06 { 
-    background: linear-gradient(135deg, #1abc9c, #16a085); /* Xanh Teal */
+.bg-vip-06 {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    /* Xanh Teal */
 }
 
-.bg-vip-12 { 
-    background: linear-gradient(135deg, #2e86de, #1e3799); /* Xanh Dương */
+.bg-vip-12 {
+    background: linear-gradient(135deg, #2e86de, #1e3799);
+    /* Xanh Dương */
 }
 
 .vip-duration {
@@ -928,7 +958,8 @@ body {
 
 /* --- 5. Cột Sách Mua/Xem Nhiều Nhất (Bên phải) --- */
 .top-selling-books {
-    flex: 0 0 350px; /* Chiều rộng cố định cho cột này */
+    flex: 0 0 350px;
+    /* Chiều rộng cố định cho cột này */
     padding-left: 20px;
     border-left: 1px solid var(--border-color);
 }
@@ -978,12 +1009,11 @@ body {
 
 /* --- 6. Khu vực Sách --- */
 .book-section {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    height: 100%;
+    background-color: var(--card-bg);
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
 }
@@ -996,12 +1026,23 @@ body {
 }
 
 .section-title {
-    font-size: 1.3em;
-    font-weight: bold;
+    font-size: 1.5em;
+    font-weight: 700;
     margin: 0;
-    border-left: 5px solid var(--primary-color);
-    padding-left: 10px;
+    padding-left: 0;
     color: var(--text-color);
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: var(--radius-sm);
 }
 
 .view-all-link {
@@ -1035,9 +1076,10 @@ body {
 .book-list {
     display: flex;
     /* Sử dụng flex-wrap nếu muốn xuống dòng, hoặc overflow-x để tạo thanh trượt */
-    overflow-x: auto; 
+    overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 10px; /* Khoảng trống cho scrollbar */
+    padding-bottom: 10px;
+    /* Khoảng trống cho scrollbar */
     gap: 15px;
     scroll-behavior: smooth;
     scrollbar-width: thin;
@@ -1050,22 +1092,23 @@ body {
     flex: 0 0 210px;
     min-width: 210px;
     max-width: 210px;
-    text-align: center;
+    text-align: left;
     cursor: pointer;
-    transition: transform 0.3s;
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 400px;
+    min-height: 420px;
 }
 
 .book-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
 }
 
 /* Navigation buttons cho book carousel */
@@ -1135,7 +1178,8 @@ body {
 }
 
 .book-card {
-    flex: 0 0 180px; /* Chiều rộng cố định cho mỗi thẻ sách */
+    flex: 0 0 180px;
+    /* Chiều rộng cố định cho mỗi thẻ sách */
     text-align: center;
     cursor: pointer;
     transition: transform 0.3s;
@@ -1156,7 +1200,8 @@ body {
 
 .book-cover {
     width: 100%;
-    height: 250px; /* Chiều cao cố định cho bìa sách */
+    height: 250px;
+    /* Chiều cao cố định cho bìa sách */
     background-color: #ddd;
     margin-bottom: 10px;
     border: 1px solid var(--border-color);
@@ -1223,7 +1268,8 @@ body {
 }
 
 .book-rating .stars {
-    color: #ffd700; /* Màu vàng cho ngôi sao */
+    color: #ffd700;
+    /* Màu vàng cho ngôi sao */
     font-size: 0.9em;
     display: inline-block;
     letter-spacing: 2px;
@@ -1259,7 +1305,8 @@ body {
 /* --- 7. Khu vực "Điểm Sách" (image_057ac1.jpg) --- */
 .law-content {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Chia 2 cột bằng nhau */
+    grid-template-columns: 1fr 1fr;
+    /* Chia 2 cột bằng nhau */
     gap: 20px;
 }
 
@@ -1360,10 +1407,11 @@ body {
 
 .diem-sach-featured-wrapper {
     position: relative;
-    background-color: white;
-    border-radius: 8px;
+    background-color: var(--card-bg);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
 }
 
 .diem-sach-featured-slider {
@@ -1582,33 +1630,33 @@ body {
     .diem-sach-content {
         grid-template-columns: 1fr;
     }
-    
+
     .diem-sach-featured-cover {
         height: 280px;
     }
-    
+
     .diem-sach-featured-info {
         padding: 15px;
     }
-    
+
     .diem-sach-featured-title {
         font-size: 1.1em;
     }
-    
+
     .diem-sach-featured-description {
         font-size: 0.9em;
     }
-    
+
     .diem-sach-nav {
         width: 40px;
         height: 40px;
         font-size: 22px;
     }
-    
+
     .diem-sach-nav-prev {
         left: 10px;
     }
-    
+
     .diem-sach-nav-next {
         right: 10px;
     }
@@ -1696,11 +1744,12 @@ body {
 }
 
 .right-column .bestbooks-section {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: var(--card-bg);
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -1829,101 +1878,101 @@ body {
     .main-layout {
         flex-direction: column;
     }
-    
+
     .sidebar {
         flex: 1 1 auto;
         width: 100%;
     }
-    
+
     .header-top {
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
     }
-    
+
     .header-nav {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .search-bar {
         width: 100%;
         max-width: none;
     }
-    
+
     .main-banner-section {
         grid-template-columns: 1fr;
     }
-    
+
     .banner-carousel-wrapper {
         height: 300px;
     }
-    
+
     .carousel-nav {
         width: 40px;
         height: 40px;
         font-size: 1.5em;
     }
-    
+
     .carousel-prev {
         left: 10px;
     }
-    
+
     .carousel-next {
         right: 10px;
     }
-    
+
     .right-panels {
         flex-direction: row;
         flex-wrap: wrap;
     }
-    
+
     .cooperation-section {
         grid-template-columns: 1fr;
     }
-    
+
     .cooperation-banner {
         padding: 25px 20px;
         min-height: auto;
     }
-    
+
     .coop-content {
         flex-direction: column;
         text-align: center;
         gap: 15px;
     }
-    
+
     .coop-image {
         font-size: 3em;
     }
-    
+
     .coop-text h2 {
         font-size: 1.3em;
     }
-    
+
     .coop-text p {
         font-size: 0.9em;
     }
-    
+
     .coop-hotline {
         font-size: 0.95em;
     }
-    
+
     .coop-btn {
         padding: 10px 24px;
         font-size: 0.85em;
         align-self: center;
     }
-    
+
     .panel-card {
         flex: 1 1 calc(50% - 10px);
         min-width: 150px;
     }
-    
+
     .vip-account-section {
         flex-direction: column;
     }
-    
+
     .top-selling-books {
         flex: 1 1 auto;
         width: 100%;
@@ -1932,47 +1981,47 @@ body {
         border-left: none;
         border-top: 1px solid var(--border-color);
     }
-    
+
     .upgrade-bestbooks-section {
         flex-direction: column;
     }
-    
+
     .right-column {
         flex: 1 1 auto;
         width: 100%;
     }
-    
+
     .bestbooks-container {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .right-column .bestbooks-container {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .upgrade-cards {
         gap: 10px;
     }
-    
+
     .upgrade-card {
         flex: 0 0 120px;
         height: 160px;
     }
-    
+
     .law-content {
         grid-template-columns: 1fr;
     }
-    
+
     .book-list {
         gap: 10px;
     }
-    
+
     .book-card {
         flex: 0 0 150px;
     }
-    
+
     .container {
         width: 95%;
         padding: 15px 0;
@@ -1983,41 +2032,42 @@ body {
     .logo {
         font-size: 1em;
     }
-    
+
     .hotline {
         font-size: 0.8em;
     }
-    
+
     .banner-title {
         font-size: 1.5em;
     }
-    
+
     .main-banner-section {
         grid-template-columns: 1fr;
     }
-    
+
     .right-panels {
         flex-direction: column;
     }
-    
+
     .panel-card {
         width: 100%;
     }
-    
+
     .vip-package {
         flex: 0 0 100px;
         height: 130px;
     }
-    
+
     .section-title {
         font-size: 1.2em;
     }
-    
+
     .book-card {
         flex: 0 0 120px;
     }
-    
-    .book-cover, .book-cover-img {
+
+    .book-cover,
+    .book-cover-img {
         height: 180px;
     }
 }
@@ -2026,18 +2076,24 @@ body {
 .sach-list-container {
     /* 1. Bật Flexbox và Ngăn xuống dòng */
     display: flex;
-    flex-wrap: nowrap; /* Quan trọng: Giữ tất cả các mục trên một hàng */
-    
+    flex-wrap: nowrap;
+    /* Quan trọng: Giữ tất cả các mục trên một hàng */
+
     /* 2. Bật Cuộn Ngang */
-    overflow-x: auto; /* Bật cuộn khi nội dung tràn */
-    
+    overflow-x: auto;
+    /* Bật cuộn khi nội dung tràn */
+
     /* 3. Khoảng cách và Căn chỉnh */
-    gap: 20px; /* Khoảng cách giữa các cuốn sách */
-    padding: 0 50px; /* Thêm khoảng trống hai bên lề (tùy chọn) */
-    
+    gap: 20px;
+    /* Khoảng cách giữa các cuốn sách */
+    padding: 0 50px;
+    /* Thêm khoảng trống hai bên lề (tùy chọn) */
+
     /* 4. Tùy chọn: Ẩn thanh cuộn mặc định */
-    -ms-overflow-style: none;  /* Cho IE and Edge */
-    scrollbar-width: none;  /* Cho Firefox */
+    -ms-overflow-style: none;
+    /* Cho IE and Edge */
+    scrollbar-width: none;
+    /* Cho Firefox */
 }
 
 /* Ẩn thanh cuộn trên WebKit (Chrome, Safari, Edge Chromium) */
@@ -2049,7 +2105,8 @@ body {
 .sach-list-container .book-item {
     /* Đặt kích thước cố định và ngăn chúng co lại */
     /* flex-grow: 0 (không dãn), flex-shrink: 0 (không co), flex-basis: 210px (chiều rộng) */
-    flex: 0 0 210px !important; /* Đặt chiều rộng cố định cho mỗi cuốn sách */
+    flex: 0 0 210px !important;
+    /* Đặt chiều rộng cố định cho mỗi cuốn sách */
     min-width: 210px !important;
     max-width: 210px !important;
     min-height: 400px !important;
@@ -2076,8 +2133,8 @@ body {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    border-radius: 12px 12px 0 0;
+    background: var(--primary-color);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .best-collection-section .section-header {
@@ -2256,14 +2313,14 @@ body {
 
 .best-collection-section .collection-nav-prev,
 .best-collection-section .collection-nav-next {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: var(--primary-color) !important;
     color: white !important;
-    border: 2px solid white !important;
-    width: 40px;
-    height: 40px;
+    border: none !important;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2303,28 +2360,28 @@ body {
         padding: 25px 15px !important;
         border-radius: 12px;
     }
-    
+
     .best-collection-section .section-title {
         font-size: 1.5em;
     }
-    
+
     .best-collection-section .collection-item {
         flex: 0 0 260px !important;
         min-width: 260px !important;
         max-width: 260px !important;
         min-height: 440px;
     }
-    
+
     .best-collection-section .collection-nav-prev,
     .best-collection-section .collection-nav-next {
         width: 40px;
         height: 40px;
     }
-    
+
     .best-collection-section .collection-nav-prev {
         left: -15px;
     }
-    
+
     .best-collection-section .collection-nav-next {
         right: -15px;
     }
@@ -2339,26 +2396,27 @@ body {
 }
 
 .topic-item {
-    background: linear-gradient(135deg, #c7a364, #d4a373);
-    border-radius: 8px;
+    background: #f1f5f9;
+    border-radius: var(--radius-md);
     padding: 16px;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     text-decoration: none;
-    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(199, 163, 100, 0.3);
     min-height: 100px;
 }
 
 .topic-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(199, 163, 100, 0.5);
-    background: linear-gradient(135deg, #d4a373, #e6b886);
+    background: var(--primary-color);
     color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
     text-decoration: none;
 }
 
@@ -2393,16 +2451,16 @@ body {
     .topics-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .topic-item {
         min-height: 90px;
         padding: 12px;
     }
-    
+
     .topic-count {
         font-size: 1.3rem;
     }
-    
+
     .topic-name {
         font-size: 0.85rem;
     }
@@ -2413,17 +2471,17 @@ body {
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
     }
-    
+
     .topic-item {
         min-height: 80px;
         padding: 10px;
     }
-    
+
     .topic-count {
         font-size: 1.1rem;
         margin-bottom: 6px;
     }
-    
+
     .topic-name {
         font-size: 0.8rem;
     }
@@ -2492,14 +2550,14 @@ body {
 .logo-line-1 {
     font-size: 14px;
     font-weight: 600;
-    color: #dc3545;
+    color: var(--primary-color);
     line-height: 1.2;
 }
 
 .logo-line-2 {
     font-size: 24px;
     font-weight: 700;
-    color: #dc3545;
+    color: var(--primary-color);
     line-height: 1.2;
 }
 
@@ -2519,7 +2577,7 @@ body {
 }
 
 .contact-item i {
-    color: #dc3545;
+    color: var(--primary-color);
     width: 18px;
     flex-shrink: 0;
     margin-top: 2px;
@@ -2553,12 +2611,12 @@ body {
 .footer-column-title {
     font-size: 16px;
     font-weight: 700;
-    color: #333;
+    color: var(--text-color);
     margin-bottom: 25px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #dc3545;
+    border-bottom: 2px solid var(--primary-color);
     width: 100%;
 }
 
@@ -2706,7 +2764,8 @@ body {
     border-radius: 4px;
     transition: all 0.3s;
     width: fit-content;
-    margin-left: calc(15px + 80px); /* Align với QR code (gap + qr width) */
+    margin-left: calc(15px + 80px);
+    /* Align với QR code (gap + qr width) */
     margin-top: 8px;
 }
 
@@ -2810,18 +2869,19 @@ body {
 
 /* Copyright Bar */
 .footer-copyright {
-    background: #d4a574;
+    background: #1e293b;
     color: white;
-    padding: 18px 20px;
+    padding: 24px 20px;
     text-align: center;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     margin-top: 0;
     margin-left: -20px;
     margin-right: -20px;
     width: calc(100% + 40px);
     clear: both;
     letter-spacing: 0.3px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-copyright p {
@@ -2887,21 +2947,21 @@ body {
     .footer-main-content {
         padding-bottom: 30px;
     }
-    
+
     .footer-middle {
         grid-template-columns: 1fr;
         gap: 40px;
     }
-    
+
     .footer-column-title {
         font-size: 15px;
         margin-bottom: 20px;
     }
-    
+
     .footer-links-list {
         gap: 10px;
     }
-    
+
     .footer-container {
         padding: 40px 15px 0;
     }
@@ -2940,7 +3000,7 @@ body {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(to right, #d9534f, #f0ad4e);
+    background: var(--primary-color);
     border-radius: 2px;
 }
 
@@ -3023,7 +3083,7 @@ body {
 }
 
 .author-link:hover .author-name {
-    color: #d9534f;
+    color: var(--primary-color);
 }
 
 /* Responsive cho phần Tác giả */
@@ -3031,7 +3091,7 @@ body {
     .authors-list {
         justify-content: space-between;
     }
-    
+
     .author-avatar {
         width: 110px;
         height: 110px;
@@ -3042,12 +3102,12 @@ body {
     .authors-list {
         justify-content: space-between;
     }
-    
+
     .author-avatar {
         width: 100px;
         height: 100px;
     }
-    
+
     .author-name {
         font-size: 13px;
         max-width: 100px;
@@ -3059,13 +3119,13 @@ body {
         justify-content: center;
         gap: 15px;
     }
-    
+
     .author-avatar {
         width: 90px;
         height: 90px;
         border-width: 2px;
     }
-    
+
     .author-name {
         font-size: 12px;
         max-width: 90px;
@@ -3077,12 +3137,12 @@ body {
         justify-content: center;
         gap: 12px;
     }
-    
+
     .author-avatar {
         width: 80px;
         height: 80px;
     }
-    
+
     .author-name {
         font-size: 11px;
         max-width: 80px;
@@ -3193,7 +3253,7 @@ body {
 }
 
 .contact-link:hover .contact-label {
-    color: #d9534f;
+    color: var(--primary-color);
 }
 
 /* Responsive cho phần Liên hệ - Hợp tác */
@@ -3201,12 +3261,12 @@ body {
     .contact-item {
         flex: 0 0 calc(50% - 10px);
     }
-    
+
     .contact-image-wrapper {
         width: 150px;
         height: 150px;
     }
-    
+
     .contact-image {
         width: 130px;
         height: 130px;
@@ -3218,21 +3278,21 @@ body {
         justify-content: center;
         gap: 25px;
     }
-    
+
     .contact-item {
         flex: 0 0 calc(50% - 12px);
     }
-    
+
     .contact-image-wrapper {
         width: 140px;
         height: 140px;
     }
-    
+
     .contact-image {
         width: 120px;
         height: 120px;
     }
-    
+
     .contact-label {
         font-size: 14px;
     }
@@ -3242,22 +3302,22 @@ body {
     .contact-list {
         gap: 20px;
     }
-    
+
     .contact-item {
         flex: 0 0 100%;
         max-width: 200px;
     }
-    
+
     .contact-image-wrapper {
         width: 120px;
         height: 120px;
     }
-    
+
     .contact-image {
         width: 100px;
         height: 100px;
     }
-    
+
     .contact-label {
         font-size: 13px;
     }
@@ -3320,7 +3380,7 @@ body {
 }
 
 .service-item:hover .service-label {
-    color: #d9534f;
+    color: var(--primary-color);
 }
 
 /* Responsive cho phần Trân trọng phục vụ */
@@ -3335,7 +3395,7 @@ body {
     .service-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .service-image {
         height: 120px;
     }
@@ -3346,11 +3406,11 @@ body {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    
+
     .service-image {
         height: 100px;
     }
-    
+
     .service-label {
         font-size: 12px;
     }
@@ -3372,11 +3432,12 @@ body {
 }
 
 .news-featured-card {
-    background: white;
-    border-radius: 8px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .news-featured-card:hover {
@@ -3558,15 +3619,15 @@ body {
     .news-content {
         flex-direction: column;
     }
-    
+
     .news-featured {
         flex: 1;
     }
-    
+
     .news-list {
         flex: 1;
     }
-    
+
     .news-featured-image {
         height: 250px;
     }
@@ -3576,22 +3637,21 @@ body {
     .news-featured-image {
         height: 200px;
     }
-    
+
     .news-featured-info {
         padding: 15px;
     }
-    
+
     .news-title {
         font-size: 18px;
     }
-    
+
     .news-item-link {
         flex-direction: column;
     }
-    
+
     .news-item-image {
         width: 100%;
         height: 150px;
     }
 }
-

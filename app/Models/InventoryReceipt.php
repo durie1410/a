@@ -32,11 +32,6 @@ class InventoryReceipt extends Model
         'quantity' => 'integer',
     ];
 
-    public function book()
-    {
-        return $this->belongsTo(Book::class);
-    }
-
     public function receiver()
     {
         return $this->belongsTo(User::class, 'received_by');
@@ -50,6 +45,27 @@ class InventoryReceipt extends Model
     public function inventories()
     {
         return $this->hasMany(Inventory::class, 'receipt_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(InventoryReceiptItem::class, 'receipt_id');
+    }
+
+    // Book关系：为了向后兼容，保留book_id关系
+    // 如果receipt有items，可以通过items获取多个book
+    public function book()
+    {
+        return $this->belongsTo(Book::class);
+    }
+    
+    // 获取第一个item的book（如果有items）
+    public function getFirstBookAttribute()
+    {
+        if ($this->items()->exists()) {
+            return $this->items()->first()->book;
+        }
+        return $this->book;
     }
 
     // Scope để lấy phiếu đang chờ phê duyệt

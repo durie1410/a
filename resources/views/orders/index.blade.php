@@ -1,924 +1,897 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Lịch sử mua hàng - Nhà Xuất Bản Xây Dựng</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/account.css') }}">
+@extends('account._layout')
+
+@section('title', 'Lịch sử đơn mượn')
+@section('breadcrumb', 'Lịch sử đơn mượn')
+
+@section('content')
     <style>
-        /* Styles cho bảng lịch sử mua hàng */
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+        }
+
         .purchase-history-section {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .purchase-history-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 25px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .purchase-history-title::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
         }
 
         .purchase-history-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .purchase-history-table thead {
-            background-color: #f5f5f5;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 1.5rem;
         }
 
         .purchase-history-table th {
-            padding: 12px 15px;
-            text-align: left;
+            background: var(--gray-100);
+            color: var(--gray-700);
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #ddd;
-            font-size: 14px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
         }
 
         .purchase-history-table td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            color: #555;
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            color: var(--gray-800);
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.2s ease;
         }
 
-        .purchase-history-table tbody tr:hover {
-            background-color: #f9f9f9;
+        .purchase-history-table tr:hover td {
+            background-color: #f9fafb;
         }
 
         .order-code {
+            font-family: 'Monaco', 'Consolas', monospace;
             font-weight: 600;
-            color: #333;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
         }
 
         .order-date {
-            color: #666;
+            color: var(--gray-500);
+            font-size: 0.875rem;
         }
 
         .order-amount {
-            font-weight: 600;
-            color: #d82329;
+            font-weight: 700;
+            color: var(--gray-800);
         }
 
-        .status-buttons {
+        .payment-method {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .status-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
             font-weight: 500;
-            cursor: default;
         }
 
-        .status-btn.cancelled {
-            background-color: #dc3545;
-            color: #fff;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
-        .status-btn.unpaid {
-            background-color: #6c757d;
-            color: #fff;
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
         }
 
-        .status-btn.paid {
-            background-color: #28a745;
-            color: #fff;
+        .status-borrowing {
+            background: #dbeafe;
+            color: #1e40af;
         }
 
-        .status-btn.processing {
-            background-color: #17a2b8;
-            color: #fff;
+        .status-returned {
+            background: #d1fae5;
+            color: #065f46;
         }
 
-        .view-btn {
-            background-color: #28a745;
-            color: #fff;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.2s;
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
-        .view-btn:hover {
-            background-color: #218838;
-            color: #fff;
-            text-decoration: none;
-        }
-
-        .cancel-btn {
-            background-color: #dc3545;
-            color: #fff;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-            transition: background-color 0.2s;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-
-        .cancel-btn:hover {
-            background-color: #c82333;
-            color: #fff;
-            text-decoration: none;
+        .status-overdue {
+            background: #fff1f2;
+            color: #be123c;
         }
 
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-view {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-view:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-cancel {
+            background: #fff;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-cancel:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-return {
+            background: #fff;
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .btn-return:hover {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-request {
+            background: #fff;
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        .btn-request:hover {
+            background: var(--info);
+            color: #fff;
+        }
+
+        .btn-confirm {
+            background: #fff !important;
+            color: #198754 !important;
+            border: 1px solid #198754 !important;
+        }
+
+        .btn-confirm:hover {
+            background: #198754 !important;
+            color: #fff !important;
+        }
+
+        .btn-reject {
+            background: #fff !important;
+            color: #f59e0b !important;
+            border: 1px solid #f59e0b !important;
+        }
+
+        .btn-reject:hover {
+            background: #f59e0b !important;
+            color: #fff !important;
+        }
+
+        .img-preview-container {
+            margin-top: 1rem;
+            border: 2px dashed var(--gray-200);
+            border-radius: 8px;
+            padding: 0.5rem;
+            text-align: center;
+            position: relative;
+            min-height: 100px;
+            display: flex;
             align-items: center;
-            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .img-preview-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 4px;
+        }
+
+        .form-group-custom {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label-custom {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-select-custom {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background-color: #fff;
         }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 4rem 2rem;
+            background: #fff;
+            border-radius: 12px;
         }
 
         .empty-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
         }
 
         .empty-state h4 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
         }
 
         .empty-state p {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 30px;
+            color: var(--gray-500);
+            margin-bottom: 2rem;
         }
 
-        .pagination-wrapper {
-            margin-top: 30px;
+        .btn-primary-modern {
+            display: inline-block;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-primary-modern:hover {
+            background: #1d4ed8;
+        }
+
+        /* Modal Styles */
+        .modal-custom {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-custom.show {
             display: flex;
+            align-items: center;
             justify-content: center;
         }
+
+        .modal-dialog-custom {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            animation: modalSlide 0.3s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body-custom {
+            padding: 1.5rem;
+        }
+
+        .modal-footer-custom {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        textarea.form-control-custom {
+            width: 100%;
+            min-height: 120px;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        textarea.form-control-custom:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
     </style>
-</head>
-<body>
-    <header class="main-header">
-        <div class="header-top">
-            <div class="logo-section">
-                <img src="{{ asset('favicon.ico') }}" alt="Logo" class="logo-img">
-                <div class="logo-text">
-                    <span class="logo-part1">NHÀ XUẤT BẢN</span>
-                    <span class="logo-part2">XÂY DỰNG</span>
-                </div>
-            </div>
-            <div class="hotline-section">
-                <div class="hotline-item">
-                    <span class="hotline-label">Hotline khách lẻ:</span>
-                    <a href="tel:0327888669" class="hotline-number">0327888669</a>
-                </div>
-                <div class="hotline-item">
-                    <span class="hotline-label">Hotline khách sỉ:</span>
-                    <a href="tel:02439741791" class="hotline-number">02439741791 - 0327888669</a>
-                </div>
-            </div>
-            <div class="user-actions">
-                @auth
-                    <div class="user-menu-dropdown" style="position: relative;">
-                        <a href="#" class="auth-link user-menu-toggle">
-                            <span class="user-icon">👤</span>
-                            <span>{{ auth()->user()->name }}</span>
-                        </a>
-                        <div class="user-dropdown-menu">
-                            <div class="dropdown-header" style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">
-                                <span class="user-icon">👤</span>
-                                {{ auth()->user()->name }}
-                            </div>
-                            @if(auth()->user()->reader)
-                            <a href="{{ route('account.borrowed-books') }}" class="dropdown-item">
-                                <span>📚</span> Sách đang mượn
-                            </a>
-                            <a href="{{ route('account.reader-info') }}" class="dropdown-item">
-                                <span>👥</span> Thông tin độc giả
-                            </a>
-                            @endif
-                            <a href="{{ route('account') }}" class="dropdown-item">
-                                <span>👤</span> Thông tin tài khoản
-                            </a>
-                            <a href="{{ route('account.change-password') }}" class="dropdown-item">
-                                <span>🔒</span> Đổi mật khẩu
-                            </a>
-                            <a href="{{ route('orders.index') }}" class="dropdown-item">
-                                <span>⏰</span> Lịch sử mua hàng
-                            </a>
-                            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'staff')
-                            <div style="border-top: 1px solid #eee; margin-top: 5px;"></div>
-                            <a href="{{ route('dashboard') }}" class="dropdown-item">
-                                <span>📊</span> Dashboard
-                            </a>
-                            @endif
-                            <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
-                                @csrf
-                                <button type="submit" class="dropdown-item logout-btn">
-                                    <span>➡️</span> Đăng xuất
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    <style>
-                        .user-menu-dropdown {
-                            position: relative;
-                        }
-                        .user-menu-dropdown .user-dropdown-menu {
-                            display: none;
-                            position: absolute;
-                            top: calc(100% + 5px);
-                            right: 0;
-                            background: white;
-                            border: 1px solid #ddd;
-                            border-radius: 8px;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                            min-width: 220px;
-                            z-index: 1000;
-                            overflow: hidden;
-                        }
-                        .user-menu-dropdown:hover .user-dropdown-menu {
-                            display: block;
-                        }
-                        .user-menu-dropdown .dropdown-item {
-                            display: block;
-                            padding: 10px 15px;
-                            color: #333;
-                            text-decoration: none;
-                            border-bottom: 1px solid #eee;
-                            transition: background-color 0.2s;
-                            cursor: pointer;
-                        }
-                        .user-menu-dropdown .dropdown-item:hover {
-                            background-color: #f5f5f5;
-                        }
-                        .user-menu-dropdown .dropdown-item.logout-btn {
-                            border: none;
-                            background: none;
-                            width: 100%;
-                            text-align: left;
-                            color: #d32f2f;
-                            border-top: 1px solid #eee;
-                            margin-top: 5px;
-                        }
-                        .user-menu-dropdown .dropdown-item.logout-btn:hover {
-                            background-color: #ffebee;
-                        }
-                        .user-menu-dropdown .dropdown-item span {
-                            margin-right: 8px;
-                        }
-                    </style>
-                @else
-                    <a href="{{ route('login') }}" class="auth-link">Đăng nhập</a>
-                @endauth
-            </div>
-        </div>
-        <div class="header-nav">
-            <div class="search-bar">
-                <form action="{{ route('books.public') }}" method="GET" class="search-form">
-                    <input type="text" name="keyword" placeholder="Tìm sách, tác giả, sản phẩm mong muốn..." value="{{ request('keyword') }}" class="search-input">
-                    <button type="submit" class="search-button">🔍 Tìm kiếm</button>
-                </form>
-            </div>
-        </div>
-    </header>
 
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb-nav">
-        <div class="breadcrumb-container">
-            <a href="{{ route('home') }}" class="breadcrumb-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                </svg>
-            </a>
-            <span class="breadcrumb-separator">/</span>
-            <span class="breadcrumb-current">Lịch sử mua hàng</span>
-        </div>
-    </nav>
+    <div class="purchase-history-section">
+        <h2 class="purchase-history-title">Lịch sử đơn mượn</h2>
 
-    <main class="account-container">
-        <aside class="account-sidebar">
-            <div class="user-profile">
-                <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
-                <div class="username">{{ auth()->user()->name }}</div>
-            </div>
-            <nav class="account-nav">
-                <ul>
-                    @if(auth()->user()->reader)
-                    <li><a href="{{ route('account.borrowed-books') }}"><span class="icon">📚</span> Sách đang mượn</a></li>
-                    @endif
-                    <li><a href="{{ route('account') }}"><span class="icon">👤</span> Thông tin khách hàng</a></li>
-                    <li><a href="{{ route('account.change-password') }}"><span class="icon">🔒</span> Đổi mật khẩu</a></li>
-                    <li class="active"><a href="{{ route('orders.index') }}"><span class="icon">🛒</span> Lịch sử mua hàng</a></li>
-                    @if(!auth()->user()->reader)
-                    <li><a href="{{ route('account.register-reader') }}"><span class="icon">📝</span> Đăng kí độc giả</a></li>
-                    @endif
-                    <li><a href="#" class="logout-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><span class="icon">➡️</span> Đăng xuất</a></li>
-                </ul>
-            </nav>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                @csrf
-            </form>
-        </aside>
-
-        <section class="account-content">
-            <div class="purchase-history-section">
-                <h2 class="purchase-history-title">Lịch sử mua hàng</h2>
-                
-                @if($orders->count() > 0)
+        @if($orders->count() > 0)
+            <div class="table-container">
                 <table class="purchase-history-table">
                     <thead>
                         <tr>
                             <th>STT</th>
                             <th>Mã đơn</th>
-                            <th>Ngày đặt</th>
+                            <th>Ngày mượn</th>
                             <th>Số tiền</th>
-                            <th>Phương thức thanh toán</th>
+                            <th>Thanh toán</th>
                             <th>Trạng thái</th>
-                            <th>Xử lý</th>
+                            <th style="text-align: right;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($orders as $index => $order)
-                        <tr>
-                            <td>{{ $orders->firstItem() + $index }}</td>
-                            <td>
-                                <span class="order-code">#{{ $order->order_number }}</span>
-                            </td>
-                            <td>
-                                <span class="order-date">{{ $order->created_at->format('d/m/Y H:i') }}</span>
-                            </td>
-                            <td>
-                                <span class="order-amount">{{ number_format($order->total_amount, 0, ',', '.') }}₫</span>
-                            </td>
-                            <td>
-                                @if($order->payment_method === 'cash_on_delivery')
-                                    <span style="color: #28a745; font-weight: 500;">💳 Thanh toán khi nhận hàng</span>
-                                @elseif($order->payment_method === 'bank_transfer')
-                                    <span style="color: #17a2b8; font-weight: 500;">🏦 Chuyển khoản ngân hàng</span>
-                                @else
-                                    <span style="color: #6c757d;">Chưa xác định</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="status-buttons">
-                                    @if($order->status === 'cancelled')
-                                        <span class="status-btn cancelled">Đã huỷ</span>
-                                    @elseif($order->status === 'pending')
-                                        <span class="status-btn" style="background-color: #ffc107; color: #000;">Chờ xử lý</span>
-                                    @elseif($order->status === 'processing')
-                                        <span class="status-btn processing">Đang xử lý</span>
-                                    @elseif($order->status === 'shipped')
-                                        <span class="status-btn" style="background-color: #17a2b8; color: #fff;">Đã giao hàng</span>
-                                    @elseif($order->status === 'delivered')
-                                        <span class="status-btn paid">Đã hoàn thành</span>
-                                    @endif
-                                    @if($order->payment_status === 'pending')
-                                        <span class="status-btn unpaid">Chưa thanh toán</span>
-                                    @elseif($order->payment_status === 'paid')
-                                        <span class="status-btn paid">Đã thanh toán</span>
-                                    @elseif($order->payment_status === 'failed')
-                                        <span class="status-btn cancelled">Thanh toán thất bại</span>
-                                    @elseif($order->payment_status === 'refunded')
-                                        <span class="status-btn" style="background-color: #6c757d; color: #fff;">Đã hoàn tiền</span>
-                                    @endif
-                                </div>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <a href="{{ route('orders.show', $order->id) }}" class="view-btn">Xem</a>
-                                    @if($order->canBeCancelled())
-                                    <button type="button" class="cancel-btn" onclick="cancelOrder({{ $order->id }})">
-                                        Huỷ
-                                    </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
+                                <tr>
+                                    <td style="color: var(--gray-500); font-size: 0.875rem;">{{ $orders->firstItem() + $index }}</td>
+                                    <td>
+                                        <span class="order-code">#BRW{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="order-date">{{ $order->created_at->format('d/m/Y H:i') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="order-amount">{{ number_format($order->tong_tien ?? 0, 0, ',', '.') }}₫</span>
+                                    </td>
+                                    <td>
+                                        @php
+                                            $payment = $order->payments->first();
+                                            $paymentMethod = $payment ? $payment->payment_method : null;
+                                            $paymentNote = $payment ? $payment->note : '';
+                                        @endphp
+                                        <div class="payment-method">
+                                            @if($paymentMethod === 'online')
+                                                @if(str_contains($paymentNote, 'VNPay'))
+                                                    <span style="color: #2196f3;">💳 VNPay</span>
+                                                @elseif(str_contains($paymentNote, 'chuyển khoản'))
+                                                    <span style="color: #17a2b8;">🏦 CK Ngân hàng</span>
+                                                @elseif(str_contains($paymentNote, 'ví điện tử'))
+                                                    <span style="color: #ff9800;">👛 Ví điện tử</span>
+                                                @else
+                                                    <span style="color: #2196f3;">💳 Online</span>
+                                                @endif
+                                            @elseif($paymentMethod === 'offline')
+                                                <span style="color: #28a745;">💰 Khi nhận hàng</span>
+                                            @else
+                                                <span style="color: #6c757d;">Chưa xác định</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if($order->trang_thai === 'Cho duyet')
+                                            <span class="status-badge status-pending">
+                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Chờ duyệt
+                                            </span>
+                                        @elseif($order->trang_thai === 'Dang muon')
+                                            @if($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_CHO_TRA_SACH)
+                                                <span class="status-badge" style="background: #fff3cd; color: #856404;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Chờ trả sách
+                                                </span>
+                                            @elseif($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DANG_VAN_CHUYEN_TRA_VE)
+                                                <span class="status-badge" style="background: #cff4fc; color: #055160;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7h-3v7h3V7z" />
+                                                        <path d="M14 7V5h3.06a1 1 0 01.99.85l.89 4.38a1 1 0 01-.15.86l-1.39 2.15a2.5 2.5 0 01-1.34.76H15.95a2.5 2.5 0 01-4.9 0H11" />
+                                                    </svg>
+                                                    Đang trả về
+                                                </span>
+                                            @elseif($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DA_NHAN_VA_KIEM_TRA)
+                                                <span class="status-badge" style="background: #fff3cd; color: #664d03;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Chờ hoàn tất
+                                                </span>
+                                            @else
+                                                <span class="status-badge status-borrowing">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.435.292-3.483.804a1 1 0 00-.517.876V15.803a1 1 0 001.49.876A6 6 0 017.18 16c1.103 0 2.113.188 3.013.53a1 1 0 00.814 0c.9-.342 1.91-.53 3.013-.53 1.103 0 2.113.188 3.013.53a1 1 0 001.49-.876V5.68a1 1 0 00-.517-.876A7.968 7.968 0 0014.5 4c-1.255 0-2.435.292-3.483.804V14.5a1 1 0 01-1.016 1.016A7.96 7.96 0 009 14.5V4.804z"></path>
+                                                    </svg>
+                                                    Đang mượn
+                                                </span>
+                                            @endif
+                                        @elseif($order->trang_thai === 'Da tra')
+                                            <span class="status-badge status-returned">
+                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Đã trả
+                                            </span>
+                                        @elseif($order->trang_thai === 'Huy')
+                                            <span class="status-badge status-cancelled">
+                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Đã hủy
+                                            </span>
+                                        @elseif($order->trang_thai === 'Qua han')
+                                            <span class="status-badge status-overdue">
+                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                                Quá hạn
+                                            </span>
+                                        @else
+                                            <span class="status-badge"
+                                                style="background: var(--gray-200); color: var(--gray-700);">{{ $order->trang_thai }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons" style="justify-content: flex-end;">
+                                            <a href="{{ route('orders.detail', $order->id) }}" class="btn-action btn-view"
+                                                title="Xem chi tiết">
+                                                Chi tiết
+                                            </a>
+
+                            @php
+                                // Trạng thái chờ xác nhận giao hàng
+                                $needsConfirmation = ($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DANG_GIAO_HANG || $order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_GIAO_HANG_THANH_CONG)
+                                    && !$order->customer_confirmed_delivery && !$order->customer_rejected_delivery;
+
+                                $canConfirmReturn = ($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_CHO_TRA_SACH);
+                            @endphp
+
+                                            @if($needsConfirmation)
+                                                <form action="{{ route('account.borrows.confirm-delivery', $order->id) }}" method="POST"
+                                                    style="display:inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn-action btn-confirm"
+                                                        onclick="return confirm('Bạn có chắc chắn đã nhận sách?')"
+                                                        title="Xác nhận đã nhận sách">
+                                                        Nhận sách
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn-action btn-reject"
+                                                    onclick="showRejectDeliveryModal({{ $order->id }})" title="Từ chối nhận sách">
+                                                    Từ chối
+                                                </button>
+                                            @endif
+
+                                            @if($canConfirmReturn)
+                                            <button type="button" class="btn-action btn-return" onclick="showReturnModal({{ $order->id }})">
+                                                Trả sách
+                                            </button>
+                                        @endif
+
+                                            @if($order->trang_thai === 'Cho duyet')
+                                                <button type="button" class="btn-action btn-cancel"
+                                                    onclick="showCancelModal(event, {{ $order->id }})">
+                                                    Hủy đơn
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
                         @endforeach
                     </tbody>
                 </table>
+            </div>
 
-                <!-- Phân trang -->
-                @if($orders->hasPages())
-                <div class="pagination-wrapper">
+            <!-- Phân trang -->
+            @if($orders->hasPages())
+                <div class="pagination-wrapper mt-4">
                     {{ $orders->links() }}
                 </div>
-                @endif
+            @endif
 
-                @else
-                <div class="empty-state">
-                    <div class="empty-icon">🛒</div>
-                    <h4>Bạn chưa có đơn hàng nào</h4>
-                    <p>Hãy bắt đầu mua sắm để tạo đơn hàng đầu tiên của bạn!</p>
-                    <a href="{{ route('books.public') }}" class="btn-primary">
-                        Mua sắm ngay
-                    </a>
-                </div>
-                @endif
+        @else
+            <div class="empty-state">
+                <div class="empty-icon">📂</div>
+                <h4>Bạn chưa có đơn mượn nào</h4>
+                <p>Hãy khám phá thư viện của chúng tôi và bắt đầu chuyến hành trình đọc sách của bạn!</p>
+                <a href="{{ route('books.public') }}" class="btn-primary-modern">
+                    Mượn sách ngay
+                </a>
             </div>
-        </section>
-    </main>
+        @endif
+    </div>
 
-    @include('components.footer')
-
-    <!-- Modal xác nhận hủy đơn hàng (Bước 1: Xác nhận) -->
-    <div class="modal fade" id="confirmCancelModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-                <div class="modal-body text-center" style="padding: 40px 30px;">
-                    <!-- Icon -->
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background-color: #fff3cd; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 48px; color: #ffc107; font-weight: bold;">?</span>
-                    </div>
-                    
-                    <!-- Title -->
-                    <h4 class="modal-title mb-3" style="font-weight: 600; color: #333; font-size: 22px;">
-                        Xác nhận hủy đơn hàng
-                    </h4>
-                    
-                    <!-- Message -->
-                    <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
-                        Vui lòng xác nhận để hủy đơn hàng
-                    </p>
-                    
-                    <!-- Buttons -->
-                    <div class="d-flex gap-3 justify-content-center">
-                        <button type="button" class="btn btn-secondary" id="cancelConfirmBtn" style="padding: 10px 30px; border-radius: 8px; font-weight: 500;">
-                            Huỷ
-                        </button>
-                        <button type="button" class="btn btn-primary" id="proceedCancelBtn" style="padding: 10px 30px; border-radius: 8px; font-weight: 500; background-color: #0d6efd;">
-                            Xác nhận
-                        </button>
-                    </div>
-                </div>
+    <!-- Modal Hủy Đơn -->
+    <div id="cancelModal" class="modal-custom" tabindex="-1">
+        <div class="modal-dialog-custom">
+            <div class="modal-header-custom">
+                <h5 class="m-0 font-weight-bold" style="font-size: 1.125rem;">Xác nhận hủy đơn mượn</h5>
+                <button type="button" class="btn-close" onclick="hideCancelModal()"
+                    style="border: none; background: none; font-size: 1.5rem; line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body-custom">
+                <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 1rem;">Vui lòng cho chúng tôi biết lý do
+                    bạn muốn hủy đơn mượn này.</p>
+                <textarea id="cancelReason" class="form-control-custom"
+                    placeholder="Nhập lý do hủy đơn (tối thiểu 10 ký tự)..."></textarea>
+                <div id="errorMessage" class="text-danger mt-2"
+                    style="display: none; font-size: 0.75rem; font-weight: 500;"></div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-action" onclick="hideCancelModal()"
+                    style="background: var(--gray-100); color: var(--gray-700);">Đóng</button>
+                <button type="button" class="btn-action btn-cancel" onclick="confirmCancel()">Xác nhận hủy</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal nhập lý do hủy (Bước 2: Nhập lý do) -->
-    <div class="modal fade" id="cancelOrderModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="border-bottom: 1px solid #e9ecef; padding: 20px 30px;">
-                    <h5 class="modal-title" style="font-weight: 600; color: #333;">Nhập lý do hủy đơn hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" style="padding: 30px;">
-                    <div class="alert alert-warning mb-3">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Lưu ý:</strong> Hành động này không thể hoàn tác.
+    <!-- Modal Hoàn Trả Sách (Upload Ảnh) -->
+    <div id="returnModal" class="modal-custom" tabindex="-1">
+        <div class="modal-dialog-custom">
+            <div class="modal-header-custom">
+                <h5 class="m-0 font-weight-bold" style="font-size: 1.125rem;">Xác nhận hoàn trả sách</h5>
+                <button type="button" class="btn-close" onclick="hideReturnModal()"
+                    style="border: none; background: none; font-size: 1.5rem; line-height: 1;">&times;</button>
+            </div>
+            <form id="returnForm" enctype="multipart/form-data">
+                <div class="modal-body-custom">
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Tình trạng sách thực tế:</label>
+                        <select id="returnCondition" class="form-select-custom" required>
+                            <option value="binh_thuong">Bình thường</option>
+                            <option value="hong_nhe">Hỏng nhẹ (Rách trang, bẩn...)</option>
+                            <option value="hong_nang">Hỏng nặng (Mất trang, hư bìa...)</option>
+                            <option value="mat_sach">Mất hoàn toàn</option>
+                        </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="cancellation_reason" class="form-label">
-                            <strong>Lý do hủy đơn hàng <span class="text-danger">*</span></strong>
-                        </label>
-                        <textarea 
-                            class="form-control" 
-                            id="cancellation_reason" 
-                            name="cancellation_reason" 
-                            rows="4" 
-                            placeholder="Vui lòng nhập lý do hủy đơn hàng (tối thiểu 10 ký tự)"
-                            required
-                            minlength="10"
-                            maxlength="500"
-                            style="border-radius: 8px;"
-                        ></textarea>
-                        <div class="form-text">
-                            <span id="charCount">0</span>/500 ký tự (tối thiểu 10 ký tự)
+
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Hình ảnh minh chứng (tối thiểu 1 ảnh):</label>
+                        <input type="file" id="returnImage" name="anh_hoan_tra[]" accept="image/*" class="form-control"
+                            onchange="previewImages(event)" required multiple>
+                        <div class="img-preview-container" id="imagePreview"
+                            style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; min-height: 120px; border: 2px dashed #e2e8f0; border-radius: 8px; padding: 10px;">
+                            <span class="text-muted" style="font-size: 0.75rem; width: 100%; text-align: center;">Chưa có
+                                ảnh chọn</span>
                         </div>
-                        <div class="invalid-feedback" id="reasonError"></div>
                     </div>
+
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Ghi chú:</label>
+                        <textarea id="returnNote" class="form-control-custom"
+                            placeholder="Mô tả chi tiết tình trạng sách..."></textarea>
+                    </div>
+                    <div id="returnError" class="text-danger mt-2"
+                        style="display: none; font-size: 0.75rem; font-weight: 500;"></div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #e9ecef; padding: 20px 30px;">
-                    <button type="button" class="btn btn-secondary" id="backToConfirmBtn" style="border-radius: 8px;">
-                        <i class="fas fa-arrow-left"></i> Quay lại
-                    </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelBtn" style="border-radius: 8px;">
-                        <i class="fas fa-times"></i> Xác nhận hủy
-                    </button>
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn-action" onclick="hideReturnModal()"
+                        style="background: var(--gray-100); color: var(--gray-700);">Đóng</button>
+                    <button type="button" class="btn-action btn-return" onclick="confirmReturnSubmit(event)">Xác nhận hoàn
+                        trả</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
-    <!-- Toast thông báo -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="orderToast" class="toast" role="alert">
-            <div class="toast-header">
-                <i class="fas fa-shopping-cart text-success me-2"></i>
-                <strong class="me-auto">Thông báo</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+    <!-- Modal Từ Chối Nhận Sách -->
+    <div id="rejectDeliveryModal" class="modal-custom" tabindex="-1">
+        <div class="modal-dialog-custom">
+            <div class="modal-header-custom">
+                <h5 class="m-0 font-weight-bold" style="font-size: 1.125rem;">Xác nhận từ chối nhận sách</h5>
+                <button type="button" class="btn-close" onclick="hideRejectDeliveryModal()"
+                    style="border: none; background: none; font-size: 1.5rem; line-height: 1;">&times;</button>
             </div>
-            <div class="toast-body" id="toastMessage">
-                <!-- Nội dung thông báo sẽ được thêm vào đây -->
+            <div class="modal-body-custom">
+                <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 1rem;">Vui lòng cho biết lý do bạn từ chối
+                    nhận đơn mượn này.</p>
+                <textarea id="rejectReason" class="form-control-custom"
+                    placeholder="Nhập lý do từ chối (tối thiểu 5 ký tự)..."></textarea>
+                <div id="rejectErrorMessage" class="text-danger mt-2"
+                    style="display: none; font-size: 0.75rem; font-weight: 500;"></div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-action" onclick="hideRejectDeliveryModal()"
+                    style="background: var(--gray-100); color: var(--gray-700);">Đóng</button>
+                <button type="button" class="btn-action btn-reject" onclick="confirmRejectDelivery(event)">Xác nhận từ
+                    chối</button>
             </div>
         </div>
     </div>
+@endsection
 
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Khai báo biến global
-    let currentOrderId = null;
-    let confirmCancelModal = null;
-    let cancelOrderModal = null;
-    let orderToast = null;
+        let currentBorrowId = null;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-    // Hàm hủy đơn hàng - Hiển thị modal xác nhận đầu tiên
-    window.cancelOrder = function(orderId) {
-        console.log('=== cancelOrder function called ===');
-        console.log('Order ID:', orderId);
-        
-        if (!orderId) {
-            console.error('Order ID is required');
-            alert('Lỗi: Không có mã đơn hàng');
-            return false;
+        // --- Hủy đơn ---
+        function showCancelModal(event, borrowId) {
+            currentBorrowId = borrowId;
+            document.getElementById('cancelModal').style.display = 'flex';
+            document.getElementById('cancelModal').classList.add('show');
+            document.getElementById('cancelReason').value = '';
+            document.getElementById('errorMessage').style.display = 'none';
         }
-        
-        currentOrderId = orderId;
-        
-        // Tìm modal xác nhận
-        const confirmModalElement = document.getElementById('confirmCancelModal');
-        if (!confirmModalElement) {
-            console.error('Confirm modal element not found in DOM');
-            alert('Không thể tải form hủy đơn hàng. Vui lòng tải lại trang.');
-            return false;
+
+        function hideCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+            document.getElementById('cancelModal').classList.remove('show');
+            currentBorrowId = null;
         }
-        
-        console.log('Confirm modal element found');
-        
-        // Khởi tạo modal xác nhận nếu chưa có
-        if (!confirmCancelModal) {
-            try {
-                if (typeof bootstrap === 'undefined') {
-                    console.error('Bootstrap is not loaded');
-                    alert('Lỗi: Bootstrap chưa được tải. Vui lòng tải lại trang.');
-                    return false;
-                }
-                
-                confirmCancelModal = new bootstrap.Modal(confirmModalElement, {
-                    backdrop: 'static',
-                    keyboard: false
-                });
-                console.log('Confirm modal initialized successfully');
-            } catch (error) {
-                console.error('Error initializing confirm modal:', error);
-                alert('Lỗi khởi tạo form: ' + error.message);
-                return false;
+
+        function confirmCancel(event) {
+            const reason = document.getElementById('cancelReason').value.trim();
+            const errorDiv = document.getElementById('errorMessage');
+
+            if (reason.length < 10) {
+                errorDiv.textContent = 'Lí do hủy đơn phải có ít nhất 10 ký tự';
+                errorDiv.style.display = 'block';
+                return;
             }
-        }
-        
-        // Hiển thị modal xác nhận
-        try {
-            confirmCancelModal.show();
-            console.log('Confirm modal shown successfully');
-            return true;
-        } catch (error) {
-            console.error('Error showing confirm modal:', error);
-            alert('Lỗi hiển thị form: ' + error.message);
-            return false;
-        }
-    };
 
-    // Khởi tạo tất cả sau khi DOM đã load
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing cancel order functionality...');
-        
-        // Khởi tạo modal xác nhận
-        const confirmModalElement = document.getElementById('confirmCancelModal');
-        if (confirmModalElement && typeof bootstrap !== 'undefined') {
-            confirmCancelModal = new bootstrap.Modal(confirmModalElement, {
-                backdrop: 'static',
-                keyboard: false
-            });
-            console.log('Confirm modal initialized');
-        }
-        
-        // Khởi tạo modal nhập lý do
-        const modalElement = document.getElementById('cancelOrderModal');
-        if (modalElement && typeof bootstrap !== 'undefined') {
-            cancelOrderModal = new bootstrap.Modal(modalElement, {
-                backdrop: 'static',
-                keyboard: false
-            });
-            console.log('Cancel order modal initialized');
-        }
-        
-        // Khởi tạo toast
-        const toastElement = document.getElementById('orderToast');
-        if (toastElement && typeof bootstrap !== 'undefined') {
-            orderToast = new bootstrap.Toast(toastElement);
-            console.log('Toast initialized');
-        }
-        
-        // Xử lý nút "Huỷ" trong modal xác nhận
-        const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
-        if (cancelConfirmBtn && confirmCancelModal) {
-            cancelConfirmBtn.addEventListener('click', function() {
-                confirmCancelModal.hide();
-            });
-        }
-        
-        // Xử lý nút "Xác nhận" trong modal xác nhận - chuyển sang modal nhập lý do
-        const proceedCancelBtn = document.getElementById('proceedCancelBtn');
-        if (proceedCancelBtn && confirmCancelModal && cancelOrderModal) {
-            proceedCancelBtn.addEventListener('click', function() {
-                confirmCancelModal.hide();
-                setTimeout(function() {
-                    // Reset form trước khi hiển thị
-                    const cancellationReasonInput = document.getElementById('cancellation_reason');
-                    const charCountSpan = document.getElementById('charCount');
-                    const reasonError = document.getElementById('reasonError');
-                    if (cancellationReasonInput) {
-                        cancellationReasonInput.value = '';
-                        cancellationReasonInput.classList.remove('is-invalid');
-                    }
-                    if (charCountSpan) {
-                        charCountSpan.textContent = '0';
-                        charCountSpan.classList.remove('text-success', 'text-warning', 'text-danger');
-                    }
-                    if (reasonError) {
-                        reasonError.textContent = '';
-                    }
-                    
-                    cancelOrderModal.show();
-                    
-                    setTimeout(function() {
-                        if (cancellationReasonInput) {
-                            cancellationReasonInput.focus();
-                        }
-                    }, 100);
-                }, 300);
-            });
-        }
-        
-        // Xử lý nút "Quay lại" trong modal nhập lý do
-        const backToConfirmBtn = document.getElementById('backToConfirmBtn');
-        if (backToConfirmBtn && cancelOrderModal && confirmCancelModal) {
-            backToConfirmBtn.addEventListener('click', function() {
-                cancelOrderModal.hide();
-                const cancellationReasonInput = document.getElementById('cancellation_reason');
-                const charCountSpan = document.getElementById('charCount');
-                const reasonError = document.getElementById('reasonError');
-                if (cancellationReasonInput) {
-                    cancellationReasonInput.value = '';
-                    cancellationReasonInput.classList.remove('is-invalid');
-                }
-                if (charCountSpan) {
-                    charCountSpan.textContent = '0';
-                    charCountSpan.classList.remove('text-success', 'text-warning', 'text-danger');
-                }
-                if (reasonError) {
-                    reasonError.textContent = '';
-                }
-                setTimeout(function() {
-                    confirmCancelModal.show();
-                }, 300);
-            });
-        }
-        
-        // Đếm ký tự trong textarea lý do hủy
-        const cancellationReasonInput = document.getElementById('cancellation_reason');
-        const charCountSpan = document.getElementById('charCount');
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
 
-        if (cancellationReasonInput && charCountSpan) {
-            cancellationReasonInput.addEventListener('input', function() {
-                const charCount = this.value.length;
-                charCountSpan.textContent = charCount;
-                
-                if (charCount < 10) {
-                    charCountSpan.classList.add('text-warning');
-                    charCountSpan.classList.remove('text-success', 'text-danger');
-                } else if (charCount > 500) {
-                    charCountSpan.classList.add('text-danger');
-                    charCountSpan.classList.remove('text-success', 'text-warning');
-                } else {
-                    charCountSpan.classList.add('text-success');
-                    charCountSpan.classList.remove('text-warning', 'text-danger');
-                }
-            });
-        }
-        
-        // Xác nhận hủy đơn hàng
-        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
-        if (confirmCancelBtn) {
-            confirmCancelBtn.addEventListener('click', function() {
-                if (!currentOrderId) {
-                    console.error('No order ID set');
-                    return;
-                }
-                
-                const cancellationReasonInput = document.getElementById('cancellation_reason');
-                const cancellationReason = cancellationReasonInput ? cancellationReasonInput.value.trim() : '';
-                const reasonError = document.getElementById('reasonError');
-                
-                // Validate lý do hủy
-                if (!cancellationReason) {
-                    if (reasonError && cancellationReasonInput) {
-                        reasonError.textContent = 'Vui lòng nhập lý do hủy đơn hàng';
-                        cancellationReasonInput.classList.add('is-invalid');
-                    }
-                    return;
-                }
-                
-                if (cancellationReason.length < 10) {
-                    if (reasonError && cancellationReasonInput) {
-                        reasonError.textContent = 'Lý do hủy đơn hàng phải có ít nhất 10 ký tự';
-                        cancellationReasonInput.classList.add('is-invalid');
-                    }
-                    return;
-                }
-                
-                if (cancellationReason.length > 500) {
-                    if (reasonError && cancellationReasonInput) {
-                        reasonError.textContent = 'Lý do hủy đơn hàng không được vượt quá 500 ký tự';
-                        cancellationReasonInput.classList.add('is-invalid');
-                    }
-                    return;
-                }
-                
-                if (reasonError && cancellationReasonInput) {
-                    reasonError.textContent = '';
-                    cancellationReasonInput.classList.remove('is-invalid');
-                }
-                
-                const button = this;
-                const originalText = button.innerHTML;
-                
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-                button.disabled = true;
-                
-                // Lấy CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-                
-                if (!csrfToken) {
-                    alert('Lỗi: Không tìm thấy CSRF token. Vui lòng tải lại trang.');
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                    return;
-                }
-                
-                console.log('Sending cancel request for order:', currentOrderId);
-                
-                fetch(`/orders/${currentOrderId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cancellation_reason: cancellationReason
-                    })
-                })
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    
-                    const contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('application/json')) {
-                        return response.text().then(text => {
-                            console.error('Non-JSON response:', text);
-                            if (!response.ok) {
-                                throw new Error(`Lỗi ${response.status}: ${text || 'Server error'}`);
-                            }
-                            throw new Error('Server trả về dữ liệu không đúng định dạng');
-                        });
-                    }
-                    
-                    return response.json().then(data => {
-                        if (!response.ok) {
-                            return Promise.reject({ ...data, status: response.status });
-                        }
-                        return data;
-                    });
-                })
+            fetch(`/borrows/${currentBorrowId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ cancellation_reason: reason })
+            })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Response data:', data);
-                    
                     if (data.success) {
-                        showToast('success', data.message || 'Đơn hàng đã được hủy thành công');
-                        
-                        if (cancelOrderModal) {
-                            try {
-                                cancelOrderModal.hide();
-                            } catch (e) {
-                                console.error('Error hiding modal:', e);
-                                const modalElement = document.getElementById('cancelOrderModal');
-                                if (modalElement) {
-                                    modalElement.classList.remove('show');
-                                    modalElement.style.display = 'none';
-                                    document.body.classList.remove('modal-open');
-                                    const backdrop = document.getElementById('modalBackdrop');
-                                    if (backdrop) backdrop.remove();
-                                }
-                            }
-                        }
-                        
-                        setTimeout(() => {
-                            console.log('Reloading page...');
-                            window.location.reload();
-                        }, 1500);
+                        location.reload();
                     } else {
-                        const errorMessage = data.message || data.error || 'Có lỗi xảy ra khi hủy đơn hàng';
-                        showToast('error', errorMessage);
-                        
-                        if (data.errors && data.errors.cancellation_reason) {
-                            const reasonError = document.getElementById('reasonError');
-                            const cancellationReasonInput = document.getElementById('cancellation_reason');
-                            if (reasonError && cancellationReasonInput) {
-                                reasonError.textContent = data.errors.cancellation_reason[0];
-                                cancellationReasonInput.classList.add('is-invalid');
-                            }
-                        }
+                        errorDiv.textContent = data.message;
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
+                        btn.textContent = 'Xác nhận hủy';
                     }
+                })
+                .catch(() => {
+                    errorDiv.textContent = 'Có lỗi xảy ra';
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                });
+        }
+
+        // --- Xác nhận hoàn trả (Upload ảnh) ---
+        function showReturnModal(borrowId) {
+            currentBorrowId = borrowId;
+            document.getElementById('returnModal').style.display = 'flex';
+            document.getElementById('returnModal').classList.add('show');
+            document.getElementById('imagePreview').innerHTML = '<span class="text-muted" style="font-size: 0.75rem;">Chưa có ảnh chọn</span>';
+            document.getElementById('returnError').style.display = 'none';
+            document.getElementById('returnImage').value = '';
+        }
+
+        function hideReturnModal() {
+            document.getElementById('returnModal').style.display = 'none';
+            document.getElementById('returnModal').classList.remove('show');
+        }
+
+        function previewImages(event) {
+            const output = document.getElementById('imagePreview');
+            output.innerHTML = '';
+
+            const files = event.target.files;
+            if (files.length === 0) {
+                output.innerHTML = '<span class="text-muted" style="font-size: 0.75rem; width: 100%; text-align: center;">Chưa có ảnh chọn</span>';
+                return;
+            }
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.style.width = '100px';
+                    imgContainer.style.height = '100px';
+                    imgContainer.style.overflow = 'hidden';
+                    imgContainer.style.borderRadius = '4px';
+                    imgContainer.style.border = '1px solid #ddd';
+
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover';
+
+                    imgContainer.appendChild(img);
+                    output.appendChild(imgContainer);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function confirmReturnSubmit(event) {
+            const condition = document.getElementById('returnCondition').value;
+            const note = document.getElementById('returnNote').value;
+            const imageInput = document.getElementById('returnImage');
+            const errorDiv = document.getElementById('returnError');
+
+            if (imageInput.files.length === 0) {
+                errorDiv.textContent = 'Vui lòng chọn ít nhất 1 ảnh minh chứng';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('tinh_trang_sach', condition);
+            formData.append('ghi_chu', note);
+
+            for (let i = 0; i < imageInput.files.length; i++) {
+                formData.append('anh_hoan_tra[]', imageInput.files[i]);
+            }
+
+            formData.append('_token', csrfToken);
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+
+            fetch(`/account/borrows/${currentBorrowId}/return-book`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) location.reload();
+                    else throw new Error('Return confirmation failed');
                 })
                 .catch(error => {
-                    console.error('Error details:', error);
-                    
-                    if (error && typeof error === 'object' && 'success' in error) {
-                        const errorMessage = error.message || 'Có lỗi xảy ra khi hủy đơn hàng';
-                        showToast('error', errorMessage);
-                        
-                        if (error.errors && error.errors.cancellation_reason) {
-                            const reasonError = document.getElementById('reasonError');
-                            const cancellationReasonInput = document.getElementById('cancellation_reason');
-                            if (reasonError && cancellationReasonInput) {
-                                reasonError.textContent = error.errors.cancellation_reason[0];
-                                cancellationReasonInput.classList.add('is-invalid');
-                            }
-                        }
+                    errorDiv.textContent = 'Lỗi: ' + error.message;
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Xác nhận hoàn trả';
+                });
+        }
+
+        // --- Từ chối nhận sách ---
+        function showRejectDeliveryModal(borrowId) {
+            currentBorrowId = borrowId;
+            document.getElementById('rejectDeliveryModal').style.display = 'flex';
+            document.getElementById('rejectDeliveryModal').classList.add('show');
+            document.getElementById('rejectReason').value = '';
+            document.getElementById('rejectErrorMessage').style.display = 'none';
+        }
+
+        function hideRejectDeliveryModal() {
+            document.getElementById('rejectDeliveryModal').style.display = 'none';
+            document.getElementById('rejectDeliveryModal').classList.remove('show');
+        }
+
+        function confirmRejectDelivery(event) {
+            const reason = document.getElementById('rejectReason').value.trim();
+            const errorDiv = document.getElementById('rejectErrorMessage');
+
+            if (reason.length < 5) {
+                errorDiv.textContent = 'Lí do từ chối phải có ít nhất 5 ký tự';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+
+            fetch(`/account/borrows/${currentBorrowId}/reject-delivery`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
                     } else {
-                        let errorMessage = 'Có lỗi xảy ra, vui lòng thử lại';
-                        if (error && error.message) {
-                            errorMessage = error.message;
-                        }
-                        console.error('Error message:', errorMessage);
-                        showToast('error', errorMessage);
+                        errorDiv.textContent = data.message;
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
                     }
                 })
-                .finally(() => {
-                    button.innerHTML = originalText;
-                    button.disabled = false;
+                .catch(() => {
+                    errorDiv.textContent = 'Có lỗi xảy ra';
+                    errorDiv.style.display = 'block';
+                    btn.disabled = false;
                 });
-            });
         }
-    });
 
-    // Hàm hiển thị toast
-    function showToast(type, message) {
-        const toastElement = document.getElementById('orderToast');
-        const toastMessage = document.getElementById('toastMessage');
-        
-        if (!toastElement || !toastMessage) {
-            console.error('Toast elements not found');
-            alert(message);
-            return;
+        // Close on overlay click
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal-custom')) {
+                hideCancelModal();
+                hideReturnModal();
+                hideRejectDeliveryModal();
+            }
         }
-        
-        toastMessage.textContent = message;
-        
-        const toastHeader = toastElement.querySelector('.toast-header');
-        const icon = toastHeader.querySelector('i');
-        
-        if (type === 'success') {
-            icon.className = 'fas fa-check-circle text-success me-2';
-            toastElement.classList.remove('bg-danger');
-        } else {
-            icon.className = 'fas fa-exclamation-circle text-danger me-2';
-            toastElement.classList.add('bg-danger');
-        }
-        
-        if (orderToast) {
-            orderToast.show();
-        }
-    }
     </script>
-</body>
-</html>
+@endpush

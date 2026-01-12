@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,34 +12,36 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            background-color: #f5f5f5; 
+            background-color: #f5f5f5;
             color: #333;
         }
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             margin-top: 0;
         }
 
         .content-wrapper {
             display: flex;
-            width: 90%; 
+            width: 90%;
             max-width: 1300px;
             margin: 20px auto;
-            gap: 20px; 
+            gap: 20px;
         }
 
         /* Header sẽ sử dụng style từ style.css */
 
         /* --- MAIN CONTENT & SIDEBAR LAYOUT --- */
         .main-content {
-            flex: 3; 
+            flex: 3;
             background-color: white;
             padding: 20px 30px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .sidebar {
-            flex: 1; 
+            flex: 1;
             padding-top: 10px;
         }
 
@@ -227,7 +230,7 @@
             height: auto;
             flex-shrink: 0;
             border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .info-and-buy {
@@ -299,7 +302,8 @@
             accent-color: #4CAF50;
         }
 
-        .price, .final-price {
+        .price,
+        .final-price {
             font-weight: bold;
             color: #cc0000;
             font-size: 1.1em;
@@ -345,7 +349,7 @@
         }
 
         .btn-cart {
-            background-color: white; 
+            background-color: white;
             color: #cc0000;
             border: 1px solid #cc0000;
             flex: 1;
@@ -355,7 +359,7 @@
             opacity: 0.9;
         }
 
-        /* --- MODAL PHIẾU MƯỢN --- */
+        /* --- MODAL PHIẾU MƯỢN PREMIUM --- */
         .borrow-modal-overlay {
             display: none;
             position: fixed;
@@ -363,139 +367,223 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .borrow-modal-overlay.active {
             display: flex;
+            opacity: 1;
         }
 
         .borrow-modal {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 550px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
             position: relative;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .borrow-modal-overlay.active .borrow-modal {
+            transform: translateY(0) scale(1);
         }
 
         .borrow-modal-header {
             text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .borrow-modal-header h2 {
             margin: 0;
-            color: #cc0000;
-            font-size: 1.5em;
+            color: #1a1a1a;
+            font-size: 1.6em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
         .borrow-modal-header .subtitle {
             color: #666;
-            font-size: 0.85em;
-            margin-top: 3px;
+            font-size: 0.9em;
+            margin-top: 5px;
         }
 
         .borrow-info-section {
-            margin-bottom: 12px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .borrow-info-section h3 {
-            color: #333;
-            font-size: 1em;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #eee;
+            color: #1a1a1a;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px dashed #eee;
-            font-size: 0.95em;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            font-size: 1em;
+            color: #444;
         }
 
         .info-row:last-child {
             border-bottom: none;
         }
 
-        .info-label {
-            color: #666;
-            font-weight: 500;
+        .info-value {
+            font-weight: 600;
+            color: #1a1a1a;
         }
 
-        .info-value {
-            color: #333;
-            font-weight: bold;
-            text-align: right;
+        /* Quantity Controls */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background: #f0f0f0;
+            border-radius: 12px;
+            padding: 4px;
+            width: fit-content;
+        }
+
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: white;
+            color: #1a1a1a;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .qty-btn:hover {
+            background: #f8f8f8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .qty-btn:active {
+            transform: translateY(0);
+        }
+
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: none !important;
+            background: transparent !important;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #1a1a1a;
+            outline: none !important;
+            margin: 0 10px;
+        }
+
+        .qty-input::-webkit-inner-spin-button,
+        .qty-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .price-breakdown {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 15px;
+            border-radius: 12px;
         }
 
         .price-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            font-size: 0.95em;
+            align-items: center;
+            font-size: 1em;
+            color: #555;
         }
 
         .price-row.total {
-            border-top: 2px solid #cc0000;
-            margin-top: 8px;
-            padding-top: 10px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #cc0000;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(0, 0, 0, 0.05);
+            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .price-row.total span:last-child {
+            color: #ef4444 !important;
+            font-weight: 800;
         }
 
         .borrow-modal-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+            gap: 15px;
+            margin-top: 25px;
         }
 
         .btn-modal {
             flex: 1;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 14px;
+            border-radius: 12px;
             border: none;
-            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-modal-cancel {
-            background: #f5f5f5;
-            color: #333;
+            background: #f0f0f0;
+            color: #444;
         }
 
         .btn-modal-cancel:hover {
-            background: #e0e0e0;
+            background: #e5e5e5;
         }
 
         .btn-modal-confirm {
-            background: #cc0000;
+            background: linear-gradient(135deg, #FF416C 0%, #FF4B2B 100%);
             color: white;
+            flex: 1.5;
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.2);
         }
 
         .btn-modal-confirm:hover {
-            background: #aa0000;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(255, 65, 108, 0.3);
         }
 
         .btn-modal-confirm:disabled {
@@ -903,6 +991,7 @@
         }
     </style>
 </head>
+
 <body>
     <header class="main-header">
         <div class="header-top">
@@ -924,6 +1013,10 @@
                 </div>
             </div>
             <div class="user-actions">
+                <a href="{{ route('pricing.policy') }}" class="auth-link" style="margin-right: 15px;"
+                    title="Chính sách giá">
+                    <i class="fas fa-tags"></i> Chính sách giá
+                </a>
                 @auth
                     <a href="{{ route('borrow-cart.index') }}" class="cart-link" id="borrow-cart-link" title="Giỏ sách">
                         <i class="fas fa-shopping-cart"></i>
@@ -936,17 +1029,15 @@
                             <span>{{ auth()->user()->name }}</span>
                         </a>
                         <div class="user-dropdown-menu">
-                            <div class="dropdown-header" style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">
+                            <div class="dropdown-header"
+                                style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: 600; color: #333;">
                                 <span class="user-icon">👤</span>
                                 {{ auth()->user()->name }}
                             </div>
                             @if(auth()->user()->reader)
-                            <a href="{{ route('account.borrowed-books') }}" class="dropdown-item">
-                                <span>📚</span> Sách đang mượn
-                            </a>
-                            <a href="{{ route('account.reader-info') }}" class="dropdown-item">
-                                <span>👥</span> Thông tin độc giả
-                            </a>
+                                <a href="{{ route('account.borrowed-books') }}" class="dropdown-item">
+                                    <span>📚</span> Sách đang mượn
+                                </a>
                             @endif
                             <a href="{{ route('account') }}" class="dropdown-item">
                                 <span>👤</span> Thông tin tài khoản
@@ -958,10 +1049,10 @@
                                 <span>⏰</span> Lịch sử mua hàng
                             </a>
                             @if(auth()->user()->role === 'admin')
-                            <div style="border-top: 1px solid #eee; margin-top: 5px;"></div>
-                            <a href="{{ route('dashboard') }}" class="dropdown-item">
-                                <span>📊</span> Dashboard
-                            </a>
+                                <div style="border-top: 1px solid #eee; margin-top: 5px;"></div>
+                                <a href="{{ route('dashboard') }}" class="dropdown-item">
+                                    <span>📊</span> Dashboard
+                                </a>
                             @endif
                             <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                                 @csrf
@@ -975,6 +1066,7 @@
                         .user-menu-dropdown {
                             position: relative;
                         }
+
                         .user-menu-dropdown .user-dropdown-menu {
                             display: none;
                             position: absolute;
@@ -983,14 +1075,16 @@
                             background: white;
                             border: 1px solid #ddd;
                             border-radius: 8px;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
                             min-width: 220px;
                             z-index: 1000;
                             overflow: hidden;
                         }
+
                         .user-menu-dropdown:hover .user-dropdown-menu {
                             display: block;
                         }
+
                         .user-menu-dropdown .dropdown-item {
                             display: block;
                             padding: 10px 15px;
@@ -1000,9 +1094,11 @@
                             transition: background-color 0.2s;
                             cursor: pointer;
                         }
+
                         .user-menu-dropdown .dropdown-item:hover {
                             background-color: #f5f5f5;
                         }
+
                         .user-menu-dropdown .dropdown-item.logout-btn {
                             border: none;
                             background: none;
@@ -1012,9 +1108,11 @@
                             border-top: 1px solid #eee;
                             margin-top: 5px;
                         }
+
                         .user-menu-dropdown .dropdown-item.logout-btn:hover {
                             background-color: #ffebee;
                         }
+
                         .user-menu-dropdown .dropdown-item span {
                             margin-right: 8px;
                         }
@@ -1032,7 +1130,8 @@
         <div class="header-nav">
             <div class="search-bar">
                 <form action="{{ route('books.public') }}" method="GET" class="search-form">
-                    <input type="text" name="keyword" placeholder="Tìm sách, tác giả, sản phẩm mong muốn..." value="{{ request('keyword') }}" class="search-input">
+                    <input type="text" name="keyword" placeholder="Tìm sách, tác giả, sản phẩm mong muốn..."
+                        value="{{ request('keyword') }}" class="search-input">
                     <button type="submit" class="search-button">🔍 Tìm kiếm</button>
                 </form>
             </div>
@@ -1042,25 +1141,24 @@
     <div class="content-wrapper">
         <main class="main-content">
             <p class="breadcrumb">
-                <a href="{{ route('home') }}">🏠</a> / 
+                <a href="{{ route('home') }}">🏠</a> /
                 <span>{{ Str::limit($book->ten_sach, 50) }}</span>
             </p>
 
             <section class="book-detail-section">
                 <div class="book-summary">
-                    <img src="{{ $book->hinh_anh && file_exists(public_path('storage/'.$book->hinh_anh)) ? asset('storage/'.$book->hinh_anh) : 'https://via.placeholder.com/200x300?text=Book+Cover' }}" 
-                         alt="Bìa sách" 
-                         class="book-cover">
+                    <img src="{{ $book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh)) ? asset('storage/' . $book->hinh_anh) : 'https://via.placeholder.com/200x300?text=Book+Cover' }}"
+                        alt="Bìa sách" class="book-cover">
 
                     <div class="info-and-buy">
                         <h1>{{ $book->ten_sach }}</h1>
                         <p>Tác giả: <strong>{{ $book->tac_gia }}</strong></p>
-                        
+
                         <div class="rating">
                             @php
                                 $rating = $stats['average_rating'] ?? 4.5;
                             @endphp
-                            {{ number_format($rating, 1) }} 
+                            {{ number_format($rating, 1) }}
                             <span class="stars">
                                 @for($i = 1; $i <= 5; $i++)
                                     @if($i <= floor($rating))
@@ -1069,8 +1167,8 @@
                                         ☆
                                     @endif
                                 @endfor
-                            </span> 
-                            | {{ number_format($book->so_luot_xem ?? 0, 0, ',', '.') }} Lượt xem | 
+                            </span>
+                            | {{ number_format($book->so_luot_xem ?? 0, 0, ',', '.') }} Lượt xem |
                             {{ number_format($book->so_luong_ban ?? 0, 0, ',', '.') }} Đã bán
                         </div>
 
@@ -1078,29 +1176,42 @@
                             @php
                                 $isBorrowMode = isset($mode) && $mode === 'borrow';
                             @endphp
-                            
+
                             @if($isBorrowMode)
                                 <!-- Hiển thị thông tin giá sách -->
                                 @if($book->gia && $book->gia > 0)
-                                <div style="padding: 15px; background: #fff3e0; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ff9800;">
-                                    <strong style="font-size: 1.1em;">💰 Giá sách:</strong> 
-                                    <span style="color: #e65100; font-weight: bold; font-size: 1.2em;">{{ number_format($book->gia, 0, ',', '.') }}₫</span>
-                                </div>
+                                    <div
+                                        style="padding: 15px; background: #fff3e0; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ff9800;">
+                                        <strong style="font-size: 1.1em;">💰 Giá sách:</strong>
+                                        <span
+                                            style="color: #e65100; font-weight: bold; font-size: 1.2em;">{{ number_format($book->gia, 0, ',', '.') }}₫</span>
+                                    </div>
                                 @endif
 
                                 <!-- Hiển thị thông tin số lượng sách có sẵn -->
-                                <div style="padding: 15px; background: #e8f5e9; border-radius: 4px; margin-bottom: 20px; border: 1px solid #4caf50;">
-                                    <strong style="font-size: 1.1em;">📚 Sách có sẵn:</strong> 
-                                    <span style="color: #2e7d32; font-weight: bold; font-size: 1.1em;">{{ $stats['available_copies'] ?? 0 }} cuốn</span>
+                                <div
+                                    style="padding: 15px; background: #e8f5e9; border-radius: 4px; margin-bottom: 20px; border: 1px solid #4caf50;">
+                                    <strong style="font-size: 1.1em;">📚 Sách có sẵn:</strong>
+                                    <span
+                                        style="color: #2e7d32; font-weight: bold; font-size: 1.1em;">{{ $stats['available_copies'] ?? 0 }}
+                                        cuốn</span>
                                 </div>
 
                                 <!-- Chọn số lượng mượn -->
-                                <div style="padding: 15px; background: #f5f5f5; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd;">
-                                    <label style="display: block; margin-bottom: 10px; font-weight: bold; font-size: 1em;">Số lượng mượn:</label>
+                                <div
+                                    style="padding: 15px; background: #f5f5f5; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd;">
+                                    <label
+                                        style="display: block; margin-bottom: 10px; font-weight: bold; font-size: 1em;">Số
+                                        lượng mượn:</label>
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <button type="button" onclick="changeBorrowQuantity(-1)" style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 1.2em; font-weight: bold;">-</button>
-                                        <input type="number" id="borrow-quantity" value="1" min="1" max="{{ $stats['available_copies'] ?? 1 }}" style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 1.1em; font-weight: bold;" onchange="validateBorrowQuantity()">
-                                        <button type="button" onclick="changeBorrowQuantity(1)" style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 1.2em; font-weight: bold;">+</button>
+                                        <button type="button" onclick="changeBorrowQuantity(-1)"
+                                            style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 1.2em; font-weight: bold;">-</button>
+                                        <input type="number" id="borrow-quantity" value="1" min="1"
+                                            max="{{ $stats['available_copies'] ?? 1 }}"
+                                            style="width: 80px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 1.1em; font-weight: bold;"
+                                            onchange="validateBorrowQuantity()">
+                                        <button type="button" onclick="changeBorrowQuantity(1)"
+                                            style="padding: 8px 15px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 1.2em; font-weight: bold;">+</button>
                                         <span style="color: #666; font-size: 0.9em;">cuốn</span>
                                     </div>
                                 </div>
@@ -1114,14 +1225,16 @@
                                             <span style="font-size: 1.2em;">📖</span> Mượn ngay
                                         </button>
                                     @else
-                                        <button class="btn btn-buy" onclick="alert('Vui lòng đăng nhập để mượn sách!'); window.location.href='{{ route('login') }}';" style="opacity: 0.7; cursor: pointer; width: 100%;">
+                                        <button class="btn btn-buy"
+                                            onclick="alert('Vui lòng đăng nhập để mượn sách!'); window.location.href='{{ route('login') }}';"
+                                            style="opacity: 0.7; cursor: pointer; width: 100%;">
                                             <span style="font-size: 1.2em;">📖</span> Mượn sách
                                         </button>
                                     @endauth
                                 </div>
                             @else
                                 <label>Chọn sản phẩm</label>
-                                
+
                                 <!-- Sách giấy -->
                                 <div class="option-row">
                                     <div style="display: flex; align-items: center; gap: 8px;">
@@ -1131,23 +1244,32 @@
                                         </span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 5px;">
-                                        <button type="button" onclick="changeQuantity('paper', -1)" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;">-</button>
-                                        <input type="number" id="paper-quantity" value="1" min="1" max="{{ $stats['stock_quantity'] ?? 999 }}" style="width: 50px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center;" onchange="updateTotalPrice()">
-                                        <button type="button" onclick="changeQuantity('paper', 1)" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;">+</button>
+                                        <button type="button" onclick="changeQuantity('paper', -1)"
+                                            style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;">-</button>
+                                        <input type="number" id="paper-quantity" value="1" min="1"
+                                            max="{{ $stats['stock_quantity'] ?? 999 }}"
+                                            style="width: 50px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center;"
+                                            onchange="updateTotalPrice()">
+                                        <button type="button" onclick="changeQuantity('paper', 1)"
+                                            style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;">+</button>
                                     </div>
-                                    <span class="price" id="paper-price">{{ number_format($book->gia ?? 111000, 0, ',', '.') }}₫</span>
-                                    <input type="checkbox" id="paper-checkbox" checked onchange="updateTotalPrice()" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span class="price"
+                                        id="paper-price">{{ number_format($book->gia ?? 111000, 0, ',', '.') }}₫</span>
+                                    <input type="checkbox" id="paper-checkbox" checked onchange="updateTotalPrice()"
+                                        style="width: 20px; height: 20px; cursor: pointer;">
                                 </div>
-                                
+
                                 @if(($stats['stock_quantity'] ?? 0) == 0)
-                                    <div style="padding: 15px; background: #fff3cd; border-radius: 4px; margin: 15px 0; border: 1px solid #ffc107; color: #856404;">
+                                    <div
+                                        style="padding: 15px; background: #fff3cd; border-radius: 4px; margin: 15px 0; border: 1px solid #ffc107; color: #856404;">
                                         <strong>⚠️ Hết hàng:</strong> Sách này hiện đã hết hàng. Vui lòng quay lại sau!
                                     </div>
                                 @endif
-                                
+
                                 <div class="total-price">
                                     <span>Thành tiền</span>
-                                    <span class="final-price" id="total-price">{{ number_format($book->gia ?? 111000, 0, ',', '.') }}₫</span>
+                                    <span class="final-price"
+                                        id="total-price">{{ number_format($book->gia ?? 111000, 0, ',', '.') }}₫</span>
                                 </div>
 
                                 <div class="action-buttons">
@@ -1156,10 +1278,14 @@
                                             <span style="font-size: 1.2em;">$</span> Mua ngay
                                         </button>
                                     @else
-                                        <button class="btn btn-buy" onclick="alert('Vui lòng đăng nhập để mua hàng!'); window.location.href='{{ route('login') }}';" style="opacity: 0.7; cursor: pointer;" {{ ($stats['stock_quantity'] ?? 0) == 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }}>
+                                        <button class="btn btn-buy"
+                                            onclick="alert('Vui lòng đăng nhập để mua hàng!'); window.location.href='{{ route('login') }}';"
+                                            style="opacity: 0.7; cursor: pointer;" {{ ($stats['stock_quantity'] ?? 0) == 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }}>
                                             <span style="font-size: 1.2em;">$</span> Mua ngay
                                         </button>
-                                        <button class="btn btn-cart" onclick="alert('Vui lòng đăng nhập để thêm vào giỏ sách!'); window.location.href='{{ route('login') }}';" style="opacity: 0.7; cursor: pointer;" {{ ($stats['stock_quantity'] ?? 0) == 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }}>
+                                        <button class="btn btn-cart"
+                                            onclick="alert('Vui lòng đăng nhập để thêm vào giỏ sách!'); window.location.href='{{ route('login') }}';"
+                                            style="opacity: 0.7; cursor: pointer;" {{ ($stats['stock_quantity'] ?? 0) == 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : '' }}>
                                             <span style="font-size: 1.2em;">🛒</span> Thêm vào giỏ
                                         </button>
                                     @endauth
@@ -1211,13 +1337,8 @@
                     @auth
                         <form class="comment-form" action="{{ route('books.comments.store', $book->id) }}" method="POST">
                             @csrf
-                            <textarea 
-                                name="content" 
-                                placeholder="Để lại bình luận của bạn..." 
-                                maxlength="1500"
-                                oninput="updateCharCount(this)"
-                                required
-                            ></textarea>
+                            <textarea name="content" placeholder="Để lại bình luận của bạn..." maxlength="1500"
+                                oninput="updateCharCount(this)" required></textarea>
                             <p class="char-count">
                                 <span id="char-count">0</span>/1500
                             </p>
@@ -1225,7 +1346,8 @@
                         </form>
                     @else
                         <div style="padding: 20px; background: #f9f9f9; border-radius: 8px; text-align: center;">
-                            <p>Vui lòng <a href="{{ route('login') }}" style="color: #cc0000; font-weight: bold;">đăng nhập</a> để bình luận.</p>
+                            <p>Vui lòng <a href="{{ route('login') }}" style="color: #cc0000; font-weight: bold;">đăng
+                                    nhập</a> để bình luận.</p>
                         </div>
                     @endauth
 
@@ -1238,7 +1360,8 @@
                                         <div style="padding: 15px; background: #f9f9f9; border-radius: 8px; margin-bottom: 15px;">
                                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                                                 <strong>{{ $comment->user->name ?? 'Người dùng' }}</strong>
-                                                <span style="color: #666; font-size: 12px;">{{ $comment->created_at->format('d/m/Y H:i') }}</span>
+                                                <span
+                                                    style="color: #666; font-size: 12px;">{{ $comment->created_at->format('d/m/Y H:i') }}</span>
                                             </div>
                                             <p style="margin: 0; line-height: 1.6;">{{ $comment->content }}</p>
                                         </div>
@@ -1255,46 +1378,50 @@
 
     <!-- Cùng chủ đề -->
     @if($same_topic_books && $same_topic_books->count() > 0)
-    <div class="related-books-section full-width-section">
-        <div class="section-container">
-            <div class="section-header">
-                <h2>Cùng chủ đề</h2>
-                <a href="{{ route('books.public', ['category_id' => $book->category_id]) }}" class="view-all-link">Xem toàn bộ →</a>
-            </div>
-            <div class="book-carousel-wrapper">
-                <button class="carousel-nav carousel-prev" onclick="scrollCarousel('same-topic-carousel', -1)">‹</button>
-                <div class="book-list" id="same-topic-carousel">
-                    @foreach($same_topic_books as $relatedBook)
-                        <div class="book-item">
-                            <a href="{{ route('books.show', $relatedBook->id) }}" class="book-link">
-                                <div class="book-cover">
-                                    @if($relatedBook->hinh_anh && file_exists(public_path('storage/'.$relatedBook->hinh_anh)))
-                                        <img src="{{ asset('storage/'.$relatedBook->hinh_anh) }}" alt="{{ $relatedBook->ten_sach }}">
-                                    @else
-                                        <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
-                                            <rect width="210" height="297" fill="#f0f0f0"/>
-                                            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="16" fill="#999">📚</text>
-                                        </svg>
-                                    @endif
-                                </div>
-                                <p class="book-title">{{ Str::limit($relatedBook->ten_sach, 50) }}</p>
-                                @if($relatedBook->tac_gia)
-                                    <p class="book-author">{{ $relatedBook->tac_gia }}</p>
-                                @endif
-                                <div class="book-rating">
-                                    <span class="stars">★★★★★</span>
-                                </div>
-                                @if($relatedBook->gia && $relatedBook->gia > 0)
-                                    <p class="book-price">Chỉ từ {{ number_format($relatedBook->gia, 0, ',', '.') }}₫</p>
-                                @endif
-                            </a>
-                        </div>
-                    @endforeach
+        <div class="related-books-section full-width-section">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>Cùng chủ đề</h2>
+                    <a href="{{ route('books.public', ['category_id' => $book->category_id]) }}" class="view-all-link">Xem
+                        toàn bộ →</a>
                 </div>
-                <button class="carousel-nav carousel-next" onclick="scrollCarousel('same-topic-carousel', 1)">›</button>
+                <div class="book-carousel-wrapper">
+                    <button class="carousel-nav carousel-prev"
+                        onclick="scrollCarousel('same-topic-carousel', -1)">‹</button>
+                    <div class="book-list" id="same-topic-carousel">
+                        @foreach($same_topic_books as $relatedBook)
+                            <div class="book-item">
+                                <a href="{{ route('books.show', $relatedBook->id) }}" class="book-link">
+                                    <div class="book-cover">
+                                        @if($relatedBook->hinh_anh && file_exists(public_path('storage/' . $relatedBook->hinh_anh)))
+                                            <img src="{{ asset('storage/' . $relatedBook->hinh_anh) }}"
+                                                alt="{{ $relatedBook->ten_sach }}">
+                                        @else
+                                            <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
+                                                <rect width="210" height="297" fill="#f0f0f0" />
+                                                <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-size="16"
+                                                    fill="#999">📚</text>
+                                            </svg>
+                                        @endif
+                                    </div>
+                                    <p class="book-title">{{ Str::limit($relatedBook->ten_sach, 50) }}</p>
+                                    @if($relatedBook->tac_gia)
+                                        <p class="book-author">{{ $relatedBook->tac_gia }}</p>
+                                    @endif
+                                    <div class="book-rating">
+                                        <span class="stars">★★★★★</span>
+                                    </div>
+                                    @if($relatedBook->gia && $relatedBook->gia > 0)
+                                        <p class="book-price">Chỉ từ {{ number_format($relatedBook->gia, 0, ',', '.') }}₫</p>
+                                    @endif
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel-nav carousel-next" onclick="scrollCarousel('same-topic-carousel', 1)">›</button>
+                </div>
             </div>
         </div>
-    </div>
     @endif
 
 
@@ -1304,7 +1431,7 @@
         function switchTab(tab) {
             document.getElementById('intro-content').style.display = tab === 'intro' ? 'block' : 'none';
             document.getElementById('contents-content').style.display = tab === 'contents' ? 'block' : 'none';
-            
+
             document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
             event.target.classList.add('active');
         }
@@ -1320,11 +1447,11 @@
             let currentQuantity = parseInt(quantityInput.value) || 1;
             currentQuantity += change;
             if (currentQuantity < 1) currentQuantity = 1;
-            
+
             // Kiểm tra giới hạn số lượng tồn kho
             const isBorrowMode = {{ isset($mode) && $mode === 'borrow' ? 'true' : 'false' }};
             const maxQuantity = parseInt(quantityInput.getAttribute('max')) || 999;
-            
+
             if (isBorrowMode) {
                 // Chế độ mượn: sử dụng available_copies
                 const availableCopies = {{ $stats['available_copies'] ?? 0 }};
@@ -1341,7 +1468,7 @@
                     alert(`Chỉ còn ${stockQuantity} cuốn sách trong kho.`);
                 }
             }
-            
+
             quantityInput.value = currentQuantity;
             updateTotalPrice();
         }
@@ -1392,7 +1519,7 @@
 
             const paperCheckbox = document.getElementById('paper-checkbox');
             const paperChecked = paperCheckbox ? paperCheckbox.checked : false;
-            
+
             if (!paperChecked) {
                 alert('Vui lòng chọn sản phẩm!');
                 return;
@@ -1400,13 +1527,13 @@
 
             const quantity = parseInt(document.getElementById('paper-quantity')?.value) || 1;
             const stockQuantity = {{ $stats['stock_quantity'] ?? 0 }};
-            
+
             // Kiểm tra số lượng tồn kho
             if (quantity > stockQuantity) {
                 alert(`Số lượng bạn chọn (${quantity} cuốn) vượt quá số lượng tồn kho (${stockQuantity} cuốn). Vui lòng chọn lại!`);
                 return;
             }
-            
+
             if (stockQuantity === 0) {
                 alert('Sách này hiện đã hết hàng. Vui lòng quay lại sau!');
                 return;
@@ -1422,7 +1549,7 @@
             const params = new URLSearchParams();
             params.append('book_id', {{ $book->id }});
             params.append('paper_quantity', document.getElementById('paper-quantity').value);
-            
+
             window.location.href = '{{ route("checkout") }}?' + params.toString();
         }
 
@@ -1444,36 +1571,37 @@
         // Cập nhật tóm tắt đơn hàng mượn sách
         function updateBorrowSummary() {
             if (!isBorrowMode) return;
-            
+
             const quantity = parseInt(document.getElementById('borrow-quantity')?.value) || 1;
             const bookPrice = {{ $book->gia ?? 0 }};
             const hasCard = {{ auth()->check() && auth()->user()->reader ? 'true' : 'false' }};
-            
+
             // Số ngày mượn mặc định (có thể thay đổi khi người dùng mở modal)
             const defaultDays = 14;
-            
-            // Tính phí thuê (1% giá sách mỗi ngày, hoặc 0.5% nếu có thẻ)
-            const dailyRate = hasCard ? 0.005 : 0.01;
+
+            // Tính phí thuê (1% giá sách mỗi ngày, tính cho tất cả sách)
+            // Logic thực tế sẽ do API xử lý
+            const dailyRate = 0.01; // 1% mỗi ngày
             const rentalFeePerBook = Math.round((bookPrice * dailyRate * defaultDays) / 1000) * 1000;
             const totalRentalFee = rentalFeePerBook * quantity;
-            
-            // Tính tiền cọc (30% giá sách)
-            const depositRate = 0.3;
+
+            // Tính tiền cọc (100% giá sách - 1:1)
+            const depositRate = 1.0;
             const depositPerBook = Math.round(bookPrice * depositRate / 1000) * 1000;
             const totalDeposit = depositPerBook * quantity;
-            
+
             // Phí ship mặc định 0 (có thể thay đổi khi người dùng nhập khoảng cách)
             const shippingFee = 0;
-            
+
             // Giảm giá
             const productDiscount = 0;
             const orderDiscount = 0;
-            
+
             // Tính tổng
             const totalBasic = totalDeposit + shippingFee;
             const subtotal = totalBasic - productDiscount;
             const totalPayment = subtotal - orderDiscount;
-            
+
             // Cập nhật UI
             updateSummaryDisplay('rental-fee-display', totalRentalFee);
             updateSummaryDisplay('deposit-fee-display', totalDeposit);
@@ -1496,30 +1624,30 @@
         function applyDiscountCode() {
             const discountInput = document.getElementById('discount-code-input');
             const code = discountInput?.value.trim();
-            
+
             if (!code) {
                 alert('Vui lòng nhập mã giảm giá!');
                 return;
             }
-            
+
             // Hiển thị loading
             const btn = event.target;
             const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'Đang kiểm tra...';
-            
+
             // Gọi API kiểm tra mã giảm giá (tạm thời giả lập)
             setTimeout(() => {
                 // Giả lập kiểm tra mã giảm giá
                 const validCodes = ['LIBHUB2024', 'FREESHIP', 'DISCOUNT10'];
-                
+
                 if (validCodes.includes(code.toUpperCase())) {
                     alert('Áp dụng mã giảm giá thành công!\n\nLưu ý: Chức năng giảm giá đang được phát triển.');
                     discountInput.value = '';
                 } else {
                     alert('Mã giảm giá không hợp lệ hoặc đã hết hạn!');
                 }
-                
+
                 btn.disabled = false;
                 btn.textContent = originalText;
             }, 500);
@@ -1531,10 +1659,10 @@
 
         // Khởi tạo tóm tắt đơn hàng khi trang load (nếu ở chế độ mượn)
         if (isBorrowMode) {
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 updateBorrowSummary();
             });
-            
+
             // Cập nhật ngay lập tức nếu DOM đã load
             if (document.readyState === 'complete' || document.readyState === 'interactive') {
                 updateBorrowSummary();
@@ -1549,22 +1677,22 @@
         function changeBorrowQuantity(change) {
             const quantityInput = document.getElementById('borrow-quantity');
             if (!quantityInput) return;
-            
+
             let currentQuantity = parseInt(quantityInput.value) || 1;
             currentQuantity += change;
-            
+
             const maxQuantity = parseInt(quantityInput.getAttribute('max')) || 1;
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             if (currentQuantity < 1) {
                 currentQuantity = 1;
             } else if (currentQuantity > availableCopies) {
                 currentQuantity = availableCopies;
                 alert(`Chỉ còn ${availableCopies} cuốn sách có sẵn.`);
             }
-            
+
             quantityInput.value = currentQuantity;
-            
+
             // Cập nhật tóm tắt đơn hàng
             if (isBorrowMode) {
                 updateBorrowSummary();
@@ -1575,10 +1703,10 @@
         function validateBorrowQuantity() {
             const quantityInput = document.getElementById('borrow-quantity');
             if (!quantityInput) return;
-            
+
             let quantity = parseInt(quantityInput.value) || 1;
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             if (quantity < 1) {
                 quantity = 1;
                 quantityInput.value = 1;
@@ -1587,7 +1715,7 @@
                 quantityInput.value = availableCopies;
                 alert(`Chỉ còn ${availableCopies} cuốn sách có sẵn.`);
             }
-            
+
             // Cập nhật tóm tắt đơn hàng
             if (isBorrowMode) {
                 updateBorrowSummary();
@@ -1603,13 +1731,14 @@
             @endguest
 
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             if (availableCopies <= 0) {
                 alert('Hiện tại không còn sách có sẵn để mượn. Vui lòng thử lại sau.');
                 return;
             }
 
             // Hiển thị modal để nhập số ngày mượn
+            // Kiểm tra đăng ký độc giả sẽ được thực hiện ở trang checkout
             showBorrowModal();
         }
 
@@ -1622,7 +1751,7 @@
             @endguest
 
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             if (availableCopies <= 0) {
                 alert('Hiện tại không còn sách có sẵn để mượn. Vui lòng thử lại sau.');
                 return;
@@ -1635,6 +1764,11 @@
             if (quantity > availableCopies) {
                 alert(`Chỉ còn ${availableCopies} cuốn sách có sẵn. Vui lòng chọn lại số lượng.`);
                 return;
+            }
+
+            // Hỏi xác nhận TRƯỚC KHI thêm vào giỏ
+            if (!confirm('Bạn có muốn thêm sách này vào giỏ sách không?')) {
+                return; // Nếu hủy thì không làm gì cả
             }
 
             // Hiển thị loading
@@ -1657,31 +1791,35 @@
                     note: ''
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Cập nhật số lượng trong giỏ sách nếu có icon giỏ sách
-                    updateCartCount(data.cart_count);
-                    
-                    // Hiển thị thông báo thành công
-                    if (confirm('Đã thêm sách vào giỏ sách!\n\nBạn có muốn xem giỏ sách không?')) {
-                        window.location.href = '{{ route("borrow-cart.index") }}';
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Cập nhật số lượng trong giỏ sách nếu có icon giỏ sách
+                        updateCartCount(data.cart_count);
+
+                        // Hiển thị thông báo thành công và hỏi có muốn xem giỏ sách không
+                        if (confirm('Đã thêm sách vào giỏ sách!\n\nBạn có muốn xem giỏ sách không?')) {
+                            window.location.href = '{{ route("borrow-cart.index") }}';
+                        }
+                    } else {
+                        if (data.redirect) {
+                            // Nếu có redirect, hỏi người dùng có muốn chuyển đến trang đó không
+                            if (confirm(data.message + '\n\nBạn có muốn đăng ký ngay không?')) {
+                                window.location.href = data.redirect;
+                            }
+                        } else {
+                            alert(data.message || 'Có lỗi xảy ra khi thêm sách vào giỏ sách');
+                        }
                     }
-                } else {
-                    alert(data.message || 'Có lỗi xảy ra khi thêm sách vào giỏ sách');
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                }
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra khi thêm sách vào giỏ sách');
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            });
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi thêm sách vào giỏ sách');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
         }
 
         // Cập nhật số lượng trong giỏ sách (nếu có icon giỏ sách)
@@ -1692,76 +1830,69 @@
                 cartCountElement.textContent = count;
                 cartCountElement.style.display = count > 0 ? 'inline-block' : 'none';
             }
-            
+
             // Cập nhật borrow-cart-count (icon giỏ sách)
             const borrowCartCountElement = document.getElementById('borrow-cart-count');
             if (borrowCartCountElement) {
                 borrowCartCountElement.textContent = count;
                 borrowCartCountElement.style.display = count > 0 ? 'flex' : 'none';
             }
-            
+
             // Hoặc gọi hàm global nếu có
             if (typeof updateBorrowCartCount === 'function') {
                 updateBorrowCartCount(count);
             }
         }
 
+        // Helper function for custom qty buttons
+        function changeQty(id, delta, min, max) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            let val = parseInt(input.value) || 0;
+            val += delta;
+            if (val < min) val = min;
+            if (val > max) val = max;
+            input.value = val;
+
+            // Trigger the change/input event
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
         // Hiển thị modal phiếu mượn
         function showBorrowModal() {
             const modal = document.getElementById('borrowModal');
-            const borrowQuantity = parseInt(document.getElementById('borrow-quantity')?.value) || 1;
-            
-            // Tạo danh sách items với input riêng cho mỗi quyển
-            let itemsHtml = '';
-            for (let i = 0; i < borrowQuantity; i++) {
-                itemsHtml += `
-                    <div class="borrow-item-card" style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #e0e0e0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h4 style="margin: 0; color: #333;">📚 Quyển sách ${i + 1}</h4>
-                            <span style="color: #666; font-size: 0.9em;">{{ $book->ten_sach }}</span>
+
+            // Clear old content
+            document.getElementById('borrowModalInfo').innerHTML = '<div class="loading-spinner">Đang tải...</div>';
+            document.getElementById('borrowModalPricing').innerHTML = '';
+            document.getElementById('borrowModalActions').innerHTML = '';
+
+            // Lấy số ngày từ dropdown
+            // Chỉ còn "Số ngày mượn" nằm ở giữa
+            let itemsHtml = `
+                <div class="borrow-item-card" style="background: rgba(0,0,0,0.02); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <label style="display: block; margin-bottom: 2px; font-weight: 600; font-size: 1em; color: #1a1a1a;">Thay đổi số ngày mượn:</label>
+                            <small style="color: #666; font-size: 0.8em;">Nhấn + hoặc - để điều chỉnh</small>
                         </div>
-                        
-                        <div style="display: flex; gap: 15px;">
-                            <div style="flex: 1;">
-                                <label style="display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.9em;">Số ngày mượn:</label>
-                                <input type="number" 
-                                       class="item-days-input" 
-                                       data-index="${i}"
-                                       min="1" 
-                                       max="30" 
-                                       value="14" 
-                                       onchange="updateBorrowQuoteMultiple()" 
-                                       oninput="updateBorrowQuoteMultiple()"
-                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em;">
-                                <small style="color: #666; display: block; margin-top: 3px; font-size: 0.85em;">1 - 30 ngày</small>
-                            </div>
-                            
-                            <div style="flex: 1;">
-                                <label style="display: block; margin-bottom: 6px; font-weight: bold; font-size: 0.9em;">Khoảng cách (km):</label>
-                                <input type="number" 
-                                       class="item-distance-input" 
-                                       data-index="${i}"
-                                       min="0" 
-                                       step="0.1"
-                                       value="0" 
-                                       onchange="updateBorrowQuoteMultiple()" 
-                                       oninput="updateBorrowQuoteMultiple()"
-                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em;">
-                                <small style="color: #666; display: block; margin-top: 3px; font-size: 0.85em;">> 5km: +5.000₫/km</small>
-                            </div>
+                        <div class="quantity-control">
+                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', -1, 1, 30)">-</button>
+                            <input type="number" id="unified-days-input" class="qty-input" value="14" min="7" max="30" readonly onchange="updateBorrowQuoteUnified()">
+                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', 1, 1, 30)">+</button>
                         </div>
                     </div>
-                `;
-            }
-            
+                </div>
+            `;
+
             modal.classList.add('active');
-            
-            // Hiển thị danh sách items và loading
+
+            // Hiển thị form
             document.getElementById('borrowModalInputs').innerHTML = itemsHtml;
-            document.getElementById('borrowModalContent').innerHTML = '<div class="loading-spinner">Đang tải thông tin...</div>';
-            
+
             // Load thông tin giá
-            updateBorrowQuoteMultiple();
+            updateBorrowQuoteUnified();
+
         }
 
         // Đóng modal
@@ -1769,87 +1900,307 @@
             document.getElementById('borrowModal').classList.remove('active');
         }
 
-        // Hàm mới: Cập nhật thông tin giá cho nhiều items với thông số khác nhau
+
+        // Hàm mới: Cập nhật thông tin giá thống nhất cho tất cả quyển
+        function updateBorrowQuoteUnified() {
+            const daysInput = document.getElementById('unified-days-input');
+            const borrowQuantityInput = document.getElementById('borrow-quantity');
+            const borrowQuantity = parseInt(borrowQuantityInput?.value) || 1;
+            const days = parseInt(daysInput?.value) || 14;
+
+            if (!daysInput) {
+                return;
+            }
+
+            // Khoảng cách luôn là 0 ở modal (sẽ tính ở trang checkout)
+            const distance = 0;
+
+            if (days < 1 || days > 30) {
+                document.getElementById('borrowModalInfo').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 7 đến 30 ngày.</div>';
+                return;
+            }
+
+            // Xác định thông tin người dùng
+            const kycStatus = '{{ $kycStatus ?? "unverified" }}';
+            const userId = {{ auth()->id() ?? 'null' }};
+            const deliveryType = distance > 0 ? 'ship' : 'pickup';
+
+            // Gọi API để lấy giá
+            const apiUrl = `/api/pricing/quote?book_ids[]={{ $book->id }}&kyc_status=${kycStatus}&delivery_type=${deliveryType}&distance=${distance}&days=${days}`;
+            const finalUrl = userId ? `${apiUrl}&user_id=${userId}` : apiUrl;
+
+            fetch(finalUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const rentalFeePerBook = data.items?.[0]?.rental_fee || 0;
+                    const depositPerBook = data.items?.[0]?.deposit || 0;
+                    const shippingFee = data.shipping_fee || 0;
+
+                    // Tính tổng cho tất cả quyển
+                    const totalRentalFee = rentalFeePerBook * borrowQuantity;
+                    const totalDeposit = depositPerBook * borrowQuantity;
+                    const payableNow = totalRentalFee + totalDeposit + shippingFee;
+
+                    // Tính ngày trả dự kiến
+                    const today = new Date();
+                    const returnDate = new Date(today);
+                    returnDate.setDate(today.getDate() + days);
+
+                    displayUnifiedBorrowSummary(borrowQuantity, days, distance, totalRentalFee, totalDeposit, shippingFee, payableNow, returnDate);
+                })
+                .catch(error => {
+                    console.error('Error fetching pricing:', error);
+                    displayUnifiedBorrowSummaryFallback(borrowQuantity, days, distance);
+                });
+        }
+
+        // Hiển thị tóm tắt phiếu mượn thống nhất
+        function displayUnifiedBorrowSummary(quantity, days, distance, totalRentalFee, totalDeposit, shippingFee, payableNow, returnDate) {
+            const formatCurrency = (amount) => {
+                return new Intl.NumberFormat('vi-VN').format(amount) + '₫';
+            };
+
+            // 1. Info section
+            let infoHtml = `
+                <div class="borrow-info-section">
+                    <h3><i class="fas fa-info-circle" style="color:#3b82f6"></i> Thông tin mượn</h3>
+                    <div class="info-row">
+                        <span>Số lượng mượn:</span>
+                        <span class="info-value text-primary">${quantity} cuốn</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Số ngày mượn:</span>
+                        <span class="info-value text-primary">${days} ngày</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Ngày trả dự kiến:</span>
+                        <span class="info-value" style="color: #ef4444;">${returnDate.toLocaleDateString('vi-VN')}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('borrowModalInfo').innerHTML = infoHtml;
+
+            // 2. Pricing breakdown
+            let pricingHtml = `
+                <div class="price-breakdown">
+                    <div class="price-row">
+                        <span>Phí thuê (${quantity} cuốn × ${days} ngày):</span>
+                        <span>${formatCurrency(totalRentalFee)}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Tiền cọc (${quantity} cuốn):</span>
+                        <span>${formatCurrency(totalDeposit)}</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Phí ship dự kiến:</span>
+                        <span class="text-muted">Tính sau</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>TỔNG THANH TOÁN:</span>
+                        <span>${formatCurrency(payableNow)}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('borrowModalPricing').innerHTML = pricingHtml;
+
+            // 3. Actions
+            let actionsHtml = `
+                <div class="borrow-modal-actions">
+                    <button class="btn-modal btn-modal-cancel" onclick="closeBorrowModal()">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                    <button class="btn-modal btn-modal-confirm" onclick="confirmBorrowUnified()">
+                        <i class="fas fa-check"></i> Xác nhận mượn
+                    </button>
+                </div>
+            `;
+            document.getElementById('borrowModalActions').innerHTML = actionsHtml;
+        }
+
+        // Fallback khi API lỗi
+        function displayUnifiedBorrowSummaryFallback(quantity, days, distance) {
+            const bookPrice = {{ $book->gia ?? 0 }};
+            // Phí thuê: 1% giá sách mỗi ngày (tính cho tất cả sách - logic thực tế do API xử lý)
+            const dailyRate = 0.01; // 1% mỗi ngày
+
+            const rentalFeePerBook = Math.round((bookPrice * dailyRate * days) / 1000) * 1000;
+            const totalRentalFee = rentalFeePerBook * quantity;
+
+            // Tiền cọc = giá sách (1:1)
+            const depositRate = 1.0;
+            const depositPerBook = Math.round(bookPrice * depositRate / 1000) * 1000;
+            const totalDeposit = depositPerBook * quantity;
+
+            const shippingFee = distance > 5 ? Math.round((distance - 5) * 5000) : 0;
+            const payableNow = totalRentalFee + totalDeposit + shippingFee;
+
+            const today = new Date();
+            const returnDate = new Date(today);
+            returnDate.setDate(today.getDate() + days);
+
+            displayUnifiedBorrowSummary(quantity, days, distance, totalRentalFee, totalDeposit, shippingFee, payableNow, returnDate);
+        }
+
+        // Xác nhận mượn sách (phiên bản thống nhất)
+        function confirmBorrowUnified() {
+            const daysInput = document.getElementById('unified-days-input');
+            const borrowQuantityInput = document.getElementById('borrow-quantity');
+            const borrowQuantity = parseInt(borrowQuantityInput?.value) || 1;
+            const availableCopies = {{ $stats['available_copies'] ?? 0 }};
+
+            if (!daysInput) {
+                alert('Không có thông tin mượn sách!');
+                return;
+            }
+
+            const days = parseInt(daysInput.value) || 14;
+            // Khoảng cách luôn là 0 ở modal
+            const distance = 0;
+
+            if (days < 7 || days > 30) {
+                alert('Số ngày mượn phải từ 7 đến 30 ngày!');
+                return;
+            }
+
+            if (borrowQuantity > availableCopies) {
+                alert(`Số lượng mượn vượt quá số lượng có sẵn. Chỉ còn ${availableCopies} cuốn.`);
+                return;
+            }
+
+            closeBorrowModal();
+
+            // Tạo danh sách items với cùng thông số
+            const items = [];
+            for (let i = 0; i < borrowQuantity; i++) {
+                items.push({
+                    book_id: {{ $book->id }},
+                    borrow_days: days,
+                    distance: distance
+                });
+            }
+
+            // Redirect đến checkout với thông tin items
+            const params = new URLSearchParams();
+            params.append('book_id', {{ $book->id }});
+            params.append('quantity', borrowQuantity);
+            params.append('items', JSON.stringify(items));
+
+            window.location.href = '{{ route("borrow-cart.checkout") }}?' + params.toString();
+        }
+
+        // Hàm cũ: Cập nhật thông tin giá cho nhiều items với thông số khác nhau (giữ lại để tương thích)
         function updateBorrowQuoteMultiple() {
             const daysInputs = document.querySelectorAll('.item-days-input');
             const distanceInputs = document.querySelectorAll('.item-distance-input');
-            
+
             if (daysInputs.length === 0) {
                 return;
             }
-            
-            // Tính tổng phí cho tất cả items
-            const bookPrice = {{ $book->gia ?? 0 }};
-            const hasCard = {{ auth()->check() && auth()->user()->reader ? 'true' : 'false' }};
-            const dailyRate = hasCard ? 0.005 : 0.01;
-            
-            let totalRentalFee = 0;
-            let totalDeposit = 0;
-            let totalShippingFee = 0;
-            let itemsDetails = '';
-            
+
+            // Thu thập thông tin các items để gọi API
+            const items = [];
             daysInputs.forEach((daysInput, index) => {
                 const days = parseInt(daysInput.value) || 14;
-                const distance = parseFloat(distanceInputs[index].value) || 0;
-                
-                // Tính phí thuê cho item này
-                const rentalFeePerBook = Math.round((bookPrice * dailyRate * days) / 1000) * 1000;
-                totalRentalFee += rentalFeePerBook;
-                
-                // Tính tiền cọc cho item này (30% giá sách)
-                const depositRate = 0.3;
-                const depositPerCopy = Math.round(bookPrice * depositRate / 1000) * 1000;
-                totalDeposit += depositPerCopy;
-                
-                // Tính phí ship cho item này (chỉ tính nếu > 5km)
-                let shippingFee = 0;
-                if (distance > 5) {
-                    const extraKm = distance - 5;
-                    shippingFee = Math.round(extraKm * 5000);
-                }
-                totalShippingFee += shippingFee;
-                
-                // Tạo chi tiết item
-                const today = new Date();
-                const returnDate = new Date(today);
-                returnDate.setDate(today.getDate() + days);
-                
-                itemsDetails += `
-                    <div style="padding: 12px; background: white; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e0e0e0;">
-                        <div style="font-weight: bold; color: #333; margin-bottom: 8px;">📚 Quyển ${index + 1}</div>
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
-                            <span style="color: #666;">Số ngày mượn:</span>
-                            <span style="font-weight: 500;">${days} ngày</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
-                            <span style="color: #666;">Ngày trả dự kiến:</span>
-                            <span style="font-weight: 500; color: #cc0000;">${returnDate.toLocaleDateString('vi-VN')}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
-                            <span style="color: #666;">Khoảng cách:</span>
-                            <span style="font-weight: 500;">${distance} km</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em; border-top: 1px dashed #ddd; margin-top: 6px; padding-top: 8px;">
-                            <span style="color: #666;">Phí thuê:</span>
-                            <span style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(rentalFeePerBook)}₫</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
-                            <span style="color: #666;">Tiền cọc:</span>
-                            <span style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(depositPerCopy)}₫</span>
-                        </div>
-                        ${shippingFee > 0 ? `
-                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
-                            <span style="color: #666;">Phí ship:</span>
-                            <span style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(shippingFee)}₫</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
+                // Khoảng cách luôn là 0 - không cho nhập thủ công
+                const distance = 0;
+                items.push({ days, distance });
             });
-            
-            const payableNow = totalDeposit + totalShippingFee;
-            
-            const content = `
+
+            // Xác định thông tin người dùng
+            const kycStatus = '{{ $kycStatus ?? "unverified" }}';
+            const userId = {{ auth()->id() ?? 'null' }};
+
+            // Gọi API để lấy giá cho từng item - sử dụng Promise.all để đợi tất cả
+            const apiPromises = items.map((item, index) => {
+                const { days, distance } = item;
+                const deliveryType = distance > 0 ? 'ship' : 'pickup';
+                const apiUrl = `/api/pricing/quote?book_ids[]={{ $book->id }}&kyc_status=${kycStatus}&delivery_type=${deliveryType}&distance=${distance}&days=${days}`;
+                const finalUrl = userId ? `${apiUrl}&user_id=${userId}` : apiUrl;
+
+                return fetch(finalUrl)
+                    .then(response => response.json())
+                    .then(data => ({
+                        index,
+                        days,
+                        distance,
+                        rentalFee: data.items?.[0]?.rental_fee || 0,
+                        deposit: data.items?.[0]?.deposit || 0,
+                        shippingFee: data.shipping_fee || 0
+                    }))
+                    .catch(error => {
+                        console.error('Error fetching pricing:', error);
+                        return {
+                            index,
+                            days,
+                            distance,
+                            rentalFee: 0,
+                            deposit: 0,
+                            shippingFee: 0
+                        };
+                    });
+            });
+
+            // Đợi tất cả API hoàn thành
+            Promise.all(apiPromises).then(results => {
+                let totalRentalFee = 0;
+                let totalDeposit = 0;
+                let maxShippingFee = 0;
+                let itemsDetails = '';
+
+                // Xử lý kết quả theo đúng thứ tự
+                results.forEach(result => {
+                    const { index, days, distance, rentalFee, deposit, shippingFee } = result;
+
+                    totalRentalFee += rentalFee;
+                    totalDeposit += deposit;
+
+                    // Chỉ lấy phí ship lớn nhất
+                    if (shippingFee > maxShippingFee) {
+                        maxShippingFee = shippingFee;
+                    }
+
+                    // Tạo chi tiết item
+                    const today = new Date();
+                    const returnDate = new Date(today);
+                    returnDate.setDate(today.getDate() + days);
+
+                    itemsDetails += `
+                        <div style="padding: 12px; background: white; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e0e0e0;">
+                            <div style="font-weight: bold; color: #333; margin-bottom: 8px;">📚 Quyển ${index + 1}</div>
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
+                                <span style="color: #666;">Số ngày mượn:</span>
+                                <span style="font-weight: 500;">${days} ngày</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
+                                <span style="color: #666;">Ngày trả dự kiến:</span>
+                                <span style="font-weight: 500; color: #cc0000;">${returnDate.toLocaleDateString('vi-VN')}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
+                                <span style="color: #666;">Khoảng cách:</span>
+                                <span style="font-weight: 500;">${distance} km</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em; border-top: 1px dashed #ddd; margin-top: 6px; padding-top: 8px;">
+                                <span style="color: #666;">Phí thuê:</span>
+                                <span style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(rentalFee)}₫</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em;">
+                                <span style="color: #666;">Tiền cọc:</span>
+                                <span style="font-weight: 500;">${new Intl.NumberFormat('vi-VN').format(deposit)}₫</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                displayMultipleItemsSummary(itemsDetails, totalRentalFee, totalDeposit, maxShippingFee, items.length);
+            });
+        }
+
+        // Hàm hiển thị tổng kết cho nhiều items
+        function displayMultipleItemsSummary(itemsDetails, totalRentalFee, totalDeposit, totalShippingFee, quantity) {
+            const payableNow = totalRentalFee + totalDeposit + totalShippingFee;
+
+            let content = `
                 <div class="borrow-info-section">
                     <h3>📚 Thông tin sách</h3>
                     <div class="info-row">
@@ -1858,7 +2209,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">Số lượng mượn:</span>
-                        <span class="info-value">${daysInputs.length} cuốn</span>
+                        <span class="info-value">${quantity} cuốn</span>
                     </div>
                 </div>
 
@@ -1871,16 +2222,16 @@
                     <h3>💰 Tổng chi phí</h3>
                     <div class="price-breakdown">
                         <div class="price-row">
-                            <span>Tổng phí thuê (${daysInputs.length} cuốn):</span>
+                            <span>Tổng phí thuê (${quantity} cuốn):</span>
                             <span>${new Intl.NumberFormat('vi-VN').format(totalRentalFee)}₫</span>
                         </div>
                         <div class="price-row">
-                            <span>Tổng tiền cọc (${daysInputs.length} cuốn):</span>
+                            <span>Tổng tiền cọc (${quantity} cuốn):</span>
                             <span>${new Intl.NumberFormat('vi-VN').format(totalDeposit)}₫</span>
                         </div>
                         ${totalShippingFee > 0 ? `
                         <div class="price-row">
-                            <span>Tổng phí vận chuyển:</span>
+                            <span>Phí vận chuyển <small style="color: #666;">(chỉ tính 1 lần)</small>:</span>
                             <span>${new Intl.NumberFormat('vi-VN').format(totalShippingFee)}₫</span>
                         </div>
                         ` : ''}
@@ -1889,8 +2240,11 @@
                             <span>${new Intl.NumberFormat('vi-VN').format(payableNow)}₫</span>
                         </div>
                     </div>
-                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; border: 1px solid #ffc107; color: #856404; font-size: 0.9em;">
-                        <strong>Lưu ý:</strong> Tiền cọc sẽ được hoàn lại khi bạn trả sách đúng hạn và sách không bị hư hỏng. Phí thuê sẽ được tính khi bạn nhận sách.
+                    <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 4px; border: 1px solid #2196f3; color: #1565c0; font-size: 0.85em; margin-bottom: 8px;">
+                        <strong>💡 Phí vận chuyển:</strong> Chỉ tính 1 lần duy nhất cho khoảng cách xa nhất (${quantity} cuốn giao cùng địa chỉ).
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; border: 1px solid #ffc107; color: #856404; font-size: 0.85em;">
+                        <strong>⚠️ Lưu ý:</strong> Tiền cọc sẽ được hoàn lại khi bạn trả sách đúng hạn và sách không bị hư hỏng. Phí thuê sẽ được tính khi bạn nhận sách.
                     </div>
                 </div>
 
@@ -1900,33 +2254,34 @@
                 </div>
             `;
 
-            document.getElementById('borrowModalContent').innerHTML = content;
+            document.getElementById('borrowModalInfo').innerHTML = content;
         }
-        
+
         // Hàm cũ: Cập nhật thông tin giá khi thay đổi số ngày hoặc khoảng cách (giữ lại cho tương thích)
         function updateBorrowQuote() {
             const days = parseInt(document.getElementById('borrowDaysInput')?.value) || 14;
-            const distance = parseFloat(document.getElementById('distanceInput')?.value) || 0;
+            // Khoảng cách luôn là 0 - không cho nhập thủ công
+            const distance = 0;
             const quantity = parseInt(document.getElementById('borrow-quantity')?.value) || 1;
-            
-            if (days < 1 || days > 30) {
-                document.getElementById('borrowModalContent').innerHTML = 
-                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 1 đến 30 ngày.</div>';
+
+            if (days < 7 || days > 30) {
+                document.getElementById('borrowModalInfo').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 7 đến 30 ngày.</div>';
                 return;
             }
 
             // Sử dụng KYC status từ server
             const kycStatus = '{{ $kycStatus ?? "unverified" }}';
             const userId = {{ auth()->id() ?? 'null' }};
-            
+
             // Xác định delivery_type: nếu có khoảng cách > 0 thì là ship, ngược lại là pickup
             const deliveryType = distance > 0 ? 'ship' : 'pickup';
-            
+
             // Gọi API để lấy thông tin giá (truyền tham số days để tính phí thuê theo số ngày)
             // Lưu ý: API có thể không hỗ trợ số lượng, nên sẽ tính nhân sau
             const apiUrl = `/api/pricing/quote?book_ids[]={{ $book->id }}&kyc_status=${kycStatus}&delivery_type=${deliveryType}&distance=${distance}&days=${days}`;
             const finalUrl = userId ? `${apiUrl}&user_id=${userId}` : apiUrl;
-            
+
             fetch(finalUrl)
                 .then(response => response.json())
                 .then(data => {
@@ -1953,17 +2308,17 @@
             // Nhân với số lượng
             const totalRental = (pricingData.total_rental_fee || rentalFee) * quantity;
             const totalDeposit = (pricingData.total_deposit || deposit) * quantity;
-            const payableNow = totalDeposit + shippingFee;
+            const payableNow = totalRental + totalDeposit + shippingFee;
 
             const today = new Date();
             const returnDate = new Date(today);
             returnDate.setDate(today.getDate() + days);
 
             const formatDate = (date) => {
-                return date.toLocaleDateString('vi-VN', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
+                return date.toLocaleDateString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
                 });
             };
 
@@ -2041,39 +2396,39 @@
                 </div>
             `;
 
-            document.getElementById('borrowModalContent').innerHTML = content;
+            document.getElementById('borrowModalInfo').innerHTML = content;
         }
 
         // Fallback nếu API không hoạt động - tính dựa trên giá sách
         function displayBorrowQuoteFallback(days, kycStatus = 'unverified', quantity = 1) {
             // Lấy giá sách từ server
             const bookPrice = {{ $book->gia ?? 0 }};
-            const hasCard = {{ auth()->check() && auth()->user()->reader ? 'true' : 'false' }};
-            
-            // Tỷ lệ phí thuê mỗi ngày (1% giá sách mỗi ngày, hoặc 0.5% nếu có thẻ)
-            const dailyRate = hasCard ? 0.005 : 0.01;
-            
+
+            // Tỷ lệ phí thuê mỗi ngày (1% giá sách mỗi ngày, tính cho tất cả sách)
+            // Logic thực tế sẽ do API xử lý dựa trên condition của inventory
+            const dailyRate = 0.01; // 1% mỗi ngày
+
             // Tính phí thuê = giá sách * tỷ lệ mỗi ngày * số ngày
             const rentalFeePerBook = Math.round((bookPrice * dailyRate * days) / 1000) * 1000;
             const rentalFee = rentalFeePerBook * quantity;
-            
-            // Tính tiền cọc dựa trên giá sách (30% giá sách mặc định)
-            const depositRate = 0.3; // 30% giá sách
+
+            // Tính tiền cọc dựa trên giá sách (100% giá sách - 1:1)
+            const depositRate = 1.0; // 100% giá sách
             const depositPerCopy = Math.round(bookPrice * depositRate);
             const deposit = depositPerCopy * quantity;
-            
+
             const shippingFee = 0;
-            const total = deposit + shippingFee;
+            const total = rentalFee + deposit + shippingFee;
 
             const today = new Date();
             const returnDate = new Date(today);
             returnDate.setDate(today.getDate() + days);
 
             const formatDate = (date) => {
-                return date.toLocaleDateString('vi-VN', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
+                return date.toLocaleDateString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
                 });
             };
 
@@ -2141,145 +2496,74 @@
                 </div>
             `;
 
-            document.getElementById('borrowModalContent').innerHTML = content;
+            document.getElementById('borrowModalInfo').innerHTML = content;
         }
 
         // Hàm mới: Xác nhận mượn nhiều quyển với thông số khác nhau
+        // Thay thế hàm confirmBorrowMultiple (line ~1350) thành:
         function confirmBorrowMultiple() {
-            const confirmBtn = event.target;
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = 'Đang xử lý...';
-
-            // Lấy thông tin từng item
             const daysInputs = document.querySelectorAll('.item-days-input');
             const distanceInputs = document.querySelectorAll('.item-distance-input');
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             if (daysInputs.length === 0) {
                 alert('Không có thông tin mượn sách!');
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Xác nhận mượn sách';
                 return;
             }
-            
-            // Kiểm tra số lượng hợp lệ
+
             if (daysInputs.length > availableCopies) {
                 alert(`Số lượng mượn vượt quá số lượng có sẵn. Chỉ còn ${availableCopies} cuốn.`);
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Xác nhận mượn sách';
                 return;
             }
-            
-            // Tạo mảng items
+
+            // ✅ KHÔNG GỘI API, CHỈ REDIRECT CHECKOUT VỚI THÔNG SỐ
             const items = [];
             daysInputs.forEach((daysInput, index) => {
                 const days = parseInt(daysInput.value) || 14;
-                const distance = parseFloat(distanceInputs[index].value) || 0;
-                
+                // Khoảng cách luôn là 0 - không cho nhập thủ công
+                const distance = 0;
+
                 if (days < 1 || days > 30) {
-                    alert(`Quyển ${index + 1}: Số ngày mượn phải từ 1 đến 30 ngày!`);
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Xác nhận mượn sách';
+                    alert(`Quyển ${index + 1}: Số ngày mượn phải từ 7 đến 30 ngày!`);
                     return;
                 }
-                
+
                 items.push({
                     book_id: {{ $book->id }},
                     borrow_days: days,
                     distance: distance
                 });
             });
-            
+
             if (items.length === 0) {
                 alert('Không có thông tin mượn sách hợp lệ!');
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Xác nhận mượn sách';
                 return;
             }
 
-            // Gửi yêu cầu mượn sách với mảng items
-            fetch('{{ route("borrow.book") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    items: items,
-                    note: `Yêu cầu mượn sách - ${items.length} cuốn`
-                })
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (response.status === 401) {
-                    return response.json().then(data => {
-                        alert(data.message || 'Vui lòng đăng nhập để mượn sách!');
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
-                        } else {
-                            window.location.href = '{{ route("login") }}';
-                        }
-                        return;
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (!data) {
-                    console.error('No data returned from server');
-                    alert('Không nhận được phản hồi từ server!');
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Xác nhận mượn sách';
-                    return;
-                }
-                
-                if (data.success) {
-                    console.log('Borrow created successfully:', data.data);
-                    closeBorrowModal();
-                    
-                    // Hiển thị thông báo thành công
-                    const totalItems = items.length;
-                    const message = (data.message || 'Đã gửi yêu cầu mượn sách thành công!') + 
-                        '\n\nSố lượng mượn: ' + totalItems + ' cuốn' +
-                        '\nMã phiếu mượn: ' + (data.data?.borrow_id || 'N/A') +
-                        '\n\nYêu cầu đã được gửi và sẽ hiển thị trong trang "Quản lý mượn sách" của admin.';
-                    
-                    alert(message);
-                    
-                    // Redirect đến trang sách đang mượn
-                    window.location.href = '{{ route("account.borrowed-books") }}';
-                } else {
-                    console.error('Borrow creation failed:', data.message);
-                    alert(data.message || 'Có lỗi xảy ra khi gửi yêu cầu mượn sách!');
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Xác nhận mượn sách';
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                alert('Có lỗi xảy ra khi gửi yêu cầu mượn sách: ' + error.message);
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Xác nhận mượn sách';
-            });
+            closeBorrowModal();
+
+            // ✅ Redirect đến checkout với thông tin items
+            const params = new URLSearchParams();
+            params.append('book_id', {{ $book->id }});
+            params.append('quantity', items.length);
+            params.append('items', JSON.stringify(items));
+
+            window.location.href = '{{ route("borrow-cart.checkout") }}?' + params.toString();
         }
-        
+
         // Hàm cũ: Xác nhận mượn sách (giữ lại cho tương thích)
         function confirmBorrow(days, quantityFromModal = null) {
             const confirmBtn = event.target;
             confirmBtn.disabled = true;
             confirmBtn.textContent = 'Đang xử lý...';
 
-            // Lấy khoảng cách từ input
-            const distance = parseFloat(document.getElementById('distanceInput')?.value) || 0;
-            
+            // Khoảng cách luôn là 0 - không cho nhập thủ công
+            const distance = 0;
+
             // Lấy số lượng mượn (ưu tiên từ tham số, nếu không có thì lấy từ input)
             const quantity = quantityFromModal !== null ? quantityFromModal : (parseInt(document.getElementById('borrow-quantity')?.value) || 1);
             const availableCopies = {{ $stats['available_copies'] ?? 0 }};
-            
+
             // Kiểm tra số lượng hợp lệ
             if (quantity < 1 || quantity > availableCopies) {
                 alert(`Số lượng mượn không hợp lệ. Vui lòng chọn từ 1 đến ${availableCopies} cuốn.`);
@@ -2303,63 +2587,63 @@
                     note: `Yêu cầu mượn sách - ${quantity} cuốn - ${days} ngày`
                 })
             })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (response.status === 401) {
-                    return response.json().then(data => {
-                        alert(data.message || 'Vui lòng đăng nhập để mượn sách!');
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (response.status === 401) {
+                        return response.json().then(data => {
+                            alert(data.message || 'Vui lòng đăng nhập để mượn sách!');
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                window.location.href = '{{ route("login") }}';
+                            }
+                            return;
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (!data) {
+                        console.error('No data returned from server');
+                        alert('Không nhận được phản hồi từ server!');
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Xác nhận mượn sách';
+                        return;
+                    }
+
+                    if (data.success) {
+                        console.log('Borrow created successfully:', data.data);
+                        closeBorrowModal();
+
+                        // Hiển thị thông báo thành công với thông tin chi tiết
+                        const quantity = data.data?.quantity || 1;
+                        const message = (data.message || 'Đã gửi yêu cầu mượn sách thành công!') +
+                            '\n\nSố lượng mượn: ' + quantity + ' cuốn' +
+                            '\nMã phiếu mượn: ' + (data.data?.borrow_id || 'N/A') +
+                            '\nMã chi tiết: ' + (data.data?.borrow_item_id || 'N/A') +
+                            '\n\nYêu cầu đã được gửi và sẽ hiển thị trong trang "Quản lý mượn sách" của admin.';
+
+                        alert(message);
+
+                        // Redirect đến trang sách đang mượn để xem yêu cầu vừa tạo
+                        window.location.href = '{{ route("borrow-cart.checkout") }}';
+                    } else {
+                        console.error('Borrow creation failed:', data.message);
+                        alert(data.message || 'Có lỗi xảy ra khi gửi yêu cầu mượn sách!');
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Xác nhận mượn sách';
                         if (data.redirect) {
                             window.location.href = data.redirect;
-                        } else {
-                            window.location.href = '{{ route("login") }}';
                         }
-                        return;
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (!data) {
-                    console.error('No data returned from server');
-                    alert('Không nhận được phản hồi từ server!');
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Xác nhận mượn sách';
-                    return;
-                }
-                
-                if (data.success) {
-                    console.log('Borrow created successfully:', data.data);
-                    closeBorrowModal();
-                    
-                    // Hiển thị thông báo thành công với thông tin chi tiết
-                    const quantity = data.data?.quantity || 1;
-                    const message = (data.message || 'Đã gửi yêu cầu mượn sách thành công!') + 
-                        '\n\nSố lượng mượn: ' + quantity + ' cuốn' +
-                        '\nMã phiếu mượn: ' + (data.data?.borrow_id || 'N/A') +
-                        '\nMã chi tiết: ' + (data.data?.borrow_item_id || 'N/A') +
-                        '\n\nYêu cầu đã được gửi và sẽ hiển thị trong trang "Quản lý mượn sách" của admin.';
-                    
-                    alert(message);
-                    
-                    // Redirect đến trang sách đang mượn để xem yêu cầu vừa tạo
-                    window.location.href = '{{ route("account.borrowed-books") }}';
-                } else {
-                    console.error('Borrow creation failed:', data.message);
-                    alert(data.message || 'Có lỗi xảy ra khi gửi yêu cầu mượn sách!');
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = 'Xác nhận mượn sách';
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
                     }
-                }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                alert('Có lỗi xảy ra khi gửi yêu cầu mượn sách: ' + error.message);
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Xác nhận mượn sách';
-            });
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    alert('Có lỗi xảy ra khi gửi yêu cầu mượn sách: ' + error.message);
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Xác nhận mượn sách';
+                });
         }
 
 
@@ -2368,7 +2652,7 @@
 
 
         // Đóng modal khi click bên ngoài
-        document.getElementById('borrowModal').addEventListener('click', function(e) {
+        document.getElementById('borrowModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeBorrowModal();
             }
@@ -2377,28 +2661,28 @@
     </script>
 
     @auth
-    <script>
-    // Load số lượng giỏ sách khi trang load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadBorrowCartCount();
-    });
-
-    function loadBorrowCartCount() {
-        fetch('{{ route('borrow-cart.count') }}')
-            .then(response => response.json())
-            .then(data => {
-                const cartCountElement = document.getElementById('borrow-cart-count');
-                if (cartCountElement) {
-                    const count = data.count || 0;
-                    cartCountElement.textContent = count;
-                    cartCountElement.style.display = count > 0 ? 'flex' : 'none';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading cart count:', error);
+        <script>
+            // Load số lượng giỏ sách khi trang load
+            document.addEventListener('DOMContentLoaded', function () {
+                loadBorrowCartCount();
             });
-    }
-    </script>
+
+            function loadBorrowCartCount() {
+                fetch('{{ route('borrow-cart.count') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const cartCountElement = document.getElementById('borrow-cart-count');
+                        if (cartCountElement) {
+                            const count = data.count || 0;
+                            cartCountElement.textContent = count;
+                            cartCountElement.style.display = count > 0 ? 'flex' : 'none';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading cart count:', error);
+                    });
+            }
+        </script>
     @endauth
 
     <!-- Modal Phiếu Mượn -->
@@ -2407,23 +2691,26 @@
             <button class="close-modal" onclick="closeBorrowModal()">&times;</button>
             <div class="borrow-modal-header">
                 <h2>📖 PHIẾU MƯỢN SÁCH</h2>
-                <div class="subtitle">Vui lòng nhập thông tin cho từng quyển sách</div>
-            </div>
-            
-            <!-- Container cho danh sách items (sẽ được tạo động bằng JavaScript) -->
-            <div id="borrowModalInputs" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto;">
-                <!-- Các input cho từng quyển sách sẽ được thêm vào đây -->
+                <div class="subtitle">Vui lòng nhập thông tin mượn sách</div>
             </div>
 
-            <!-- Container cho thông tin tóm tắt và nút xác nhận -->
-            <div id="borrowModalContent">
+            <!-- Container cho thông tin tóm tắt (phần trên cùng) -->
+            <div id="borrowModalInfo">
                 <div class="loading-spinner">Đang tải thông tin...</div>
             </div>
+
+            <!-- Container cho các input (+/- số ngày mượn) nằm ngay dưới thông tin mượn -->
+            <div id="borrowModalInputs"></div>
+
+            <!-- Container cho chi tiết giá -->
+            <div id="borrowModalPricing"></div>
+
+            <!-- Container cho các nút hành động -->
+            <div id="borrowModalActions"></div>
         </div>
     </div>
 
     <!-- Modal Đặt Trước đã được xóa (thay bằng chức năng thêm vào giỏ sách) -->
 </body>
+
 </html>
-
-

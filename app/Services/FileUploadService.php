@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use Cloudinary\Cloudinary;
+use Cloudinary\Transformation\Resize;
 
 class FileUploadService
 {
@@ -23,29 +25,29 @@ class FileUploadService
             $default = 'images';
         }
         $default = trim($default, '/\\');
-        
+
         // Handle null or empty
         if (is_null($directory) || $directory === '') {
             return $default;
         }
-        
+
         // Trim whitespace
         $directory = trim($directory);
         if ($directory === '' || empty($directory)) {
             return $default;
         }
-        
+
         // Remove leading/trailing slashes
         $directory = trim($directory, '/\\');
         if ($directory === '' || empty($directory) || $directory === '.') {
             return $default;
         }
-        
+
         // Final check - ensure it's not empty after all processing
         if (empty($directory) || trim($directory) === '') {
             return $default;
         }
-        
+
         return $directory;
     }
 
@@ -102,12 +104,12 @@ class FileUploadService
             $extension = $mimeToExt[$mimeType] ?? 'jpg';
         }
         $filename = Str::uuid() . '.' . strtolower($extension);
-        
+
         // Ensure directory is valid and never empty - sanitize properly
         // Store original for logging
         $originalDirectory = $directory;
         $directory = self::ensureDirectory($directory, 'images');
-        
+
         // Multiple validation layers to ensure directory is never empty
         $directory = trim($directory, '/\\');
         if (empty($directory) || $directory === '' || $directory === '.' || $directory === '..') {
@@ -117,7 +119,7 @@ class FileUploadService
             ]);
             $directory = 'images';
         }
-        
+
         // Force default if still empty after all processing
         if (empty($directory) || trim($directory) === '' || strlen($directory) === 0) {
             \Log::warning('Directory was empty, forcing default', [
@@ -126,7 +128,7 @@ class FileUploadService
             ]);
             $directory = 'images';
         }
-        
+
         // Final validation - directory MUST have a value and be a valid string
         if (empty($directory) || !is_string($directory) || trim($directory) === '' || strlen($directory) === 0) {
             \Log::error('Directory validation failed', [
@@ -139,7 +141,7 @@ class FileUploadService
             ]);
             throw new \Exception('Thư mục không được để trống. Vui lòng kiểm tra cấu hình. Directory: ' . var_export($directory, true));
         }
-        
+
         // Log directory value for debugging
         \Log::info('Directory validated successfully', [
             'original' => $originalDirectory,
@@ -167,15 +169,15 @@ class FileUploadService
                     throw new \Exception('Không thể tạo thư mục: ' . $e->getMessage());
                 }
             }
-            
+
             // Build final path early
             $path = $directory . '/' . $filename;
-            
+
             // Validate path is not empty
             if (empty($path) || trim($path) === '' || !str_contains($path, $filename)) {
                 throw new \Exception('Đường dẫn file không hợp lệ');
             }
-            
+
             // Resize image if needed (requires intervention/image package)
             if ($resize && in_array($mimeType, ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'])) {
                 // Check if Intervention Image is available
@@ -186,7 +188,7 @@ class FileUploadService
                             $constraint->aspectRatio();
                             $constraint->upsize();
                         });
-                        
+
                         // Save resized image using put() - more reliable
                         $saved = Storage::disk($disk)->put($path, (string) $image->encode());
                         if (!$saved) {
@@ -207,7 +209,7 @@ class FileUploadService
                 // Save original file
                 self::saveOriginalFile($file, $directory, $filename, $disk);
             }
-            
+
             // Rebuild path to ensure consistency
             $path = $directory . '/' . $filename;
 
@@ -220,7 +222,7 @@ class FileUploadService
                 ]);
                 throw new \Exception('Không thể lưu file. Vui lòng kiểm tra quyền ghi file.');
             }
-            
+
             // Validate path is not empty before returning
             if (empty($path) || trim($path) === '') {
                 throw new \Exception('Đường dẫn file không hợp lệ.');
@@ -264,7 +266,7 @@ class FileUploadService
         if (empty($directory) || $directory === '' || $directory === '.' || $directory === '..') {
             $directory = 'images';
         }
-        
+
         // Final check - directory must have a value
         if (empty($directory) || trim($directory) === '') {
             \Log::error('Directory is empty after sanitization', [
@@ -272,15 +274,15 @@ class FileUploadService
             ]);
             throw new \Exception('Thư mục không được để trống. Vui lòng kiểm tra cấu hình.');
         }
-        
+
         // Validate filename is not empty
         if (empty($filename) || trim($filename) === '') {
             throw new \Exception('Tên file không được để trống');
         }
-        
+
         // Build full path
         $path = $directory . '/' . $filename;
-        
+
         // Log for debugging
         \Log::info('Saving file', [
             'directory' => $directory,
@@ -288,7 +290,7 @@ class FileUploadService
             'path' => $path,
             'disk' => $disk,
         ]);
-        
+
         // Ensure directory exists - CRITICAL: directory must exist before saving
         try {
             if (!Storage::disk($disk)->exists($directory)) {
@@ -305,10 +307,10 @@ class FileUploadService
             ]);
             throw new \Exception('Không thể tạo thư mục: ' . $e->getMessage());
         }
-        
+
         // Get file content - use multiple methods for reliability
         $fileContent = null;
-        
+
         // Method 1: Try getRealPath() - most reliable
         try {
             $realPath = $file->getRealPath();
@@ -321,7 +323,7 @@ class FileUploadService
         } catch (\Exception $e) {
             \Log::warning('getRealPath failed', ['error' => $e->getMessage()]);
         }
-        
+
         // Method 2: Try getPathname()
         if (!$fileContent || empty($fileContent)) {
             try {
@@ -336,7 +338,7 @@ class FileUploadService
                 \Log::warning('getPathname failed', ['error' => $e->getMessage()]);
             }
         }
-        
+
         // Method 3: Use file->get() - Laravel's method
         if (!$fileContent || empty($fileContent)) {
             try {
@@ -348,7 +350,7 @@ class FileUploadService
                 \Log::warning('file->get() failed', ['error' => $e->getMessage()]);
             }
         }
-        
+
         // Validate file content
         if (!$fileContent || empty($fileContent)) {
             \Log::error('Could not read file content', [
@@ -358,19 +360,19 @@ class FileUploadService
             ]);
             throw new \Exception('Không thể đọc nội dung file. Vui lòng thử lại.');
         }
-        
+
         // Save file using put() - more reliable than putFileAs
         try {
             $saved = Storage::disk($disk)->put($path, $fileContent);
             if (!$saved) {
                 throw new \Exception('Storage::put() returned false');
             }
-            
+
             // Verify file was saved
             if (!Storage::disk($disk)->exists($path)) {
                 throw new \Exception('File was not saved - verification failed');
             }
-            
+
             \Log::info('File saved successfully', ['path' => $path]);
             return;
         } catch (\Exception $e) {
@@ -407,7 +409,7 @@ class FileUploadService
         if (empty($directory) || $directory === '' || $directory === '.' || $directory === '..') {
             $directory = 'files';
         }
-        
+
         // Final validation
         if (empty($directory) || !is_string($directory) || trim($directory) === '') {
             \Log::error('Directory validation failed in uploadFile', [
@@ -452,16 +454,16 @@ class FileUploadService
                     throw new \Exception('Không thể tạo thư mục: ' . $e->getMessage());
                 }
             }
-            
+
             // Get file content and save using put() instead of putFileAs
             $fileContent = null;
-            
+
             // Try getRealPath() first
             $realPath = $file->getRealPath();
             if ($realPath && file_exists($realPath) && is_readable($realPath)) {
                 $fileContent = file_get_contents($realPath);
             }
-            
+
             // Fallback to getPathname()
             if (!$fileContent || empty($fileContent)) {
                 $pathname = $file->getPathname();
@@ -469,23 +471,23 @@ class FileUploadService
                     $fileContent = file_get_contents($pathname);
                 }
             }
-            
+
             // Last resort: use file->get()
             if (!$fileContent || empty($fileContent)) {
                 $fileContent = $file->get();
             }
-            
+
             // Validate file content
             if (!$fileContent || empty($fileContent)) {
                 throw new \Exception('Không thể đọc nội dung file.');
             }
-            
+
             // Save file using put() - more reliable than putFileAs
             $saved = Storage::disk($disk)->put($path, $fileContent);
             if (!$saved) {
                 throw new \Exception('Không thể lưu file.');
             }
-            
+
             // Verify file was saved
             if (!Storage::disk($disk)->exists($path)) {
                 throw new \Exception('File không được lưu thành công.');
@@ -579,18 +581,18 @@ class FileUploadService
                     $width = $image->width();
                     $height = $image->height();
 
-                if ($minWidth && $width < $minWidth) {
-                    $errors[] = "Chiều rộng ảnh tối thiểu là {$minWidth}px.";
-                }
-                if ($minHeight && $height < $minHeight) {
-                    $errors[] = "Chiều cao ảnh tối thiểu là {$minHeight}px.";
-                }
-                if ($maxWidth && $width > $maxWidth) {
-                    $errors[] = "Chiều rộng ảnh tối đa là {$maxWidth}px.";
-                }
-                if ($maxHeight && $height > $maxHeight) {
-                    $errors[] = "Chiều cao ảnh tối đa là {$maxHeight}px.";
-                }
+                    if ($minWidth && $width < $minWidth) {
+                        $errors[] = "Chiều rộng ảnh tối thiểu là {$minWidth}px.";
+                    }
+                    if ($minHeight && $height < $minHeight) {
+                        $errors[] = "Chiều cao ảnh tối thiểu là {$minHeight}px.";
+                    }
+                    if ($maxWidth && $width > $maxWidth) {
+                        $errors[] = "Chiều rộng ảnh tối đa là {$maxWidth}px.";
+                    }
+                    if ($maxHeight && $height > $maxHeight) {
+                        $errors[] = "Chiều cao ảnh tối đa là {$maxHeight}px.";
+                    }
                 }
             } catch (\Exception $e) {
                 $errors[] = 'Không thể đọc thông tin ảnh.';
@@ -601,6 +603,55 @@ class FileUploadService
             'valid' => empty($errors),
             'errors' => $errors,
         ];
+    }
+
+    /**
+     * Upload file lên Cloudinary
+     *
+     * @param UploadedFile $file
+     * @param string $folder
+     * @param array $options
+     * @return array
+     * @throws \Exception
+     */
+    public static function uploadToCloudinary(UploadedFile $file, string $folder = 'cccd_images', array $options = []): array
+    {
+        $cloudinaryUrl = env('CLOUDINARY_URL');
+        if (!$cloudinaryUrl) {
+            throw new \Exception('CLOUDINARY_URL chưa được cấu hình trong file .env');
+        }
+
+        try {
+            $cloudinary = new Cloudinary($cloudinaryUrl);
+
+            $uploadOptions = [
+                'folder' => $folder,
+                'resource_type' => 'auto',
+            ];
+
+            if (isset($options['public_id'])) {
+                $uploadOptions['public_id'] = $options['public_id'];
+            }
+
+            $result = $cloudinary->uploadApi()->upload($file->getRealPath(), $uploadOptions);
+
+            return [
+                'success' => true,
+                'path' => $result['secure_url'],
+                'url' => $result['secure_url'],
+                'public_id' => $result['public_id'],
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize() / 1024,
+                'mime_type' => $file->getMimeType(),
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Cloudinary upload error', [
+                'error' => $e->getMessage(),
+                'file' => $file->getClientOriginalName(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new \Exception('Lỗi khi upload lên Cloudinary: ' . $e->getMessage());
+        }
     }
 }
 

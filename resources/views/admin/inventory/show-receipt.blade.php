@@ -35,32 +35,43 @@
                             <th>Ngày nhập:</th>
                             <td>{{ $receipt->receipt_date->format('d/m/Y') }}</td>
                         </tr>
-                        <tr>
-                            <th>Sách:</th>
-                            <td>{{ $receipt->book->ten_sach }}</td>
-                        </tr>
-                        <tr>
-                            <th>Số lượng:</th>
-                            <td><strong>{{ $receipt->quantity }}</strong> cuốn</td>
-                        </tr>
-                        <tr>
-                            <th>Vị trí lưu trữ:</th>
-                            <td>{{ $receipt->storage_location }}</td>
-                        </tr>
-                        <tr>
-                            <th>Loại lưu trữ:</th>
-                            <td>
-                                @if($receipt->storage_type == 'Kho')
-                                    <span class="badge badge-info">Kho</span>
-                                @else
-                                    <span class="badge badge-warning">Trưng bày</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Giá đơn vị:</th>
-                            <td>{{ $receipt->unit_price ? number_format($receipt->unit_price, 0, ',', '.') . ' VNĐ' : '-' }}</td>
-                        </tr>
+                        @if($receipt->items && $receipt->items->count() > 0)
+                            <tr>
+                                <th>Số loại sách:</th>
+                                <td><strong>{{ $receipt->items->count() }}</strong> loại</td>
+                            </tr>
+                            <tr>
+                                <th>Tổng số lượng:</th>
+                                <td><strong>{{ $receipt->items->sum('quantity') }}</strong> cuốn</td>
+                            </tr>
+                        @else
+                            <tr>
+                                <th>Sách:</th>
+                                <td>{{ $receipt->book ? $receipt->book->ten_sach : '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Số lượng:</th>
+                                <td><strong>{{ $receipt->quantity }}</strong> cuốn</td>
+                            </tr>
+                            <tr>
+                                <th>Vị trí lưu trữ:</th>
+                                <td>{{ $receipt->storage_location }}</td>
+                            </tr>
+                            <tr>
+                                <th>Loại lưu trữ:</th>
+                                <td>
+                                    @if($receipt->storage_type == 'Kho')
+                                        <span class="badge badge-info">Kho</span>
+                                    @else
+                                        <span class="badge badge-warning">Trưng bày</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Giá đơn vị:</th>
+                                <td>{{ $receipt->unit_price ? number_format($receipt->unit_price, 0, ',', '.') . ' VNĐ' : '-' }}</td>
+                            </tr>
+                        @endif
                         <tr>
                             <th>Tổng giá:</th>
                             <td><strong>{{ $receipt->total_price ? number_format($receipt->total_price, 0, ',', '.') . ' VNĐ' : '-' }}</strong></td>
@@ -117,10 +128,63 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>Danh sách sách nhập kho</h5>
+                    <h5>Danh sách sách trong phiếu</h5>
                 </div>
                 <div class="card-body">
-                    @if($receipt->inventories->count() > 0)
+                    @if($receipt->items && $receipt->items->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tên sách</th>
+                                        <th>Số lượng</th>
+                                        <th>Vị trí</th>
+                                        <th>Loại</th>
+                                        <th>Giá đơn vị</th>
+                                        <th>Tổng giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($receipt->items as $index => $item)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>
+                                                <strong>{{ $item->book->ten_sach ?? 'N/A' }}</strong><br>
+                                                <small class="text-muted">{{ $item->book->tac_gia ?? '' }}</small>
+                                            </td>
+                                            <td><strong>{{ $item->quantity }}</strong></td>
+                                            <td>{{ $item->storage_location }}</td>
+                                            <td>
+                                                @if($item->storage_type == 'Kho')
+                                                    <span class="badge badge-info">Kho</span>
+                                                @else
+                                                    <span class="badge badge-warning">Trưng bày</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $item->unit_price ? number_format($item->unit_price, 0, ',', '.') . ' VNĐ' : '-' }}</td>
+                                            <td><strong>{{ $item->total_price ? number_format($item->total_price, 0, ',', '.') . ' VNĐ' : '-' }}</strong></td>
+                                        </tr>
+                                        @if($item->notes)
+                                            <tr>
+                                                <td colspan="7" style="padding-left: 30px; font-size: 12px; color: #6b7280;">
+                                                    <i class="fas fa-sticky-note"></i> Ghi chú: {{ $item->notes }}
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr style="background: #f9fafb; font-weight: bold;">
+                                        <td colspan="2">Tổng cộng</td>
+                                        <td><strong>{{ $receipt->items->sum('quantity') }}</strong></td>
+                                        <td colspan="3"></td>
+                                        <td><strong>{{ number_format($receipt->items->sum('total_price'), 0, ',', '.') }} VNĐ</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    @elseif($receipt->inventories->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>

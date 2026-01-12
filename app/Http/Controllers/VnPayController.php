@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Borrow;
 use App\Models\BorrowPayment;
+use App\Models\Order;
 use App\Services\VnPayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -117,8 +118,10 @@ class VnPayController extends Controller
             ]);
 
             if (!$result['success']) {
-                return redirect()->route('payment.failed')
-                    ->with('error', $result['message']);
+                // Thanh toán thất bại, quay lại trang checkout
+                return redirect()->route('borrow-cart.checkout')
+                    ->with('error', 'Thanh toán không thành công: ' . $result['message'])
+                    ->withInput();
             }
 
             // Lấy thông tin giao dịch
@@ -133,32 +136,112 @@ class VnPayController extends Controller
 
             if (!$payment) {
                 Log::error('Payment not found', ['txnRef' => $txnRef]);
-                return redirect()->route('payment.failed')
-                    ->with('error', 'Không tìm thấy thông tin thanh toán');
+                return redirect()->route('borrow-cart.checkout')
+                    ->with('error', 'Không tìm thấy thông tin thanh toán. Vui lòng thử lại.');
             }
 
             // Bắt đầu transaction
             DB::beginTransaction();
 
             try {
+                // Nếu payment chưa có borrow_id, tạo đơn từ session data
+                if (!$payment->borrow_id) {
+                    $checkoutData = session('pending_checkout_data');
+                    
+                    if (!$checkoutData) {
+                        DB::rollBack();
+                        Log::error('Checkout data not found in session', ['txnRef' => $txnRef]);
+                        return redirect()->route('borrow-cart.checkout')
+                            ->with('error', 'Không tìm thấy thông tin đơn hàng. Vui lòng thử lại.');
+                    }
+
+                    // Tạo đơn từ session data
+                    $borrow = \App\Models\Borrow::create([
+                        'reader_id' => $checkoutData['reader_id'],
+                        'ten_nguoi_muon' => $checkoutData['reader_name'],
+                        'so_dien_thoai' => $checkoutData['reader_phone'],
+                        'tinh_thanh' => $checkoutData['tinh_thanh'],
+                        'huyen' => '',
+                        'xa' => $checkoutData['xa'],
+                        'so_nha' => $checkoutData['so_nha'],
+                        'ngay_muon' => $checkoutData['ngay_muon'],
+                        'trang_thai' => 'Cho duyet',
+                        'tien_coc' => $checkoutData['total_tien_coc'],
+                        'tien_thue' => $checkoutData['total_tien_thue'],
+                        'tien_ship' => $checkoutData['total_tien_ship'],
+                        'tong_tien' => $checkoutData['tong_tien'],
+                        'voucher_id' => $checkoutData['voucher_id'],
+                        'ghi_chu' => trim($checkoutData['notes'] ?: 'Đặt mượn từ giỏ sách'),
+                    ]);
+
+                    // Tạo các borrow items
+                    foreach ($checkoutData['items'] as $itemData) {
+                        \App\Models\BorrowItem::create([
+                            'borrow_id' => $borrow->id,
+                            'book_id' => $itemData['book_id'],
+                            'inventorie_id' => $itemData['inventorie_id'],
+                            'ngay_muon' => $checkoutData['ngay_muon'],
+                            'ngay_hen_tra' => now()->addDays($itemData['borrow_days'])->toDateString(),
+                            'trang_thai' => 'Cho duyet',
+                            'tien_coc' => $itemData['tien_coc'],
+                            'tien_thue' => $itemData['tien_thue'],
+                            'tien_ship' => $itemData['tien_ship'],
+                            'ghi_chu' => $itemData['note'],
+                        ]);
+                    }
+
+                    // Giảm số lượng voucher nếu có
+                    if ($checkoutData['voucher_id']) {
+                        $voucher = \App\Models\Voucher::find($checkoutData['voucher_id']);
+                        if ($voucher) {
+                            $voucher->so_luong = max(0, $voucher->so_luong - 1);
+                            $voucher->save();
+                        }
+                    }
+
+                    // Xóa items khỏi giỏ hàng nếu từ giỏ hàng
+                    if ($checkoutData['checkout_source'] === 'cart') {
+                        $cart = \App\Models\BorrowCart::where('user_id', auth()->id())->first();
+                        if ($cart) {
+                            $cart->items()->where('is_selected', true)->delete();
+                            $cart->update(['total_items' => $cart->getTotalItemsAttribute()]);
+                        }
+                    }
+
+                    // Xóa session data
+                    session()->forget('pending_checkout_data');
+                } else {
+                    $borrow = $payment->borrow;
+                }
+
                 // Cập nhật trạng thái thanh toán
                 $payment->update([
+                    'borrow_id' => $borrow->id,
                     'payment_status' => 'success',
                     'transaction_code' => $vnpayTranId,
                     'note' => $payment->note . ' | VnPay TxnID: ' . $vnpayTranId . ' | Ngân hàng: ' . ($result['data']['bank_code'] ?? 'N/A')
                 ]);
 
-                // Cập nhật trạng thái phiếu mượn nếu là thanh toán cọc
-                $borrow = $payment->borrow;
+                // Cập nhật trạng thái inventory khi thanh toán thành công
                 if ($payment->payment_type === 'deposit' && $borrow) {
-                    // Có thể cập nhật trạng thái phiếu mượn ở đây nếu cần
-                    // Ví dụ: chuyển từ 'cho_xu_ly' sang 'da_thu_coc'
+                    $borrowItems = $borrow->items;
+                    foreach ($borrowItems as $item) {
+                        if ($item->inventorie_id) {
+                            \App\Models\Inventory::where('id', $item->inventorie_id)
+                                ->where('status', 'Co san')
+                                ->update([
+                                    'status' => 'Dang muon',
+                                    'updated_at' => now()
+                                ]);
+                        }
+                    }
                 }
 
                 DB::commit();
 
                 // Xóa session
                 session()->forget('vnpay_payment_id');
+                session()->forget('vnpay_transaction_code');
 
                 return redirect()->route('payment.success', ['payment_id' => $payment->id])
                     ->with('success', 'Thanh toán thành công!');
@@ -174,8 +257,13 @@ class VnPayController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->route('payment.failed')
-                ->with('error', 'Có lỗi xảy ra khi xử lý thanh toán');
+            // Xóa session data nếu có lỗi
+            session()->forget('pending_checkout_data');
+            session()->forget('vnpay_payment_id');
+            session()->forget('vnpay_transaction_code');
+
+            return redirect()->route('borrow-cart.checkout')
+                ->with('error', 'Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
         }
     }
 

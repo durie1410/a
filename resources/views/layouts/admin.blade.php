@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,8 @@
     <title>@yield('title', 'Admin - Quản Lý Thư Viện LIBHUB')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ asset('css/pagination.css') }}" rel="stylesheet">
     <style>
@@ -20,7 +22,7 @@
             --accent-purple: #8b5cf6;
             --accent-blue: #3b82f6;
             --accent-pink: #ec4899;
-            
+
             --background-dark: #ffffff;
             --background-card: #ffffff;
             --background-elevated: #f9fafb;
@@ -28,21 +30,21 @@
             --sidebar-bg: #ffffff;
             --sidebar-hover: rgba(0, 255, 153, 0.08);
             --sidebar-active: rgba(0, 255, 153, 0.15);
-            
+
             --text-primary: #1f2937;
             --text-secondary: #4b5563;
             --text-muted: #6b7280;
             --text-disabled: #9ca3af;
-            
+
             --border-color: rgba(0, 255, 153, 0.2);
             --border-hover: rgba(0, 255, 153, 0.4);
-            
+
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             --shadow-primary: 0 0 20px rgba(0, 255, 153, 0.15);
-            
+
             --transition-fast: 0.15s;
             --transition-normal: 0.3s;
             --transition-slow: 0.5s;
@@ -59,7 +61,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: var(--background-dark);
-            background-image: 
+            background-image:
                 radial-gradient(circle at 20% 50%, rgba(0, 255, 153, 0.03) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
             color: var(--text-primary);
@@ -298,30 +300,30 @@
             backdrop-filter: blur(10px);
             flex-shrink: 0;
         }
-        
+
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         .sidebar::-webkit-scrollbar-track {
             background: #f9fafb;
         }
-        
+
         .sidebar::-webkit-scrollbar-thumb {
             background: rgba(0, 255, 153, 0.3);
             border-radius: 3px;
         }
-        
+
         .sidebar::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 255, 153, 0.5);
         }
-        
+
         .sidebar-menu {
             padding: 24px 0;
             min-height: auto;
             display: block;
         }
-        
+
         .menu-section-title {
             padding: 16px 24px 12px;
             font-size: 11px;
@@ -356,7 +358,7 @@
             min-width: 0;
             overflow: hidden;
         }
-        
+
         .menu-item span {
             white-space: nowrap;
             overflow: hidden;
@@ -405,7 +407,7 @@
             width: 20px;
             font-size: 16px;
         }
-        
+
         .menu-badge {
             margin-left: auto;
             background: var(--primary-color);
@@ -415,7 +417,7 @@
             font-size: 11px;
             font-weight: 600;
         }
-        
+
         .menu-badge.new {
             background: #ff6b6b;
             color: white;
@@ -431,7 +433,7 @@
         .submenu.show {
             max-height: 500px;
         }
-        
+
         .submenu-item {
             display: flex;
             align-items: center;
@@ -442,13 +444,13 @@
             transition: all var(--transition-fast);
             font-size: 13px;
         }
-        
+
         .submenu-item:hover {
             background: var(--sidebar-hover);
             color: var(--primary-color);
             padding-left: 55px;
         }
-        
+
         .submenu-item.active {
             color: var(--primary-color);
         }
@@ -458,7 +460,7 @@
             transition: transform var(--transition-normal);
             font-size: 12px;
         }
-        
+
         .arrow.rotated {
             transform: rotate(180deg);
         }
@@ -476,6 +478,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -646,7 +649,7 @@
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 8px;
@@ -654,8 +657,9 @@
             font-size: 14px;
             font-weight: 500;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             width: 100%;
             padding: 12px 16px;
             background: #ffffff;
@@ -667,7 +671,8 @@
             transition: all var(--transition-normal) var(--ease-smooth);
         }
 
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(0, 255, 153, 0.1);
@@ -906,7 +911,8 @@
             margin-top: 30px;
         }
 
-        .pagination a, .pagination span {
+        .pagination a,
+        .pagination span {
             padding: 10px 15px;
             background: var(--background-card);
             border: 1px solid rgba(0, 255, 153, 0.1);
@@ -963,7 +969,7 @@
             }
 
             .main-content {
-            padding: 20px;
+                padding: 20px;
             }
 
             .admin-header {
@@ -1021,6 +1027,7 @@
     </style>
     @stack('styles')
 </head>
+
 <body>
     <!-- Header -->
     <div class="admin-header">
@@ -1028,15 +1035,16 @@
             <button class="mobile-menu-toggle" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="logo"><span style="color: #dc2626;">THƯ VIỆN</span> <span style="color: #000000;">LIBHUB</span></div>
+            <div class="logo"><span style="color: #dc2626;">THƯ VIỆN</span> <span style="color: #000000;">LIBHUB</span>
+            </div>
         </div>
-        
+
         <div class="header-right">
             <div class="user-menu">
                 <button class="btn-user" onclick="toggleUserMenu()">
                     <div class="user-avatar">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-            </div>
+                    </div>
                     <span>{{ auth()->user()->name }}</span>
                     <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
                 </button>
@@ -1056,8 +1064,8 @@
                 </div>
             </div>
         </div>
-                </div>
-                
+    </div>
+
     <!-- Main Layout -->
     <div class="admin-layout">
         <!-- Sidebar -->
@@ -1065,14 +1073,16 @@
             <div class="sidebar-menu">
                 <!-- Dashboard -->
                 <div class="menu-section-title">DASHBOARD</div>
-                <a href="{{ route('admin.dashboard') }}" class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('admin.dashboard') }}"
+                    class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Tổng quan</span>
                 </a>
 
                 <!-- Quản lý dữ liệu -->
                 <div class="menu-section-title">QUẢN LÝ DỮ LIỆU</div>
-                <a href="{{ route('admin.books.index') }}" class="menu-item {{ request()->routeIs('admin.books.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.books.index') }}"
+                    class="menu-item {{ request()->routeIs('admin.books.*') ? 'active' : '' }}">
                     <i class="fas fa-book"></i>
                     <span>Quản lý sách</span>
                 </a>
@@ -1080,145 +1090,104 @@
                 <!-- Quản lý kho -->
                 <div class="menu-section-title">QUẢN LÝ KHO</div>
                 @if(Route::has('admin.inventory.index'))
-                <a href="{{ route('admin.inventory.index') }}" class="menu-item {{ request()->routeIs('admin.inventory.index') || request()->routeIs('admin.inventory.show') || request()->routeIs('admin.inventory.edit') ? 'active' : '' }}">
-                    <i class="fas fa-warehouse"></i>
-                    <span>Danh sách kho</span>
-                </a>
+                    <a href="{{ route('admin.inventory.index') }}"
+                        class="menu-item {{ request()->routeIs('admin.inventory.index') || request()->routeIs('admin.inventory.show') || request()->routeIs('admin.inventory.edit') ? 'active' : '' }}">
+                        <i class="fas fa-warehouse"></i>
+                        <span>Danh sách kho</span>
+                    </a>
                 @endif
                 @if(Route::has('admin.inventory.receipts'))
-                <a href="{{ route('admin.inventory.receipts') }}" class="menu-item {{ request()->routeIs('admin.inventory.receipts.*') ? 'active' : '' }}">
-                    <i class="fas fa-file-invoice"></i>
-                    <span>Phiếu nhập kho</span>
-                </a>
+                    <a href="{{ route('admin.inventory.receipts') }}"
+                        class="menu-item {{ request()->routeIs('admin.inventory.receipts.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Phiếu nhập kho</span>
+                    </a>
                 @endif
                 @if(Route::has('admin.inventory.transactions'))
-                <a href="{{ route('admin.inventory.transactions') }}" class="menu-item {{ request()->routeIs('admin.inventory.transactions') ? 'active' : '' }}">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Giao dịch kho</span>
-                </a>
+                    <a href="{{ route('admin.inventory.transactions') }}"
+                        class="menu-item {{ request()->routeIs('admin.inventory.transactions') ? 'active' : '' }}">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Giao dịch kho</span>
+                    </a>
                 @endif
                 @if(Route::has('admin.inventory.report'))
-                <a href="{{ route('admin.inventory.report') }}" class="menu-item {{ request()->routeIs('admin.inventory.report') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Báo cáo kho</span>
-                </a>
+                    <a href="{{ route('admin.inventory.report') }}"
+                        class="menu-item {{ request()->routeIs('admin.inventory.report') ? 'active' : '' }}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Báo cáo kho</span>
+                    </a>
                 @endif
 
                 <!-- Quản lý Độc giả -->
                 <div class="menu-section-title">PHÂN QUYỀN</div>
                 @if(Route::has('admin.user-management.dashboard'))
-                <a href="{{ route('admin.user-management.dashboard') }}" class="menu-item {{ request()->routeIs('admin.user-management.*') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i>
-                    <span>Tổng quan</span>
-                </a>
+                    <a href="{{ route('admin.user-management.dashboard') }}"
+                        class="menu-item {{ request()->routeIs('admin.user-management.*') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span>Tổng quan</span>
+                    </a>
                 @endif
-                <a href="{{ route('admin.users.index') }}" class="menu-item {{ request()->routeIs('admin.users.*') && !request()->routeIs('admin.user-management.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.users.index') }}"
+                    class="menu-item {{ request()->routeIs('admin.users.*') && !request()->routeIs('admin.user-management.*') ? 'active' : '' }}">
                     <i class="fas fa-users-cog"></i>
                     <span>Admin</span>
                 </a>
-                @if(Route::has('admin.readers.index'))
-                <a href="{{ route('admin.readers.index') }}" class="menu-item {{ request()->routeIs('admin.readers.*') ? 'active' : '' }}">
-                    <i class="fas fa-book-reader"></i>
-                    <span>Độc giả</span>
-                </a>
-                @endif
 
                 <!-- Mượn trả sách -->
                 <div class="menu-section-title">MƯỢN TRẢ SÁCH</div>
-                @can('view-reservations')
-                @if(Route::has('admin.reservations.index'))
-                <a href="{{ route('admin.reservations.index') }}" class="menu-item {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>Đặt Trước</span>
+                <a href="{{ route('admin.borrows.index') }}"
+                    class="menu-item {{ request()->routeIs('admin.borrows.*') ? 'active' : '' }}">
+                    <i class="fas fa-book-reader"></i>
+                    <span>Quản lý đơn mượn</span>
                 </a>
-                <a href="{{ route('admin.vouchers.index') }}" class="menu-item {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>voucher</span>
+                <a href="{{ route('admin.shipping_logs.index') }}" class="menu-item d-flex align-items-center gap-2 
+                          {{ request()->routeIs('admin.shipping_logs.*') ? 'active' : '' }}">
+                    <i class="bi bi-truck fs-5"></i>
+                    <span>🚚 Giao Hàng (Đơn Mua)</span>
                 </a>
-                
+                @if(Route::has('admin.vouchers.index'))
+                    <a href="{{ route('admin.vouchers.index') }}"
+                        class="menu-item {{ request()->routeIs('admin.vouchers.*') ? 'active' : '' }}">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Vouchers</span>
+                    </a>
                 @endif
-                @endcan
-                <a href="{{ route('admin.borrows.index')}}" class="menu-item">
-                    <i class="fas fa-undo"></i>
-                    <span>Quản lý mượn sách</span>
-                </a>
-<a href="{{ route('admin.shipping_logs.index') }}" 
-   class="menu-item d-flex align-items-center gap-2 
-          {{ request()->routeIs('admin.shipping_logs.*') ? 'active' : '' }}">
-    <i class="bi bi-truck fs-5"></i>
-    <span>Đơn mượn</span>
-</a>
 
 
 
 
                 <!-- Tài chính -->
-                @if(Route::has('admin.fines.index'))
-                <a href="{{ route('admin.fines.index') }}" class="menu-item {{ request()->routeIs('admin.fines.*') ? 'active' : '' }}">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Quản lý phí phạt</span>
-                </a>
-                @endif
+
 
                 <!-- Hệ thống -->
                 <div class="menu-section-title">HỆ THỐNG</div>
                 @can('manage-notifications')
-                @if(Route::has('admin.notifications.index'))
-                <a href="{{ route('admin.notifications.index') }}" class="menu-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
-                    <i class="fas fa-bell"></i>
-                    <span>Thông báo</span>
-                </a>
-                @endif
+                    @if(Route::has('admin.notifications.index'))
+                        <a href="{{ route('admin.notifications.index') }}"
+                            class="menu-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
+                            <i class="fas fa-bell"></i>
+                            <span>Thông báo</span>
+                        </a>
+                    @endif
                 @endcan
                 @if(Route::has('admin.banners.index'))
-                <a href="{{ route('admin.banners.index') }}" class="menu-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
-                    <i class="fas fa-images"></i>
-                    <span>Quản lý Banner</span>
-                </a>
+                    <a href="{{ route('admin.banners.index') }}"
+                        class="menu-item {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+                        <i class="fas fa-images"></i>
+                        <span>Quản lý Banner</span>
+                    </a>
                 @endif
-                @if(Route::has('admin.settings.index'))
-                <a href="{{ route('admin.settings.index') }}" class="menu-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                    <i class="fas fa-cog"></i>
-                    <span>Cài đặt chung</span>
-                </a>
-                @endif
-            </div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-            @if(session('success'))
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    {{ session('success') }}
-            </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    {{ session('error') }}
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle"></i>
-            <div>
-                        <strong>Có lỗi xảy ra:</strong>
-                        <ul style="margin: 8px 0 0 20px;">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
             </div>
         </div>
-            @endif
-        
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Alerts replaced by Global Modal -->
+
             @yield('content')
         </div>
     </div>
-    
+
     <script>
         // Toggle user menu
         function toggleUserMenu() {
@@ -1227,7 +1196,7 @@
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const userMenu = document.querySelector('.user-menu');
             if (!userMenu.contains(event.target)) {
                 document.getElementById('userDropdown').classList.remove('show');
@@ -1238,7 +1207,7 @@
         function toggleSubmenu(id, element) {
             const submenu = document.getElementById(id);
             const arrow = element.querySelector('.arrow');
-            
+
             submenu.classList.toggle('show');
             arrow.classList.toggle('rotated');
         }
@@ -1249,10 +1218,10 @@
         }
 
         // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const sidebar = document.getElementById('sidebar');
             const toggle = document.querySelector('.mobile-menu-toggle');
-            
+
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
                     sidebar.classList.remove('show');
@@ -1260,6 +1229,8 @@
             }
         });
     </script>
+    @include('partials.global-modal')
     @stack('scripts')
 </body>
+
 </html>

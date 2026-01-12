@@ -1,0 +1,254 @@
+<?php
+
+/**
+ * Script thêm ảnh sách từ các thư mục vào database
+ * 
+ * Sử dụng: php add_book_images_from_folders.php
+ */
+
+require __DIR__.'/vendor/autoload.php';
+
+$app = require_once __DIR__.'/bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+use App\Models\Book;
+use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
+// Mapping thư mục với category_id
+$categoryMapping = [
+    'lich_su' => 'Lịch sử',
+    'cong_nghe' => 'Công nghệ',
+    'giao_duc' => 'Giáo dục',
+    'khoa_hoc' => 'Khoa học',
+    'kinh_te' => 'Kinh tế',
+    'tieu_thuyet' => 'Tiểu thuyết',
+    'van_hoc' => 'Văn học',
+];
+
+// Đường dẫn gốc chứa các thư mục ảnh
+$basePath = 'C:/Users/Admin/Pictures';
+
+// Thư mục đích trong storage
+$storagePath = 'books';
+
+// Đảm bảo thư mục storage tồn tại
+if (!Storage::disk('public')->exists($storagePath)) {
+    Storage::disk('public')->makeDirectory($storagePath, 0755, true);
+}
+
+/**
+ * Chuyển đổi tên file thành tên sách
+ */
+function fileNameToBookName($fileName) {
+    // Loại bỏ phần mở rộng
+    $name = pathinfo($fileName, PATHINFO_FILENAME);
+    
+    // Thay _ và - bằng khoảng trắng
+    $name = str_replace(['_', '-'], ' ', $name);
+    
+    // Loại bỏ khoảng trắng thừa
+    $name = preg_replace('/\s+/', ' ', $name);
+    $name = trim($name);
+    
+    // Xử lý các từ viết tắt và từ đặc biệt
+    $specialWords = [
+        'ai' => 'AI',
+        'hd' => 'HD',
+        'st' => 'ST',
+        'stem' => 'STEM',
+        'big data' => 'Big Data',
+    ];
+    
+    foreach ($specialWords as $key => $value) {
+        $name = preg_replace('/\b' . preg_quote($key, '/') . '\b/i', $value, $name);
+    }
+    
+    // Viết hoa chữ cái đầu mỗi từ (nhưng giữ nguyên các từ đã được xử lý đặc biệt)
+    $words = explode(' ', $name);
+    $result = [];
+    foreach ($words as $word) {
+        // Nếu từ đã là chữ hoa hoặc viết tắt, giữ nguyên
+        if (strtoupper($word) === $word && strlen($word) <= 5) {
+            $result[] = $word;
+        } else {
+            $result[] = mb_convert_case($word, MB_CASE_TITLE, 'UTF-8');
+        }
+    }
+    $name = implode(' ', $result);
+    
+    return $name;
+}
+
+/**
+ * Tìm category_id từ tên category
+ */
+function findCategoryId($categoryName) {
+    $category = Category::where('ten_the_loai', 'like', "%{$categoryName}%")->first();
+    if ($category) {
+        return $category->id;
+    }
+    
+    // Nếu không tìm thấy, tìm theo từ khóa
+    $keywords = [
+        'Lịch sử' => ['lịch sử', 'history'],
+        'Công nghệ' => ['công nghệ', 'technology', 'tech'],
+        'Giáo dục' => ['giáo dục', 'education'],
+        'Khoa học' => ['khoa học', 'science'],
+        'Kinh tế' => ['kinh tế', 'economy', 'economics'],
+        'Tiểu thuyết' => ['tiểu thuyết', 'novel', 'fiction'],
+        'Văn học' => ['văn học', 'literature'],
+    ];
+    
+    if (isset($keywords[$categoryName])) {
+        foreach ($keywords[$categoryName] as $keyword) {
+            $category = Category::where('ten_the_loai', 'like', "%{$keyword}%")->first();
+            if ($category) {
+                return $category->id;
+            }
+        }
+    }
+    
+    // Mặc định trả về category_id = 1 nếu không tìm thấy
+    return 1;
+}
+
+/**
+ * Xử lý một file ảnh
+ */
+function processImageFile($filePath, $fileName, $categoryName) {
+    global $storagePath;
+    
+    echo "Đang xử lý: {$fileName}...\n";
+    
+    // Kiểm tra file có tồn tại không
+    if (!file_exists($filePath)) {
+        echo "  ❌ File không tồn tại: {$filePath}\n";
+        return false;
+    }
+    
+    // Lấy phần mở rộng file
+    $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    
+    // Chỉ xử lý file ảnh
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    if (!in_array($extension, $allowedExtensions)) {
+        echo "  ⚠️  Bỏ qua file không phải ảnh: {$fileName}\n";
+        return false;
+    }
+    
+    // Tạo tên sách từ tên file
+    $bookName = fileNameToBookName($fileName);
+    
+    // Tìm category_id
+    $categoryId = findCategoryId($categoryName);
+    
+    // Tạo tên file mới (sử dụng tên gốc để tránh trùng lặp)
+    $baseFileName = Str::slug(pathinfo($fileName, PATHINFO_FILENAME));
+    $newFileName = $baseFileName . '.' . $extension;
+    $storageFilePath = $storagePath . '/' . $newFileName;
+    
+    // Nếu file đã tồn tại, thêm timestamp để tránh trùng
+    if (Storage::disk('public')->exists($storageFilePath)) {
+        $newFileName = $baseFileName . '_' . time() . '.' . $extension;
+        $storageFilePath = $storagePath . '/' . $newFileName;
+    }
+    
+    // Copy file vào storage
+    try {
+        $fileContent = file_get_contents($filePath);
+        Storage::disk('public')->put($storageFilePath, $fileContent);
+        
+        echo "  ✅ Đã copy ảnh vào storage: {$storageFilePath}\n";
+    } catch (\Exception $e) {
+        echo "  ❌ Lỗi khi copy file: " . $e->getMessage() . "\n";
+        return false;
+    }
+    
+    // Tìm hoặc tạo sách trong database
+    try {
+        $book = Book::where('ten_sach', $bookName)->first();
+        
+        if ($book) {
+            // Cập nhật sách đã tồn tại
+            $book->hinh_anh = $storageFilePath;
+            $book->category_id = $categoryId;
+            $book->save();
+            echo "  ✅ Đã cập nhật sách: {$bookName} (ID: {$book->id})\n";
+        } else {
+            // Tạo sách mới
+            $book = Book::create([
+                'ten_sach' => $bookName,
+                'category_id' => $categoryId,
+                'tac_gia' => 'Chưa cập nhật',
+                'nam_xuat_ban' => date('Y'),
+                'hinh_anh' => $storageFilePath,
+                'mo_ta' => "Sách về {$categoryName}",
+                'gia' => 0,
+                'danh_gia_trung_binh' => 0,
+                'so_luong_ban' => 0,
+                'so_luot_xem' => 0,
+                'is_featured' => false,
+                'trang_thai' => 'active',
+            ]);
+            echo "  ✅ Đã tạo sách mới: {$bookName} (ID: {$book->id})\n";
+        }
+        
+        return true;
+    } catch (\Exception $e) {
+        echo "  ❌ Lỗi khi lưu database: " . $e->getMessage() . "\n";
+        return false;
+    }
+}
+
+// Bắt đầu xử lý
+echo "========================================\n";
+echo "Bắt đầu thêm ảnh sách vào hệ thống\n";
+echo "========================================\n\n";
+
+$totalProcessed = 0;
+$totalSuccess = 0;
+$totalFailed = 0;
+
+foreach ($categoryMapping as $folderName => $categoryName) {
+    $folderPath = $basePath . '/' . $folderName;
+    
+    echo "\n📁 Xử lý thư mục: {$folderName} ({$categoryName})\n";
+    echo str_repeat('-', 50) . "\n";
+    
+    if (!is_dir($folderPath)) {
+        echo "  ⚠️  Thư mục không tồn tại: {$folderPath}\n";
+        continue;
+    }
+    
+    // Đọc tất cả file trong thư mục
+    $files = scandir($folderPath);
+    
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') {
+            continue;
+        }
+        
+        $filePath = $folderPath . '/' . $file;
+        
+        if (is_file($filePath)) {
+            $totalProcessed++;
+            if (processImageFile($filePath, $file, $categoryName)) {
+                $totalSuccess++;
+            } else {
+                $totalFailed++;
+            }
+        }
+    }
+}
+
+// Tổng kết
+echo "\n\n========================================\n";
+echo "Hoàn thành!\n";
+echo "========================================\n";
+echo "Tổng số file đã xử lý: {$totalProcessed}\n";
+echo "Thành công: {$totalSuccess}\n";
+echo "Thất bại: {$totalFailed}\n";
+echo "========================================\n";
+
