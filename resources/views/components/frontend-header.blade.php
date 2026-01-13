@@ -8,7 +8,9 @@
     <div class="header-top">
         <div class="logo-section">
             <a href="{{ route('home') }}" style="text-decoration: none; display: flex; align-items: center;">
-                <img src="{{ asset('favicon.ico') }}" alt="Logo" class="logo-img">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e51d2e 0%, #c41e2f 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-right: 8px;">
+                    📚
+                </div>
                 <div class="logo-text">
                     <span class="logo-part1">THƯ VIỆN</span>
                     <span class="logo-part2">LIBHUB</span>

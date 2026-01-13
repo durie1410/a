@@ -559,7 +559,12 @@
 <body>
     <!-- Header -->
     <header>
-        <a href="{{ route('home') }}" class="logo">WAKA</a>
+        <a href="{{ route('home') }}" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e51d2e 0%, #c41e2f 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                📚
+            </div>
+            <span>WAKA</span>
+        </a>
         
         <nav>
             <ul>

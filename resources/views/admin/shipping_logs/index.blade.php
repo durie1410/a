@@ -276,7 +276,27 @@
                     </td>
                     
                     {{-- Tổng tiền --}}
-                    <td>{{ number_format($log->borrow->tong_tien ?? 0, 0) }}</td>
+                    <td>
+                        @php
+                            // Tính lại tổng tiền = cọc + thuê + ship
+                            $tienCoc = $log->borrow->tien_coc ?? 0;
+                            $tienThue = $log->borrow->tien_thue ?? 0;
+                            $tienShip = $log->borrow->tien_ship ?? 0;
+                            
+                            // Nếu ship = 0, tính từ items
+                            if ($tienShip == 0 && $log->borrow->items && $log->borrow->items->count() > 0) {
+                                $tienShip = $log->borrow->items->sum('tien_ship');
+                            }
+                            // Nếu vẫn = 0, mặc định 20k
+                            if ($tienShip == 0) {
+                                $tienShip = 20000;
+                            }
+                            
+                            // Tính lại tổng tiền
+                            $tongTienDisplay = $tienCoc + $tienThue + $tienShip;
+                        @endphp
+                        {{ number_format($tongTienDisplay, 0) }}
+                    </td>
                     
                     {{-- Ngày đặt --}}
                     <td>

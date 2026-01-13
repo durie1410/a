@@ -168,7 +168,7 @@ class VnPayController extends Controller
                         'trang_thai' => 'Cho duyet',
                         'tien_coc' => $checkoutData['total_tien_coc'],
                         'tien_thue' => $checkoutData['total_tien_thue'],
-                        'tien_ship' => $checkoutData['total_tien_ship'],
+                        'tien_ship' => $checkoutData['total_tien_ship'] ?? 0,
                         'tong_tien' => $checkoutData['tong_tien'],
                         'voucher_id' => $checkoutData['voucher_id'],
                         'ghi_chu' => trim($checkoutData['notes'] ?: 'Đặt mượn từ giỏ sách'),
@@ -185,9 +185,19 @@ class VnPayController extends Controller
                             'trang_thai' => 'Cho duyet',
                             'tien_coc' => $itemData['tien_coc'],
                             'tien_thue' => $itemData['tien_thue'],
-                            'tien_ship' => $itemData['tien_ship'],
+                            'tien_ship' => $itemData['tien_ship'] ?? 0,
                             'ghi_chu' => $itemData['note'],
                         ]);
+                    }
+                    
+                    // Đảm bảo tien_ship được đồng bộ từ items nếu borrow->tien_ship = 0
+                    if ($borrow->tien_ship == 0) {
+                        $tienShipFromItems = $borrow->items()->sum('tien_ship');
+                        if ($tienShipFromItems > 0) {
+                            $borrow->tien_ship = $tienShipFromItems;
+                            $borrow->tong_tien = $borrow->tien_coc + $borrow->tien_thue + $borrow->tien_ship;
+                            $borrow->save();
+                        }
                     }
 
                     // Giảm số lượng voucher nếu có

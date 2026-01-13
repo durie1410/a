@@ -411,7 +411,25 @@
                                         <span class="order-date">{{ $order->created_at->format('d/m/Y H:i') }}</span>
                                     </td>
                                     <td>
-                                        <span class="order-amount">{{ number_format($order->tong_tien ?? 0, 0, ',', '.') }}₫</span>
+                                        @php
+                                            // Tính lại tổng tiền = cọc + thuê + ship
+                                            $tienCoc = $order->tien_coc ?? 0;
+                                            $tienThue = $order->tien_thue ?? 0;
+                                            $tienShip = $order->tien_ship ?? 0;
+                                            
+                                            // Nếu ship = 0, tính từ items
+                                            if ($tienShip == 0 && $order->items && $order->items->count() > 0) {
+                                                $tienShip = $order->items->sum('tien_ship');
+                                            }
+                                            // Nếu vẫn = 0, mặc định 20k
+                                            if ($tienShip == 0) {
+                                                $tienShip = 20000;
+                                            }
+                                            
+                                            // Tính lại tổng tiền
+                                            $tongTienDisplay = $tienCoc + $tienThue + $tienShip;
+                                        @endphp
+                                        <span class="order-amount">{{ number_format($tongTienDisplay, 0, ',', '.') }}₫</span>
                                     </td>
                                     <td>
                                         @php
@@ -439,55 +457,127 @@
                                     </td>
                                     <td>
                                         @if($order->trang_thai === 'Cho duyet')
-                                            <span class="status-badge status-pending">
-                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                                        clip-rule="evenodd"></path>
-                                                </svg>
-                                                Chờ duyệt
-                                            </span>
-                                        @elseif($order->trang_thai === 'Dang muon')
-                                            @if($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_CHO_TRA_SACH)
-                                                <span class="status-badge" style="background: #fff3cd; color: #856404;">
-                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                                                    </svg>
-                                                    Chờ trả sách
+                                            @php
+                                                $detailStatusChoDuyet = $order->trang_thai_chi_tiet;
+                                            @endphp
+                                            @if($detailStatusChoDuyet === \App\Models\Borrow::STATUS_DANG_CHUAN_BI_SACH)
+                                                <span class="status-badge" style="background: #e0f2fe; color: #0369a1;">
+                                                    📦 Đang chuẩn bị sách
                                                 </span>
-                                            @elseif($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DANG_VAN_CHUYEN_TRA_VE)
+                                            @elseif($detailStatusChoDuyet === \App\Models\Borrow::STATUS_CHO_BAN_GIAO_VAN_CHUYEN)
+                                                <span class="status-badge" style="background: #fef9c3; color: #854d0e;">
+                                                    🚚 Chờ bàn giao vận chuyển
+                                                </span>
+                                            @elseif($detailStatusChoDuyet === \App\Models\Borrow::STATUS_DANG_GIAO_HANG)
+                                                <span class="status-badge" style="background: #cffafe; color: #155e75;">
+                                                    🚚 Đang giao hàng
+                                                </span>
+                                            @elseif($detailStatusChoDuyet === \App\Models\Borrow::STATUS_DON_HANG_MOI)
+                                                <span class="status-badge" style="background: #d4edda; color: #155724;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Đã được duyệt
+                                                </span>
+                                            @else
+                                                <span class="status-badge status-pending">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Chờ duyệt
+                                                </span>
+                                            @endif
+                                        @elseif($order->trang_thai === 'Dang muon')
+                                            @php
+                                                $detailStatus = $order->trang_thai_chi_tiet;
+                                            @endphp
+
+                                            {{-- Giai đoạn trước khi thực sự bắt đầu mượn (chuẩn bị / giao hàng / chờ xác nhận) --}}
+                                            @if($detailStatus === \App\Models\Borrow::STATUS_DANG_CHUAN_BI_SACH)
+                                                <span class="status-badge" style="background: #e0f2fe; color: #0369a1;">
+                                                    📦 Đang chuẩn bị sách
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_CHO_BAN_GIAO_VAN_CHUYEN)
+                                                <span class="status-badge" style="background: #fef9c3; color: #854d0e;">
+                                                    🚚 Chờ bàn giao vận chuyển
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_DANG_GIAO_HANG)
+                                                <span class="status-badge" style="background: #cffafe; color: #155e75;">
+                                                    🚚 Đang giao hàng
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_GIAO_HANG_THANH_CONG && !$order->customer_confirmed_delivery)
+                                                <span class="status-badge" style="background: #e0f2fe; color: #1d4ed8;">
+                                                    ✅ Đã giao hàng - Chờ bạn xác nhận
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_GIAO_HANG_THAT_BAI)
+                                                <span class="status-badge" style="background: #fee2e2; color: #dc2626;">
+                                                    ❌ Giao hàng Thất bại
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_DANG_VAN_CHUYEN_TRA_VE)
                                                 <span class="status-badge" style="background: #cff4fc; color: #055160;">
                                                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
                                                         <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7h-3v7h3V7z" />
                                                         <path d="M14 7V5h3.06a1 1 0 01.99.85l.89 4.38a1 1 0 01-.15.86l-1.39 2.15a2.5 2.5 0 01-1.34.76H15.95a2.5 2.5 0 01-4.9 0H11" />
                                                     </svg>
-                                                    Đang trả về
+                                                    Vận chuyển trả về
                                                 </span>
-                                            @elseif($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DA_NHAN_VA_KIEM_TRA)
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_DA_NHAN_VA_KIEM_TRA)
                                                 <span class="status-badge" style="background: #fff3cd; color: #664d03;">
                                                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                                     </svg>
-                                                    Chờ hoàn tất
+                                                    Đã nhận & Kiểm tra
                                                 </span>
-                                            @else
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_HOAN_TAT_DON_HANG)
+                                                <span class="status-badge" style="background: #d4edda; color: #155724;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Đã hoàn tiền
+                                                </span>
+
+                                            {{-- Giai đoạn sau khi đã mượn (đang mượn / chờ trả / đang trả / chờ hoàn tất) --}}
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_CHO_TRA_SACH)
+                                                <span class="status-badge" style="background: #fff3cd; color: #856404;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Chờ trả sách
+                                                </span>
+                                            @elseif($detailStatus === \App\Models\Borrow::STATUS_DA_MUON_DANG_LUU_HANH)
                                                 <span class="status-badge status-borrowing">
                                                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
                                                         <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.435.292-3.483.804a1 1 0 00-.517.876V15.803a1 1 0 001.49.876A6 6 0 017.18 16c1.103 0 2.113.188 3.013.53a1 1 0 00.814 0c.9-.342 1.91-.53 3.013-.53 1.103 0 2.113.188 3.013.53a1 1 0 001.49-.876V5.68a1 1 0 00-.517-.876A7.968 7.968 0 0014.5 4c-1.255 0-2.435.292-3.483.804V14.5a1 1 0 01-1.016 1.016A7.96 7.96 0 009 14.5V4.804z"></path>
                                                     </svg>
                                                     Đang mượn
                                                 </span>
+                                            @else
+                                                {{-- Fallback: nếu vì lý do gì đó không khớp chi tiết, hiển thị trạng thái tổng quát --}}
+                                                <span class="status-badge status-borrowing">
+                                                    📖 Đang mượn
+                                                </span>
                                             @endif
                                         @elseif($order->trang_thai === 'Da tra')
-                                            <span class="status-badge status-returned">
-                                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                        clip-rule="evenodd"></path>
-                                                </svg>
-                                                Đã trả
-                                            </span>
+                                            @if($order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_HOAN_TAT_DON_HANG)
+                                                <span class="status-badge" style="background: #d4edda; color: #155724;">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Đã hoàn tiền
+                                                </span>
+                                            @else
+                                                <span class="status-badge status-returned">
+                                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                            clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Đã trả
+                                                </span>
+                                            @endif
                                         @elseif($order->trang_thai === 'Huy')
                                             <span class="status-badge status-cancelled">
                                                 <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
@@ -536,10 +626,7 @@
                                                         Nhận sách
                                                     </button>
                                                 </form>
-                                                <button type="button" class="btn-action btn-reject"
-                                                    onclick="showRejectDeliveryModal({{ $order->id }})" title="Từ chối nhận sách">
-                                                    Từ chối
-                                                </button>
+                                                {{-- Ở trạng thái Đang giao hàng: không cho từ chối --}}
                                             @endif
 
                                             @if($canConfirmReturn)
@@ -548,11 +635,28 @@
                                             </button>
                                         @endif
 
-                                            @if($order->trang_thai === 'Cho duyet')
+                                            @php
+                                                // Chỉ cho phép hủy khi đơn còn ở trạng thái mới (chưa chuyển sang chuẩn bị / giao hàng)
+                                                $canCancelOrder = $order->trang_thai === 'Cho duyet'
+                                                    && ($order->trang_thai_chi_tiet === null
+                                                        || $order->trang_thai_chi_tiet === \App\Models\Borrow::STATUS_DON_HANG_MOI);
+                                            @endphp
+
+                                            @if($canCancelOrder)
                                                 <button type="button" class="btn-action btn-cancel"
                                                     onclick="showCancelModal(event, {{ $order->id }})">
                                                     Hủy đơn
                                                 </button>
+                                            @elseif($order->trang_thai === 'Cho duyet' 
+                                                && in_array($order->trang_thai_chi_tiet, [
+                                                    \App\Models\Borrow::STATUS_DANG_CHUAN_BI_SACH,
+                                                    \App\Models\Borrow::STATUS_CHO_BAN_GIAO_VAN_CHUYEN,
+                                                    \App\Models\Borrow::STATUS_DANG_GIAO_HANG,
+                                                    \App\Models\Borrow::STATUS_GIAO_HANG_THANH_CONG,
+                                                ]))
+                                                <span style="display:block; margin-top:6px; font-size:12px; color:#6b7280;">
+                                                    ❌ Đơn đang được xử lý/giao hàng, không thể hủy.
+                                                </span>
                                             @endif
                                         </div>
                                     </td>

@@ -996,7 +996,9 @@
     <header class="main-header">
         <div class="header-top">
             <div class="logo-section">
-                <img src="{{ asset('favicon.ico') }}" alt="Logo" class="logo-img">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e51d2e 0%, #c41e2f 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-right: 8px;">
+                    📚
+                </div>
                 <div class="logo-text">
                     <span class="logo-part1">THƯ VIỆN</span>
                     <span class="logo-part2">LIBHUB</span>
@@ -1147,18 +1149,21 @@
 
             <section class="book-detail-section">
                 <div class="book-summary">
-                    <img src="{{ $book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh)) ? asset('storage/' . $book->hinh_anh) : 'https://via.placeholder.com/200x300?text=Book+Cover' }}"
-                        alt="Bìa sách" class="book-cover">
+                    <img src="{{ $book->image_url ?? 'https://via.placeholder.com/200x300?text=Book+Cover' }}"
+                        alt="Bìa sách {{ $book->ten_sach }}" class="book-cover">
 
                     <div class="info-and-buy">
                         <h1>{{ $book->ten_sach }}</h1>
-                        <p>Tác giả: <strong>{{ $book->tac_gia }}</strong></p>
+                        <p>Tác giả: <strong>{{ $book->formatted_author }}</strong></p>
+                        @if($book->nam_xuat_ban)
+                            <p>Năm xuất bản: <strong>{{ $book->formatted_year }}</strong></p>
+                        @endif
 
                         <div class="rating">
                             @php
-                                $rating = $stats['average_rating'] ?? 4.5;
+                                $rating = $stats['average_rating'] ?? $book->formatted_rating;
                             @endphp
-                            {{ number_format($rating, 1) }}
+                            {{ number_format($rating, 1, ',', '.') }}
                             <span class="stars">
                                 @for($i = 1; $i <= 5; $i++)
                                     @if($i <= floor($rating))
@@ -1168,8 +1173,8 @@
                                     @endif
                                 @endfor
                             </span>
-                            | {{ number_format($book->so_luot_xem ?? 0, 0, ',', '.') }} Lượt xem |
-                            {{ number_format($book->so_luong_ban ?? 0, 0, ',', '.') }} Đã bán
+                            | {{ $book->formatted_views }} Lượt xem |
+                            {{ $book->formatted_sales }} Đã bán
                         </div>
 
                         <div class="buy-options">
@@ -1184,7 +1189,7 @@
                                         style="padding: 15px; background: #fff3e0; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ff9800;">
                                         <strong style="font-size: 1.1em;">💰 Giá sách:</strong>
                                         <span
-                                            style="color: #e65100; font-weight: bold; font-size: 1.2em;">{{ number_format($book->gia, 0, ',', '.') }}₫</span>
+                                            style="color: #e65100; font-weight: bold; font-size: 1.2em;">{{ $book->formatted_price_short }}</span>
                                     </div>
                                 @endif
 
@@ -1301,7 +1306,7 @@
                 </div>
 
                 <div class="description-section" id="intro-content">
-                    {{ $book->mo_ta ?? 'Nội dung giới thiệu về sách đang được cập nhật...' }}
+                    {{ $book->formatted_description }}
                 </div>
 
                 <div class="description-section" id="contents-content" style="display: none;">
@@ -1313,22 +1318,30 @@
                     <table class="book-metadata">
                         <tr>
                             <td class="label">Tác giả:</td>
-                            <td>{{ $book->tac_gia }}</td>
+                            <td>{{ $book->formatted_author }}</td>
+                            <td class="label">Năm xuất bản:</td>
+                            <td>{{ $book->formatted_year }}</td>
+                        </tr>
+                        <tr>
                             <td class="label">Nhà xuất bản:</td>
-                            <td>{{ $book->publisher->ten_nha_xuat_ban ?? 'Nhà xuất bản Xây dựng' }}</td>
+                            <td>{{ $book->publisher->ten_nha_xuat_ban ?? 'Chưa có thông tin' }}</td>
+                            <td class="label">Giá sách:</td>
+                            <td>{{ $book->formatted_price }}</td>
                         </tr>
                         <tr>
-                            <td class="label">📖 Khổ sách:</td>
-                            <td>17 x 24 (cm)</td>
+                            <td class="label">Số lượng:</td>
+                            <td>{{ $book->formatted_quantity }} cuốn</td>
+                            <td class="label">Đánh giá:</td>
+                            <td>{{ $book->formatted_rating }}/5.0 ⭐</td>
+                        </tr>
+                        @if($book->so_trang)
+                        <tr>
                             <td class="label">Số trang:</td>
-                            <td>{{ $book->so_trang ?? '260' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="label">Mã ISBN:</td>
-                            <td>{{ $book->isbn ?? '' }}</td>
+                            <td>{{ $book->so_trang }} trang</td>
                             <td class="label">Ngôn ngữ:</td>
-                            <td>vi</td>
+                            <td>Tiếng Việt</td>
                         </tr>
+                        @endif
                     </table>
                 </div>
 
@@ -1393,8 +1406,8 @@
                             <div class="book-item">
                                 <a href="{{ route('books.show', $relatedBook->id) }}" class="book-link">
                                     <div class="book-cover">
-                                        @if($relatedBook->hinh_anh && file_exists(public_path('storage/' . $relatedBook->hinh_anh)))
-                                            <img src="{{ asset('storage/' . $relatedBook->hinh_anh) }}"
+                                        @if($relatedBook->image_url)
+                                            <img src="{{ $relatedBook->image_url }}"
                                                 alt="{{ $relatedBook->ten_sach }}">
                                         @else
                                             <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -1796,11 +1809,6 @@
                     if (data.success) {
                         // Cập nhật số lượng trong giỏ sách nếu có icon giỏ sách
                         updateCartCount(data.cart_count);
-
-                        // Hiển thị thông báo thành công và hỏi có muốn xem giỏ sách không
-                        if (confirm('Đã thêm sách vào giỏ sách!\n\nBạn có muốn xem giỏ sách không?')) {
-                            window.location.href = '{{ route("borrow-cart.index") }}';
-                        }
                     } else {
                         if (data.redirect) {
                             // Nếu có redirect, hỏi người dùng có muốn chuyển đến trang đó không
@@ -1877,9 +1885,9 @@
                             <small style="color: #666; font-size: 0.8em;">Nhấn + hoặc - để điều chỉnh</small>
                         </div>
                         <div class="quantity-control">
-                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', -1, 1, 30)">-</button>
-                            <input type="number" id="unified-days-input" class="qty-input" value="14" min="7" max="30" readonly onchange="updateBorrowQuoteUnified()">
-                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', 1, 1, 30)">+</button>
+                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', -1, 0, 30)">-</button>
+                            <input type="number" id="unified-days-input" class="qty-input" value="14" min="0" max="30" readonly onchange="updateBorrowQuoteUnified()">
+                            <button type="button" class="qty-btn" onclick="changeQty('unified-days-input', 1, 0, 30)">+</button>
                         </div>
                     </div>
                 </div>
@@ -1915,9 +1923,9 @@
             // Khoảng cách luôn là 0 ở modal (sẽ tính ở trang checkout)
             const distance = 0;
 
-            if (days < 1 || days > 30) {
+            if (days < 0 || days > 30) {
                 document.getElementById('borrowModalInfo').innerHTML =
-                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 7 đến 30 ngày.</div>';
+                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 0 đến 30 ngày.</div>';
                 return;
             }
 
@@ -2058,8 +2066,8 @@
             // Khoảng cách luôn là 0 ở modal
             const distance = 0;
 
-            if (days < 7 || days > 30) {
-                alert('Số ngày mượn phải từ 7 đến 30 ngày!');
+            if (days < 0 || days > 30) {
+                alert('Số ngày mượn phải từ 0 đến 30 ngày!');
                 return;
             }
 
@@ -2264,9 +2272,9 @@
             const distance = 0;
             const quantity = parseInt(document.getElementById('borrow-quantity')?.value) || 1;
 
-            if (days < 7 || days > 30) {
+            if (days < 0 || days > 30) {
                 document.getElementById('borrowModalInfo').innerHTML =
-                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 7 đến 30 ngày.</div>';
+                    '<div style="text-align: center; padding: 20px; color: #cc0000;">Số ngày mượn phải từ 0 đến 30 ngày.</div>';
                 return;
             }
 

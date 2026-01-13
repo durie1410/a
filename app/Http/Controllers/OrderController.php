@@ -337,8 +337,21 @@ class OrderController extends Controller
     public function show($id)
     {
         try {
-            $borrow = Borrow::with(['items.book', 'items.inventory', 'reader', 'payments', 'voucher'])
+            $borrow = Borrow::with(['items.book', 'items.inventory', 'reader', 'payments', 'voucher', 'shippingLogs' => function($query) {
+                $query->where('status', 'giao_hang_that_bai')->latest()->first();
+            }])
                 ->findOrFail($id);
+            
+            // Đảm bảo tien_ship được đồng bộ từ items nếu borrow->tien_ship = 0
+            if (($borrow->tien_ship ?? 0) == 0 && $borrow->items && $borrow->items->count() > 0) {
+                $tienShipFromItems = $borrow->items->sum('tien_ship');
+                if ($tienShipFromItems > 0) {
+                    $borrow->tien_ship = $tienShipFromItems;
+                    // 重新计算总金额
+                    $borrow->tong_tien = ($borrow->tien_coc ?? 0) + ($borrow->tien_thue ?? 0) + $tienShipFromItems;
+                    $borrow->save();
+                }
+            }
             
             // Kiểm tra quyền truy cập - chỉ reader của đơn mượn mới được xem
             if (!Auth::check()) {
@@ -398,10 +411,35 @@ class OrderController extends Controller
         if (Auth::check()) {
             $reader = Auth::user()->reader;
             if ($reader) {
-                $orders = Borrow::with(['items.book', 'reader', 'librarian', 'payments'])
+                // Lấy tất cả đơn mượn của reader, bao gồm cả giao_hang_that_bai
+                $orders = Borrow::with(['items.book', 'reader', 'librarian', 'payments', 'shippingLogs' => function($query) {
+                    $query->where('status', 'giao_hang_that_bai')->latest()->first();
+                }])
                     ->where('reader_id', $reader->id)
                     ->orderBy('created_at', 'desc')
                     ->paginate(10);
+                
+                // Đồng bộ tổng tiền cho mỗi đơn (bao gồm ship)
+                foreach ($orders as $order) {
+                    $tienCoc = $order->tien_coc ?? 0;
+                    $tienThue = $order->tien_thue ?? 0;
+                    $tienShip = $order->tien_ship ?? 0;
+                    
+                    // Nếu ship = 0, tính từ items
+                    if ($tienShip == 0 && $order->items && $order->items->count() > 0) {
+                        $tienShip = $order->items->sum('tien_ship');
+                    }
+                    // Nếu vẫn = 0, mặc định 20k
+                    if ($tienShip == 0) {
+                        $tienShip = 20000;
+                    }
+                    
+                    // Tính lại tổng tiền = cọc + thuê + ship
+                    $tongTienRecalculated = $tienCoc + $tienThue + $tienShip;
+                    
+                    // Cập nhật vào order object để hiển thị (không lưu DB)
+                    $order->tong_tien_display = $tongTienRecalculated;
+                }
             } else {
                 // User chưa có thẻ độc giả
                 $orders = new \Illuminate\Pagination\LengthAwarePaginator(

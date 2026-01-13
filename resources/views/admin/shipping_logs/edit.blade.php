@@ -363,7 +363,24 @@ body {
                 {{-- Phí vận chuyển --}}
                 <div class="detail-item">
                     <div class="label">Phí vận chuyển:</div>
-                    <div class="value">{{ number_format($log->borrow->tien_ship ?? 0, 0) }}₫</div>
+                    <div class="value">
+                        @php
+                            // Tính tổng phí ship từ items
+                            $totalShipFromItems = 0;
+                            if ($log->borrow && $log->borrow->items) {
+                                foreach ($log->borrow->items as $item) {
+                                    $totalShipFromItems += $item->tien_ship ?? 0;
+                                }
+                            }
+                            // Ưu tiên lấy từ borrow, nếu = 0 thì lấy từ items
+                            $shippingFeeDisplay = ($log->borrow->tien_ship ?? 0) > 0 ? ($log->borrow->tien_ship ?? 0) : $totalShipFromItems;
+                            // Nếu vẫn = 0, mặc định là 20k
+                            if ($shippingFeeDisplay == 0) {
+                                $shippingFeeDisplay = 20000;
+                            }
+                        @endphp
+                        {{ number_format($shippingFeeDisplay, 0) }}₫
+                    </div>
                 </div>
 
                 {{-- Phương thức thanh toán --}}
@@ -465,7 +482,23 @@ body {
                 </div>
             </div>
             
-            <form action="{{ route('admin.shipping_logs.update_status', $log->id) }}" method="POST" class="status-update-form">
+            @if(session('success'))
+                <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px; background: #d4edda; color: #155724; border-radius: 6px; border: 1px solid #c3e6cb;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            
+            @if($errors->any())
+                <div class="alert alert-danger" style="margin-bottom: 20px; padding: 12px; background: #f8d7da; color: #721c24; border-radius: 6px; border: 1px solid #f5c6cb;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            
+            <form action="{{ route('admin.shipping_logs.update_status', $log->id) }}" method="POST" class="status-update-form" enctype="multipart/form-data">
                 @csrf
                 <div class="form-group-inline">
                     <div class="form-field">
@@ -481,19 +514,21 @@ body {
                                 $availableStatuses = [];
                                 
                                 // Thêm trạng thái hiện tại (cho phép giữ nguyên)
-                                if ($currentStatus) {
+                                // Bỏ qua "cho_ban_giao_van_chuyen" - không hiển thị trạng thái này
+                                if ($currentStatus && $currentStatusKey !== 'cho_ban_giao_van_chuyen') {
                                     $availableStatuses[$currentStatusKey] = $currentStatus;
                                 }
                                 
                                 // Thêm các trạng thái tiếp theo được phép
                                 if ($currentStatus && isset($currentStatus['next_statuses'])) {
                                     foreach ($currentStatus['next_statuses'] as $nextStatusKey) {
-                                        // Ẩn "giao_hang_thanh_cong" và "giao_hang_that_bai" khi đang ở "dang_giao_hang"
-                                        // Vì thành công hay thất bại phụ thuộc vào khách hàng xác nhận
-                                        if ($currentStatusKey === 'dang_giao_hang' && 
-                                            ($nextStatusKey === 'giao_hang_thanh_cong' || $nextStatusKey === 'giao_hang_that_bai')) {
+                                        // Ẩn "giao_hang_thanh_cong" khi đang ở "dang_giao_hang"
+                                        // Vì thành công phụ thuộc vào khách hàng xác nhận
+                                        if ($currentStatusKey === 'dang_giao_hang' && $nextStatusKey === 'giao_hang_thanh_cong') {
                                             continue; // Bỏ qua, không hiển thị option này
                                         }
+                                        // Cho phép "giao_hang_that_bai" hiển thị khi đang ở "dang_giao_hang"
+                                        // Admin có thể bấm "Giao hàng thất bại" và chọn lý do
                                         
                                         // Ẩn "dang_van_chuyen_tra_ve" khi đang ở "cho_tra_sach"
                                         // Vì chỉ khi khách hàng xác nhận hoàn trả sách thì mới chuyển sang trạng thái này
@@ -504,6 +539,11 @@ body {
                                         // Ẩn "da_nhan_va_kiem_tra" khi đang ở "giao_hang_that_bai"
                                         // Vì sách phải được vận chuyển trả về trước, sau đó mới có thể nhận và kiểm tra
                                         if ($currentStatusKey === 'giao_hang_that_bai' && $nextStatusKey === 'da_nhan_va_kiem_tra') {
+                                            continue; // Bỏ qua, không hiển thị option này
+                                        }
+                                        
+                                        // Ẩn "cho_ban_giao_van_chuyen" - bỏ trạng thái này
+                                        if ($nextStatusKey === 'cho_ban_giao_van_chuyen') {
                                             continue; // Bỏ qua, không hiển thị option này
                                         }
                                         
@@ -530,9 +570,136 @@ body {
                             @endforelse
                         </select>
                     </div>
-                    <button type="submit" class="btn-update">Cập nhật trạng thái</button>
+                    <button type="submit" class="btn-update" id="update-status-btn">Cập nhật trạng thái</button>
                 </div>
                 
+                <script>
+                // Kiểm tra form submit + bật/tắt required theo trạng thái
+                document.addEventListener('DOMContentLoaded', function() {
+                    const statusSelect = document.getElementById('status');
+                    const failureForm = document.getElementById('failure-form');
+                    const failureRadios = document.querySelectorAll('input[name="failure_reason"]');
+                    const failureImage = document.getElementById('failure_proof_image');
+
+                    function toggleFailureRequired() {
+                        const statusValue = statusSelect ? statusSelect.value : '';
+                        const isFail = statusValue === 'giao_hang_that_bai';
+                        if (!failureRadios) return;
+
+                        failureRadios.forEach(r => {
+                            r.required = isFail;
+                        });
+
+                        if (failureImage) {
+                            const required = isFail && Array.from(failureRadios).some(r => r.checked && r.value === 'loi_thu_vien');
+                            failureImage.required = required;
+                        }
+                    }
+
+                    if (statusSelect) {
+                        statusSelect.addEventListener('change', toggleFailureRequired);
+                        // init
+                        toggleFailureRequired();
+                    }
+
+                    const statusForm = document.querySelector('.status-update-form');
+                    if (statusForm) {
+                        statusForm.addEventListener('submit', function(e) {
+                            const statusValue = statusSelect ? statusSelect.value : '';
+                            
+                            // Kiểm tra nếu chưa chọn trạng thái
+                            if (!statusValue || statusValue === '') {
+                                e.preventDefault();
+                                alert('Vui lòng chọn trạng thái mới!');
+                                return false;
+                            }
+                            
+                            // Kiểm tra nếu chọn giao_hang_that_bai nhưng chưa chọn failure_reason
+                            if (statusValue === 'giao_hang_that_bai') {
+                                const failureReason = document.querySelector('input[name="failure_reason"]:checked');
+                                if (!failureReason) {
+                                    e.preventDefault();
+                                    alert('Vui lòng chọn lý do thất bại!');
+                                    return false;
+                                }
+                                
+                                // Nếu lỗi do thư viện, kiểm tra ảnh
+                                if (failureReason.value === 'loi_thu_vien') {
+                                    if (failureImage) {
+                                        const hasNewImage = failureImage.files && failureImage.files.length > 0;
+                                        const existingImage = document.querySelector('#failure-image-field img');
+                                        if (!hasNewImage && !existingImage) {
+                                            e.preventDefault();
+                                            alert('Vui lòng tải ảnh minh chứng cho lỗi do thư viện!');
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Nếu không có lỗi, cho phép submit (không gọi preventDefault)
+                        });
+                    }
+                });
+                </script>
+                
+                {{-- Form cho giao hàng thất bại --}}
+                <div id="failure-form" style="display: none; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                    <h6 style="margin-bottom: 15px; color: #856404; font-weight: 600;">Thông tin giao hàng thất bại</h6>
+                    
+                    <div class="form-field" style="margin-bottom: 20px;">
+                        <label class="form-label" style="font-weight: 600; color: #856404;">Lý do thất bại <span style="color: red;">*</span></label>
+                        <div style="margin-top: 10px;">
+                            <label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer; padding: 10px; background: white; border-radius: 4px; border: 2px solid #e0e0e0;">
+                                <input type="radio" name="failure_reason" value="loi_khach_hang" style="margin-right: 10px;" {{ old('failure_reason', $log->failure_reason) === 'loi_khach_hang' ? 'checked' : '' }}>
+                                <div style="flex: 1;">
+                                    <strong style="color: #333;">Lựa chọn A: Lỗi do Khách hàng</strong>
+                                    <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                                        <strong>Lý do:</strong> Đổi ý, không nghe máy, từ chối nhận hàng...<br>
+                                        <div style="margin-top: 6px; padding: 8px; background: #fff3cd; border-radius: 4px; border-left: 3px solid #dc3545;">
+                                            <strong style="color: #dc3545;">Tiền hoàn:</strong><br>
+                                            • Hoàn: <strong>Phí thuê</strong><br>
+                                            • Hoàn: <strong>80% tiền cọc</strong> (trừ 20% phí phạt)<br>
+                                            • <span style="color: #dc3545;">Khách mất: Phí ship (100%)</span><br>
+                                            • <span style="color: #dc3545;">Khách mất: 20% tiền cọc (phí phạt)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; padding: 10px; background: white; border-radius: 4px; border: 2px solid #e0e0e0;">
+                                <input type="radio" name="failure_reason" value="loi_thu_vien" style="margin-right: 10px;" {{ old('failure_reason', $log->failure_reason) === 'loi_thu_vien' ? 'checked' : '' }}>
+                                <div style="flex: 1;">
+                                    <strong style="color: #333;">Lựa chọn B: Lỗi do Sách/Thư viện</strong>
+                                    <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                                        <strong>Lý do:</strong> Sách rách, bẩn, sai tên sách, thiếu sách...<br>
+                                        <div style="margin-top: 6px; padding: 8px; background: #d1e7dd; border-radius: 4px; border-left: 3px solid #28a745;">
+                                            <strong style="color: #28a745;">Tiền hoàn:</strong><br>
+                                            • Hoàn: <strong>100% tiền cọc</strong><br>
+                                            • Hoàn: <strong>100% phí thuê</strong><br>
+                                            • Hoàn: <strong>100% phí ship</strong><br>
+                                            <span style="color: #28a745;">→ Khách được hoàn toàn bộ 100%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-field" id="failure-image-field" style="margin-bottom: 15px; display: none;">
+                        <label class="form-label">
+                            <span id="failure-image-label">Ảnh minh chứng</span>
+                            <span id="failure-image-required" style="color: red; display: none;">*</span>
+                        </label>
+                        <input type="file" name="failure_proof_image" id="failure_proof_image" class="form-control" accept="image/*">
+                        <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;" id="failure-image-hint"></small>
+                        @if($log->failure_proof_image)
+                            <div style="margin-top: 10px;">
+                                <img src="{{ asset('storage/' . $log->failure_proof_image) }}" alt="Ảnh minh chứng" style="max-width: 200px; border-radius: 4px;">
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 {{-- Form cho thanh toán cọc --}}
                 <div id="refund-form" style="display: none; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
                     <h6 style="margin-bottom: 15px; color: #495057;">Thông tin thanh toán cọc</h6>
@@ -564,13 +731,110 @@ body {
         <script>
         document.getElementById('status').addEventListener('change', function() {
             const refundForm = document.getElementById('refund-form');
+            const failureForm = document.getElementById('failure-form');
+            const failureImageField = document.getElementById('failure-image-field');
+            
             // Hiển thị form khi chọn trạng thái "da_nhan_va_kiem_tra" hoặc "hoan_tat_don_hang"
             if (this.value === 'da_nhan_va_kiem_tra' || this.value === 'hoan_tat_don_hang') {
                 refundForm.style.display = 'block';
             } else {
                 refundForm.style.display = 'none';
             }
+            
+            // Hiển thị form khi chọn trạng thái "giao_hang_that_bai"
+            if (this.value === 'giao_hang_that_bai') {
+                failureForm.style.display = 'block';
+            } else {
+                failureForm.style.display = 'none';
+                failureImageField.style.display = 'none';
+            }
         });
+        
+        // Xử lý khi chọn lý do thất bại
+        // Lưu ý: $totalTienCoc sẽ được định nghĩa sau trong vòng lặp, nên tạm thời sử dụng giá trị từ borrow
+        const totalTienCocFromBorrow = {!! json_encode((float) ($log->borrow->tien_coc ?? 0)) !!};
+        const tienCocHoanDisplay = document.getElementById('tien-coc-hoan-display');
+        
+        function updateRefundDeposit(failureReason) {
+            if (!tienCocHoanDisplay) return;
+            
+            // Lấy giá trị từ DOM nếu có, nếu không thì dùng từ borrow
+            let totalCoc = totalTienCocFromBorrow;
+            const cocDisplayElement = document.querySelector('.summary-line:has(.summary-label:contains("Tiền cọc")) .summary-value');
+            if (cocDisplayElement) {
+                const cocText = cocDisplayElement.textContent.replace(/[^\d]/g, '');
+                if (cocText) {
+                    totalCoc = parseFloat(cocText);
+                }
+            }
+            
+            if (failureReason === 'loi_khach_hang') {
+                // Lỗi do khách hàng: Hoàn 80% tiền cọc (trừ 20% phí phạt)
+                const refundDeposit = totalCoc * 0.80;
+                tienCocHoanDisplay.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <div style="text-decoration: line-through; color: #999; font-size: 14px;">${formatVnd(totalCoc)}</div>
+                        <div style="color: #28a745;">${formatVnd(refundDeposit)}</div>
+                    </div>
+                `;
+            } else if (failureReason === 'loi_thu_vien') {
+                // Lỗi do thư viện: Hoàn 100% tiền cọc
+                tienCocHoanDisplay.innerHTML = `<div style="color: #28a745;">${formatVnd(totalCoc)}</div>`;
+            } else {
+                // Trường hợp khác: Hiển thị giá trị mặc định
+                const defaultRefund = {!! json_encode((float) ($tienCocHoan ?? 0)) !!};
+                tienCocHoanDisplay.innerHTML = formatVnd(defaultRefund);
+            }
+        }
+        
+        document.querySelectorAll('input[name="failure_reason"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const failureImageField = document.getElementById('failure-image-field');
+                const failureImageInput = document.getElementById('failure_proof_image');
+                const failureImageRequired = document.getElementById('failure-image-required');
+                const failureImageLabel = document.getElementById('failure-image-label');
+                const failureImageHint = document.getElementById('failure-image-hint');
+                
+                if (this.value === 'loi_khach_hang') {
+                    // Lỗi do khách hàng: Ảnh không bắt buộc
+                    failureImageField.style.display = 'block';
+                    failureImageRequired.style.display = 'none';
+                    failureImageInput.removeAttribute('required');
+                    failureImageLabel.textContent = 'Ảnh minh chứng (Chụp ảnh minh chứng khách không nhận)';
+                    failureImageHint.textContent = 'Yêu cầu: Chụp ảnh minh chứng khách không nhận.';
+                    // Cập nhật tiền cọc hoàn trả: 80%
+                    updateRefundDeposit('loi_khach_hang');
+                } else if (this.value === 'loi_thu_vien') {
+                    // Lỗi do thư viện: Ảnh bắt buộc
+                    failureImageField.style.display = 'block';
+                    failureImageRequired.style.display = 'inline';
+                    failureImageInput.setAttribute('required', 'required');
+                    failureImageLabel.textContent = 'Ảnh minh chứng';
+                    failureImageHint.textContent = 'Yêu cầu: Bắt buộc upload ảnh chỗ sách bị vấn đề để làm bằng chứng nhập kho sách lỗi.';
+                    // Cập nhật tiền cọc hoàn trả: 100%
+                    updateRefundDeposit('loi_thu_vien');
+                }
+            });
+        });
+        
+        // Khởi tạo form nếu đã có giá trị
+        @if($log->status === 'giao_hang_that_bai')
+            document.getElementById('failure-form').style.display = 'block';
+            @if($log->failure_reason === 'loi_khach_hang')
+                document.querySelector('input[name="failure_reason"][value="loi_khach_hang"]').checked = true;
+                document.getElementById('failure-image-field').style.display = 'block';
+                document.getElementById('failure-image-required').style.display = 'none';
+                document.getElementById('failure-image-label').textContent = 'Ảnh minh chứng (Chụp ảnh minh chứng khách không nhận)';
+                document.getElementById('failure-image-hint').textContent = 'Yêu cầu: Chụp ảnh minh chứng khách không nhận.';
+            @elseif($log->failure_reason === 'loi_thu_vien')
+                document.querySelector('input[name="failure_reason"][value="loi_thu_vien"]').checked = true;
+                document.getElementById('failure-image-field').style.display = 'block';
+                document.getElementById('failure-image-required').style.display = 'inline';
+                document.getElementById('failure_proof_image').setAttribute('required', 'required');
+                document.getElementById('failure-image-label').textContent = 'Ảnh minh chứng';
+                document.getElementById('failure-image-hint').textContent = 'Yêu cầu: Bắt buộc upload ảnh chỗ sách bị vấn đề để làm bằng chứng nhập kho sách lỗi.';
+            @endif
+        @endif
         </script>
 
         {{-- Sản phẩm --}}
@@ -662,8 +926,13 @@ body {
             @php
                 // Tạm tính = tổng phí thuê từ tất cả items
                 $subtotal = $totalTienThue;
-                // Phí vận chuyển lấy từ borrow (có thể là phí chung cho cả đơn)
-                $shippingFee = $log->borrow->tien_ship ?? 0;
+                // Phí vận chuyển: ưu tiên lấy từ borrow, nếu = 0 thì lấy từ tổng items
+                $shippingFeeFromBorrow = $log->borrow->tien_ship ?? 0;
+                $shippingFee = $shippingFeeFromBorrow > 0 ? $shippingFeeFromBorrow : $totalTienShip;
+                // Nếu vẫn = 0, mặc định là 20k
+                if ($shippingFee == 0) {
+                    $shippingFee = 20000;
+                }
                 $discount = 0;
                 // Tổng cộng = tien_coc + tien_thue + tien_ship (từ borrow)
                 // Sử dụng tong_tien từ borrow để đảm bảo đúng với dữ liệu thực tế
@@ -695,6 +964,66 @@ body {
                 </div>
                 @endif
 
+                {{-- Hiển thị thông tin giao hàng thất bại --}}
+                @if($log->status === 'giao_hang_that_bai' && $log->failure_reason)
+                    @php
+                        $borrow = $log->borrow;
+                        $totalDeposit = $borrow->tien_coc ?? 0;
+                        $totalBorrowFee = $borrow->tien_thue ?? 0;
+                        $totalShippingFee = $borrow->tien_ship ?? 0;
+                    @endphp
+                    
+                    @if($log->failure_reason === 'loi_khach_hang')
+                        @php
+                            $penaltyAmount = $totalDeposit * 0.20;
+                            $refundDeposit = $totalDeposit * 0.80;
+                        @endphp
+                        <div class="summary-line" style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ffc107;">
+                            <div class="summary-label" style="color: #dc3545; font-weight: 600;">Chi tiết hoàn tiền (Lỗi khách hàng):</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✓ Hoàn phí thuê:</div>
+                            <div class="summary-value" style="color: #28a745;">{{ number_format($totalBorrowFee, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✓ Hoàn tiền cọc (80%):</div>
+                            <div class="summary-value" style="color: #28a745;">{{ number_format($refundDeposit, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✗ Trừ phí phạt (20% cọc):</div>
+                            <div class="summary-value" style="color: #dc3545;">- {{ number_format($penaltyAmount, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✗ Không hoàn phí ship:</div>
+                            <div class="summary-value" style="color: #dc3545;">- {{ number_format($totalShippingFee, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0;">
+                            <div class="summary-label" style="font-weight: 600;">Tổng khách mất:</div>
+                            <div class="summary-value" style="color: #dc3545; font-weight: 600;">{{ number_format($penaltyAmount + $totalShippingFee, 0) }}₫</div>
+                        </div>
+                    @elseif($log->failure_reason === 'loi_thu_vien')
+                        <div class="summary-line" style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #28a745;">
+                            <div class="summary-label" style="color: #28a745; font-weight: 600;">Chi tiết hoàn tiền (Lỗi thư viện):</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✓ Hoàn 100% phí thuê:</div>
+                            <div class="summary-value" style="color: #28a745;">{{ number_format($totalBorrowFee, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✓ Hoàn 100% tiền cọc:</div>
+                            <div class="summary-value" style="color: #28a745;">{{ number_format($totalDeposit, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="padding-left: 15px;">
+                            <div class="summary-label">✓ Hoàn 100% phí ship:</div>
+                            <div class="summary-value" style="color: #28a745;">{{ number_format($totalShippingFee, 0) }}₫</div>
+                        </div>
+                        <div class="summary-line" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0;">
+                            <div class="summary-label" style="font-weight: 600;">Tổng hoàn lại:</div>
+                            <div class="summary-value" style="color: #28a745; font-weight: 600;">{{ number_format($totalDeposit + $totalBorrowFee + $totalShippingFee, 0) }}₫</div>
+                        </div>
+                    @endif
+                @endif
+
                 {{-- Hiện phí phạt nếu đã có hoặc khi chọn tình trạng --}}
                 <div class="summary-line" id="phi-hong-line" style="display: {{ $phiHong > 0 ? 'flex' : 'none' }};">
                     <div class="summary-label">Phí phạt:</div>
@@ -718,24 +1047,91 @@ body {
 
                 <div class="summary-line total-row" style="border-top:2px solid #e9ecef; padding-top:10px; margin-top:6px;">
                     <div class="summary-label">Tổng tiền mượn() :</div>
-                    <div class="total-value" id="final-total-display" style="background:#f8f9fa; padding:8px 12px; border-radius:6px; font-size:18px;">{{ number_format($finalGrand ?? $grandTotal, 0) }}₫</div>
+                    <div class="total-value" id="final-total-display" style="background:#f8f9fa; padding:8px 12px; border-radius:6px; font-size:18px;">
+                        @php
+                            // Tính lại tổng tiền = cọc + thuê + ship
+                            $tienCocForTotal = $totalTienCoc;
+                            $tienThueForTotal = $totalTienThue;
+                            $tienShipForTotal = $shippingFee; // Đã tính ở trên
+                            $tongTienRecalculated = $tienCocForTotal + $tienThueForTotal + $tienShipForTotal;
+                        @endphp
+                        @if($log->status === 'giao_hang_that_bai' && $log->failure_reason === 'loi_khach_hang')
+                            @php
+                                $penaltyAmount = ($log->borrow->tien_coc ?? 0) * 0.20;
+                                $totalDeducted = $penaltyAmount + $tienShipForTotal;
+                                $finalTotalAfterDeduct = $tongTienRecalculated - $totalDeducted;
+                            @endphp
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div style="text-decoration: line-through; color: #999; font-size: 14px;">{{ number_format($tongTienRecalculated, 0) }}₫</div>
+                                <div style="color: #dc3545;">{{ number_format($finalTotalAfterDeduct, 0) }}₫</div>
+                                <div style="font-size: 11px; color: #dc3545; margin-top: 4px;">(Đã trừ: {{ number_format($totalDeducted, 0) }}₫)</div>
+                            </div>
+                        @else
+                            {{ number_format($tongTienRecalculated, 0) }}₫
+                        @endif
+                    </div>
                 </div>
                 <div class="summary-line" id="tien-coc-hoan-line" style="display: {{ $tienCocHoan >= 0 ? 'flex' : 'none' }};">
                     <div class="summary-label">Tiền cọc hoàn trả:</div>
-                    <div class="summary-value" id="tien-coc-hoan-display">{{ number_format($tienCocHoan, 0) }}₫</div>
+                    <div class="summary-value" id="tien-coc-hoan-display">
+                        @if($log->status === 'giao_hang_that_bai' && $log->failure_reason === 'loi_khach_hang')
+                            @php
+                                $refundDeposit = ($log->borrow->tien_coc ?? 0) * 0.80;
+                            @endphp
+                            <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div style="text-decoration: line-through; color: #999; font-size: 14px;">{{ number_format($totalTienCoc, 0) }}₫</div>
+                                <div style="color: #28a745;">{{ number_format($refundDeposit, 0) }}₫</div>
+                            </div>
+                        @else
+                            {{ number_format($tienCocHoan, 0) }}₫
+                        @endif
+                    </div>
                 </div>
-                <div style="font-size:12px; color:#6a6a6a; margin-top:8px;">Ghi chú: <strong>Phí phạt hiển thị riêng và không làm giảm "Tổng phải thu".</strong> Tiền cọc đã thu và tiền cọc hoàn trả hiển thị tách biệt để đối soát.</div>
+                <div style="font-size:12px; color:#6a6a6a; margin-top:8px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    @if($log->status === 'giao_hang_that_bai' && $log->failure_reason === 'loi_khach_hang')
+                        @php
+                            $penaltyAmountNote = ($log->borrow->tien_coc ?? 0) * 0.20;
+                            $refundDepositNote = ($log->borrow->tien_coc ?? 0) * 0.80;
+                        @endphp
+                        <strong style="color: #dc3545;">Ghi chú (Lỗi khách hàng):</strong><br>
+                        • <strong>Trừ 20% tiền cọc</strong> ({{ number_format($penaltyAmountNote, 0) }}₫) - Phí phạt do khách hàng từ chối nhận hàng<br>
+                        • <strong>Trừ 100% phí vận chuyển</strong> ({{ number_format($shippingFee, 0) }}₫) - Khách hàng mất phí ship<br>
+                        • <strong>Hoàn 100% phí thuê</strong> ({{ number_format($totalTienThue, 0) }}₫)<br>
+                        • <strong>Hoàn 80% tiền cọc</strong> ({{ number_format($refundDepositNote, 0) }}₫)<br>
+                        <span style="color: #dc3545; font-weight: 600;">→ Tổng khách hàng mất: {{ number_format($penaltyAmountNote + $shippingFee, 0) }}₫</span>
+                    @elseif($log->status === 'giao_hang_that_bai' && $log->failure_reason === 'loi_thu_vien')
+                        <strong style="color: #28a745;">Ghi chú (Lỗi thư viện):</strong><br>
+                        • <strong>Hoàn 100% tiền cọc</strong> ({{ number_format($totalTienCoc, 0) }}₫)<br>
+                        • <strong>Hoàn 100% phí thuê</strong> ({{ number_format($totalTienThue, 0) }}₫)<br>
+                        • <strong>Hoàn 100% phí vận chuyển</strong> ({{ number_format($shippingFee, 0) }}₫)<br>
+                        <span style="color: #28a745; font-weight: 600;">→ Khách hàng được hoàn toàn bộ: {{ number_format($totalTienCoc + $totalTienThue + $shippingFee, 0) }}₫</span>
+                    @else
+                        <strong>Ghi chú:</strong> <strong>Phí phạt hiển thị riêng và không làm giảm "Tổng phải thu".</strong> Tiền cọc đã thu và tiền cọc hoàn trả hiển thị tách biệt để đối soát.
+                    @endif
+                </div>
             </div>
 
             <script>
                 // Biến từ server để tính toán live khi chọn tình trạng
                 const totalBookValue = {!! json_encode((float) $totalBookValue) !!};
-                const originalTienCoc = {!! json_encode((float) $totalTienCoc) !!};
+                const originalTienCoc = {!! json_encode((float) ($totalTienCoc ?? ($log->borrow->tien_coc ?? 0))) !!};
                 const originalGrand = {!! json_encode((float) $grandTotal) !!};
 
                 function formatVnd(value) {
                     return new Intl.NumberFormat('vi-VN').format(Math.round(value)) + '₫';
                 }
+                
+                // Lắng nghe sự kiện thay đổi lý do thất bại (sử dụng hàm updateRefundDeposit đã định nghĩa ở trên)
+                document.querySelectorAll('input[name="failure_reason"]').forEach(function(radio) {
+                    radio.addEventListener('change', function() {
+                        updateRefundDeposit(this.value);
+                    });
+                });
+                
+                // Khởi tạo khi trang load nếu đã có lý do thất bại
+                @if($log->status === 'giao_hang_that_bai' && $log->failure_reason)
+                    updateRefundDeposit('{{ $log->failure_reason }}');
+                @endif
 
                 // Cập nhật hiển thị khi thay đổi tình trạng sách
                 const condSelect = document.querySelector('select[name="tinh_trang_sach"]');

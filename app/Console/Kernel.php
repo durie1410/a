@@ -46,6 +46,12 @@ class Kernel extends ConsoleKernel
                  ->dailyAt('09:00')
                  ->withoutOverlapping()
                  ->runInBackground();
+        
+        // Tự động xác nhận nhận sách sau 3 giờ (chạy mỗi 5 phút)
+        $schedule->command('borrow:auto-confirm-delivery')
+                 ->everyFiveMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     /**

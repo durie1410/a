@@ -133,14 +133,30 @@ class BorrowCartController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login')->with('error', 'Vui lòng đăng nhập để xem giỏ sách');
         }
-
+        
         $cart = $this->getOrCreateCart();
 
         if (!$cart) {
             $cart = new BorrowCart();
-            $cart->items = collect();
+            $cart->setRelation('items', collect());
         } else {
             $cart->load(['items.book', 'items.book.category']);
+
+            // Dọn các item "mồ côi" (sách đã bị xóa khỏi hệ thống)
+            $removedOrphanItems = false;
+            foreach ($cart->items as $item) {
+                if (!$item->book) {
+                    $item->delete();
+                    $removedOrphanItems = true;
+                }
+            }
+
+            if ($removedOrphanItems) {
+                // Reload lại quan hệ sau khi xóa
+                $cart->load(['items.book', 'items.book.category']);
+                // Cập nhật lại tổng số lượng
+                $cart->update(['total_items' => $cart->getTotalItemsAttribute()]);
+            }
 
             // Tính lại phí thuê cho các item có phí thuê = 0 hoặc chưa được tính
             $this->recalculateFeesForCartItems($cart);
@@ -304,7 +320,8 @@ class BorrowCartController extends Controller
             if ($quantity > $availableCopies) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Chỉ còn {$availableCopies} cuốn sách có sẵn."
+                    'message' => "Chỉ còn {$availableCopies} cuốn sách có sẵn.",
+                    'available' => $availableCopies
                 ], 400);
             }
             $item->quantity = $quantity;
@@ -1340,6 +1357,11 @@ class BorrowCartController extends Controller
             $tongTienSauGiam = max(0, $tongTienTruocGiam - $discountAmount);
 
             // Cập nhật tổng tiền
+            // Nếu totalTienShip = 0, tính lại từ items
+            if ($totalTienShip == 0) {
+                $totalTienShip = $borrow->items()->sum('tien_ship');
+            }
+            
             $borrow->update([
                 'tien_coc' => $totalTienCoc,
                 'tien_thue' => $totalTienThue,

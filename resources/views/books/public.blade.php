@@ -143,7 +143,7 @@
         .header-search {
             display: flex;
             align-items: center;
-            background-color: #ffd700; /* Màu vàng */
+            background-color: var(--search-bg);
             padding: 15px 0;
         }
 
@@ -323,38 +323,6 @@
             transform: translateX(5px);
         }
 
-        /* Lọc theo Tác giả */
-        .author-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .author-list li {
-            padding: 8px 0;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-            border-radius: 4px;
-            padding-left: 8px;
-        }
-
-        .author-list li:hover {
-            background-color: #fff5f5;
-            color: var(--primary-color);
-        }
-
-        .author-list input[type="checkbox"] {
-            margin-right: 0;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--primary-color);
-        }
-
         /* Price filter section */
         .price-filter {
             display: flex;
@@ -448,27 +416,76 @@
             padding: 10px 15px;
             border-radius: 4px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .filter-format button {
-            background: white;
+        .price-filter-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .price-range-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .price-range-btn {
+            padding: 6px 12px;
             border: 1px solid var(--border-color);
-            padding: 8px 15px;
-            margin-right: 5px;
             border-radius: 4px;
+            background-color: white;
+            color: var(--text-dark);
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
             cursor: pointer;
         }
 
-        .filter-format .active-filter {
+        .price-range-btn:hover {
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
+        }
+
+        .price-range-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .price-range-btn.clear-filter {
+            background-color: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .price-range-btn.clear-filter:hover {
+            background-color: #ff5252;
+            border-color: #ff5252;
+        }
+
+        .sort-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sort-dropdown label {
+            font-size: 14px;
+            color: var(--text-dark);
         }
 
         .sort-dropdown select {
             padding: 8px 15px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         /* Danh sách sách */
@@ -565,58 +582,58 @@
 </head>
 <body>
 
+    <!-- HEADER -->
     <header class="header">
         <div class="header-top">
             <div class="logo">
-                <div class="logo-icon">📚</div>
-                <a href="{{ route('home') }}" class="logo-text">
-                    <span class="text-red">THƯ VIỆN</span>
-                    <span class="text-black">LIBHUB</span>
+                <a href="{{ route('home') }}" class="logo-text" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e51d2e 0%, #c41e2f 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        📚
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <span class="text-red">THƯ VIỆN</span>
+                        <span class="text-black">LIBHUB</span>
+                    </div>
                 </a>
             </div>
             <div class="contact-info">
-                <div>
-                    <span>Hotline khách lẻ: </span>
-                    <span class="phone">0327888669</span>
-                </div>
-                <div>
-                    <span>Hotline khách sỉ: </span>
-                    <span class="phone">02439741791 - 0327888669</span>
-                </div>
+                <div>Hotline khách lẻ: <span class="phone">0327888669</span></div>
+                <div>Hotline khách sỉ: <span class="phone">02439741791 - 0327888669</span></div>
             </div>
             <div class="user-actions">
-                <a href="{{ route('pricing.policy') }}" class="action-button" style="margin-right: 10px;" title="Chính sách giá">
-                    <i class="fas fa-tags"></i> Chính sách giá
-                </a>
                 @auth
-                    <a href="{{ route('borrow-cart.index') }}" class="action-button cart-button" id="borrow-cart-link" title="Giỏ sách">
-                        <i class="fas fa-book"></i>
-                        <span>Giỏ sách</span>
+                    <a href="{{ route('borrow-cart.index') }}" class="action-button cart-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        Giỏ sách
                         <span class="cart-count" id="borrow-cart-count" style="display: none;">0</span>
                     </a>
-                    <a href="{{ route('dashboard') }}" class="action-button login-button">{{ auth()->user()->name }}</a>
-                @else
-                    <a href="{{ route('borrow-cart.index') }}" class="action-button cart-button" title="Giỏ sách">
-                        <i class="fas fa-book"></i>
-                        <span>Giỏ sách</span>
-                        <span class="cart-count">0</span>
+                    <a href="{{ route('account') }}" class="action-button login-button">
+                        <i class="fas fa-user"></i>
+                        {{ auth()->user()->name }}
                     </a>
-                    <a href="{{ route('login') }}" class="action-button login-button">Đăng nhập</a>
+                @else
+                    <a href="{{ route('login') }}" class="action-button login-button">
+                        <i class="fas fa-user"></i>
+                        Đăng nhập
+                    </a>
+                    <a href="{{ route('register') }}" class="action-button login-button">Đăng ký</a>
                 @endauth
             </div>
         </div>
         <div class="header-search">
-            <form action="{{ route('books.public') }}" method="GET" class="search-container">
-                <input type="text" 
-                       name="keyword" 
-                       value="{{ request('keyword') }}" 
-                       class="search-input" 
-                       placeholder="Tìm sách, tác giả, sản phẩm mong muốn...">
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i>
-                    <span>Tìm kiếm</span>
-                </button>
-            </form>
+            <div class="search-container">
+                <form action="{{ route('books.public') }}" method="GET" style="display: flex; width: 100%; gap: 10px;">
+                    <input type="text" 
+                           name="keyword" 
+                           placeholder="Tìm sách, tác giả, sản phẩm mong muốn..." 
+                           value="{{ request('keyword') }}" 
+                           class="search-input">
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i>
+                        Tìm kiếm
+                    </button>
+                </form>
+            </div>
         </div>
     </header>
 
@@ -628,7 +645,6 @@
                 <h4><i class="fas fa-tags"></i> CHỦ ĐỀ TIÊU BIỂU</h4>
                 <ul class="sidebar-list">
                     @php
-                        $categories = \App\Models\Category::all();
                         $activeCategoryId = request('category_id');
                     @endphp
                     <li>
@@ -649,74 +665,6 @@
                 </ul>
             </div>
 
-            <div class="sidebar-section">
-                <h4><i class="fas fa-user-edit"></i> TÁC GIẢ NHIỀU SÁCH NHẤT</h4>
-                <ul class="author-list">
-                    @php
-                        $topAuthors = \App\Models\Book::selectRaw('tac_gia, COUNT(*) as count')
-                            ->whereNotNull('tac_gia')
-                            ->where('tac_gia', '!=', '')
-                            ->groupBy('tac_gia')
-                            ->orderBy('count', 'desc')
-                            ->limit(4)
-                            ->get();
-                    @endphp
-                    @foreach($topAuthors as $author)
-                        <li>
-                            <input type="checkbox" name="author[]" value="{{ $author->tac_gia }}">
-                            <span>{{ $author->tac_gia }} <strong>({{ $author->count }})</strong></span>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-
-            <div class="sidebar-section">
-                <h4><i class="fas fa-language"></i> THEO NGÔN NGỮ</h4>
-                <ul class="author-list">
-                    <li>
-                        <input type="checkbox" checked>
-                        <span>Tiếng Việt</span>
-                    </li>
-                    <li>
-                        <input type="checkbox">
-                        <span>Tiếng Anh</span>
-                    </li>
-                    <li>
-                        <input type="checkbox">
-                        <span>Tiếng Nhật</span>
-                    </li>
-                    <li>
-                        <input type="checkbox">
-                        <span>Tiếng Trung Quốc</span>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="sidebar-section">
-                <h4><i class="fas fa-dollar-sign"></i> THEO GIÁ SÁCH GIẤY</h4>
-                <form method="GET" action="{{ route('books.public') }}">
-                    @if(request('keyword'))
-                        <input type="hidden" name="keyword" value="{{ request('keyword') }}">
-                    @endif
-                    @if(request('category_id'))
-                        <input type="hidden" name="category_id" value="{{ request('category_id') }}">
-                    @endif
-                    <div class="price-filter">
-                        <input type="number" 
-                               name="price_min" 
-                               placeholder="Giá tối thiểu" 
-                               value="{{ request('price_min') }}">
-                        <input type="number" 
-                               name="price_max" 
-                               placeholder="Giá tối đa" 
-                               value="{{ request('price_max') }}">
-                    </div>
-                    <button type="submit" class="price-filter-button">
-                        <i class="fas fa-filter"></i>
-                        Lọc giá
-                    </button>
-                </form>
-            </div>
         </aside>
 
         <main class="content">
@@ -732,15 +680,68 @@
             <h2>Sách mới</h2>
 
             <div class="filter-sort-bar">
-                <div class="filter-format">
-                    <button class="active-filter">Tất cả</button>
-                    <button>Sách giấy</button>
+                <div class="price-filter-group">
+                    <label style="font-size: 14px; color: var(--text-dark); margin-right: 10px;">Khoảng giá:</label>
+                    <div class="price-range-buttons">
+                        @php
+                            $currentPriceMin = request('price_min');
+                            $currentPriceMax = request('price_max');
+                            $priceRanges = [
+                                ['min' => 0, 'max' => 50000, 'label' => 'Dưới 50k'],
+                                ['min' => 50000, 'max' => 100000, 'label' => '50k - 100k'],
+                                ['min' => 100000, 'max' => 200000, 'label' => '100k - 200k'],
+                                ['min' => 200000, 'max' => 300000, 'label' => '200k - 300k'],
+                                ['min' => 300000, 'max' => 500000, 'label' => '300k - 500k'],
+                                ['min' => 500000, 'max' => null, 'label' => 'Trên 500k'],
+                            ];
+                        @endphp
+                        @foreach($priceRanges as $range)
+                            @php
+                                $isActive = ($currentPriceMin == $range['min'] && $currentPriceMax == $range['max']);
+                                $params = array_filter([
+                                    'keyword' => request('keyword'),
+                                    'category_id' => request('category_id'),
+                                    'sort' => request('sort'),
+                                    'price_min' => $range['min'],
+                                    'price_max' => $range['max']
+                                ], function($value) {
+                                    return $value !== null && $value !== '';
+                                });
+                            @endphp
+                            <a href="{{ route('books.public', $params) }}" 
+                               class="price-range-btn {{ $isActive ? 'active' : '' }}">
+                                {{ $range['label'] }}
+                            </a>
+                        @endforeach
+                        @if($currentPriceMin || $currentPriceMax)
+                            <a href="{{ route('books.public', array_filter([
+                                'keyword' => request('keyword'),
+                                'category_id' => request('category_id'),
+                                'sort' => request('sort')
+                            ])) }}" 
+                               class="price-range-btn clear-filter">
+                                Xóa lọc
+                            </a>
+                        @endif
+                    </div>
                 </div>
                 <div class="sort-dropdown">
                     <label for="sort-by">Sắp xếp theo:</label>
                     <select id="sort-by" onchange="
                         var url = new URL(window.location.href);
                         url.searchParams.set('sort', this.value);
+                        @if(request('keyword'))
+                            url.searchParams.set('keyword', '{{ request('keyword') }}');
+                        @endif
+                        @if(request('category_id'))
+                            url.searchParams.set('category_id', '{{ request('category_id') }}');
+                        @endif
+                        @if(request('price_min'))
+                            url.searchParams.set('price_min', '{{ request('price_min') }}');
+                        @endif
+                        @if(request('price_max'))
+                            url.searchParams.set('price_max', '{{ request('price_max') }}');
+                        @endif
                         window.location.href = url.toString();
                     ">
                         <option value="new" {{ request('sort') == 'new' || !request('sort') ? 'selected' : '' }}>Mới nhất</option>
@@ -757,7 +758,7 @@
                             <a href="{{ route('books.show', $book->id) }}">
                                 <div class="book-cover">
                                     @if($book->hinh_anh)
-                                        <img src="{{ asset('storage/' . $book->hinh_anh) }}" alt="{{ $book->ten_sach }}">
+                                        <img src="{{ $book->image_url ?? asset('images/default-book.png') }}" alt="{{ $book->ten_sach }}">
                                     @else
                                         <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999;">
                                             <span>Không có ảnh</span>
@@ -770,7 +771,7 @@
                                 <div class="book-author">{{ $book->tac_gia }}</div>
                                 <div class="book-price">
                                     @php
-                                        $price = $book->gia_ban ?? $book->gia ?? 0;
+                                        $price = $book->gia ?? 0;
                                     @endphp
                                     @if($price > 0)
                                         Chỉ từ {{ number_format($price) }}₫

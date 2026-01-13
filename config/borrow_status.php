@@ -29,7 +29,7 @@ return [
             'color' => 'warning',
             'icon' => 'fa-box',
             'step' => 2,
-            'next_statuses' => ['cho_ban_giao_van_chuyen'],
+            'next_statuses' => ['dang_giao_hang'],
             'actions' => ['hoan_thanh_dong_goi'],
         ],
 

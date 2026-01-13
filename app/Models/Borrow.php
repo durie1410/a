@@ -80,10 +80,16 @@ class Borrow extends Model
         // Xác nhận từ khách hàng
         'customer_confirmed_delivery',
         'customer_confirmed_delivery_at',
+        // Ảnh khi khách nhận sách
+        'anh_bia_truoc',
+        'anh_bia_sau',
+        'anh_gay_sach',
         // Từ chối từ khách hàng
         'customer_rejected_delivery',
         'customer_rejected_delivery_at',
         'customer_rejection_reason',
+        // Thời gian chờ xác nhận
+        'ngay_cho_xac_nhan_nhan',
         // Người xử lý
         'nguoi_chuan_bi_id',
         'nguoi_giao_hang_id',

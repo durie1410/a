@@ -55,7 +55,7 @@
                 <td>{{ $book->nam_xuat_ban }}</td>
                 <td>
                     @if($book->hinh_anh)
-                        <img src="{{ asset('storage/'.$book->hinh_anh) }}" width="60">
+                        <img src="{{ $book->image_url ?? asset('images/default-book.png') }}" width="60" alt="{{ $book->ten_sach }}">
                     @endif
                 </td>
                 <td>

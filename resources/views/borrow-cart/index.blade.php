@@ -486,8 +486,8 @@
                             </div>
 
                             <div class="cart-item-image-box">
-                                @if($book->hinh_anh)
-                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}" alt="{{ $book->ten_sach }}">
+                                @if($book->image_url)
+                                    <img src="{{ $book->image_url }}" alt="{{ $book->ten_sach }}">
                                 @else
                                     <div class="book-placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; background: #e2e8f0;">📖</div>
                                 @endif
@@ -572,7 +572,7 @@
                             <span class="control-label" style="margin-bottom: 8px; display: block;">Số ngày mượn</span>
                             <select id="common-borrow-days" onchange="updateCommonBorrowDays()" class="compact-input" style="background: white;">
                                 <option value="">-- Chọn số ngày mượn --</option>
-                                @for($i = 7; $i <= 30; $i++)
+                                @for($i = 0; $i <= 30; $i++)
                                     <option value="{{ $i }}">{{ $i }} ngày</option>
                                 @endfor
                             </select>
@@ -664,6 +664,9 @@
         let totalTienCoc = 0;
         let totalTienShip = window.manualShippingFee || 0;
         let hasSelection = false;
+        const daysSelected = document.getElementById('common-borrow-days') 
+            ? document.getElementById('common-borrow-days').value 
+            : '';
 
         document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
             hasSelection = true;
@@ -676,6 +679,11 @@
             totalTienThue = 0; totalTienCoc = 0; totalTienShip = 0;
         }
 
+        // Nếu khách chưa chọn số ngày mượn thì KHÔNG hiển thị phí thuê (coi như 0)
+        if (!daysSelected) {
+            totalTienThue = 0;
+        }
+
         document.getElementById('summary-tien-thue').textContent = formatCurrency(totalTienThue);
         document.getElementById('summary-tien-coc').textContent = formatCurrency(totalTienCoc);
         document.getElementById('summary-tien-ship').textContent = formatCurrency(totalTienShip);
@@ -686,6 +694,7 @@
         const input = document.getElementById('quantity-' + itemId);
         const currentValue = parseInt(input.value) || 1;
         const newValue = currentValue + change;
+        const previousValue = currentValue;
         
         // Nếu trừ và giá trị mới sẽ <= 0, hỏi xác nhận xóa
         if (change < 0 && newValue <= 0) {
@@ -698,11 +707,12 @@
         
         // Đảm bảo số lượng tối thiểu là 1
         input.value = Math.max(1, newValue);
-        updateQuantityInput(itemId);
+        updateQuantityInput(itemId, previousValue);
     }
 
-    function updateQuantityInput(itemId) {
-        const qty = document.getElementById('quantity-' + itemId).value;
+    function updateQuantityInput(itemId, fallbackValue = 1) {
+        const qtyInput = document.getElementById('quantity-' + itemId);
+        const qty = qtyInput.value;
         fetch(`{{ route('borrow-cart.update', '') }}/${itemId}`, {
             method: 'PUT',
             headers: {
@@ -715,6 +725,9 @@
         .then(data => {
             if (data.success) location.reload();
             else {
+                // Khôi phục về giá trị hợp lệ (available hoặc fallback)
+                const restoreValue = (data.available !== undefined) ? Math.max(1, data.available) : fallbackValue;
+                qtyInput.value = restoreValue;
                 if(window.showGlobalModal) window.showGlobalModal('Thông báo', data.message, 'error');
                 else alert(data.message);
             }

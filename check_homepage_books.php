@@ -60,3 +60,7 @@ foreach ($new_books as $book) {
 
 
 
+
+
+
+

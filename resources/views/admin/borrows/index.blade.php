@@ -232,8 +232,13 @@ tạo phiếu mượn    </a>
         // Sử dụng giá trị từ borrow nếu có, nếu không thì dùng từ items
         $tienShip = $tienShipFromBorrow > 0 ? $tienShipFromBorrow : $tienShipFromItems;
         
+        // Nếu ship = 0, mặc định 20k
+        if ($tienShip == 0) {
+            $tienShip = 20000;
+        }
+        
         // Tính tổng tiền từ các khoản đã tính
-        $tongTien = $tienCoc + $tienShip + $tienThue;
+        $tongTien = $tienCoc + $tienThue + $tienShip;
         
         // Áp dụng voucher nếu có
         if ($borrow->relationLoaded('voucher') && $borrow->voucher) {
@@ -428,7 +433,7 @@ if ($borrow->items && $borrow->items->count() > 0) {
                                 <td><strong>{{ $item->id }}</strong></td>
                                 <td>
                                     <div style="font-weight: 500;">{{ $item->book->ten_sach ?? 'N/A' }}</div>
-                                    @if($item->book->hinh_anh)
+                                    @if($item->book && $item->book->hinh_anh)
                                     <small class="text-muted">
                                         <i class="fas fa-image"></i> Có ảnh
                                     </small>
@@ -496,7 +501,7 @@ if ($borrow->items && $borrow->items->count() > 0) {
                                             {{-- <form action="{{ route('admin.borrowitems.approve', $item->id) }}" 
                                                   method="POST" 
                                                   style="display: inline;"
-                                                  onsubmit="return confirm('Xác nhận duyệt sách: {{ $item->book->ten_sach }}?')">
+                                                  onsubmit="return confirm('Xác nhận duyệt sách: {{ $item->book->ten_sach ?? 'N/A' }}?')">
                                                 @csrf
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-success"
@@ -511,7 +516,7 @@ if ($borrow->items && $borrow->items->count() > 0) {
                                             <form action="{{ route('admin.borrowitems.return', $item->id) }}" 
                                                   method="POST" 
                                                   style="display: inline;"
-                                                  onsubmit="return confirm('Xác nhận hoàn trả sách: {{ $item->book->ten_sach }}?')">
+                                                  onsubmit="return confirm('Xác nhận hoàn trả sách: {{ $item->book->ten_sach ?? 'N/A' }}?')">
                                                 @csrf
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-success"
@@ -524,7 +529,7 @@ if ($borrow->items && $borrow->items->count() > 0) {
                                             <form action="{{ route('admin.borrowitems.mark-overdue', $item->id) }}" 
                                                   method="POST" 
                                                   style="display: inline;"
-                                                  onsubmit="return confirm('Xác nhận đánh dấu quá hạn: {{ $item->book->ten_sach }}?')">
+                                                  onsubmit="return confirm('Xác nhận đánh dấu quá hạn: {{ $item->book->ten_sach ?? 'N/A' }}?')">
                                                 @csrf
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-warning"
@@ -537,7 +542,7 @@ if ($borrow->items && $borrow->items->count() > 0) {
                                             <form action="{{ route('admin.borrowitems.report-damage', $item->id) }}" 
                                                   method="POST" 
                                                   style="display: inline;"
-                                                  onsubmit="return confirm('Xác nhận báo hỏng sách: {{ $item->book->ten_sach }}?')">
+                                                  onsubmit="return confirm('Xác nhận báo hỏng sách: {{ $item->book->ten_sach ?? 'N/A' }}?')">
                                                 @csrf
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-danger"

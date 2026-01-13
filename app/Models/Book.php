@@ -81,6 +81,27 @@ class Book extends Model
         return $this->favorites()->where('user_id', $userId)->exists();
     }
 
+    // Accessor để tự động xử lý đường dẫn hình ảnh
+    public function getImageUrlAttribute()
+    {
+        if (!$this->hinh_anh) {
+            return asset('images/default-book.png');
+        }
+
+        // Nếu đường dẫn bắt đầu bằng assets/, sử dụng trực tiếp
+        if (strpos($this->hinh_anh, 'assets/') === 0) {
+            return asset($this->hinh_anh);
+        }
+
+        // Nếu đường dẫn bắt đầu bằng storage/ hoặc books/, thêm storage/
+        if (strpos($this->hinh_anh, 'storage/') === 0 || strpos($this->hinh_anh, 'books/') === 0) {
+            return asset('storage/' . ltrim($this->hinh_anh, 'storage/'));
+        }
+
+        // Mặc định: thêm storage/
+        return asset('storage/' . $this->hinh_anh);
+    }
+
 
     // Relationship với BorrowItem
     public function borrowItems()
@@ -140,7 +161,62 @@ class Book extends Model
     // Format giá tiền
     public function getFormattedPriceAttribute()
     {
-        return $this->gia ? number_format($this->gia, 0, ',', '.') . ' VNĐ' : 'Miễn phí';
+        return $this->gia ? number_format($this->gia, 0, ',', '.') . '₫' : 'Miễn phí';
+    }
+
+    // Format giá tiền ngắn gọn (chỉ số)
+    public function getFormattedPriceShortAttribute()
+    {
+        return $this->gia ? number_format($this->gia, 0, ',', '.') . '₫' : '0₫';
+    }
+
+    // Chuẩn hóa tác giả
+    public function getFormattedAuthorAttribute()
+    {
+        return $this->tac_gia ? trim($this->tac_gia) : 'Chưa có thông tin';
+    }
+
+    // Chuẩn hóa năm xuất bản
+    public function getFormattedYearAttribute()
+    {
+        return $this->nam_xuat_ban ? (string)$this->nam_xuat_ban : 'Chưa có';
+    }
+
+    // Chuẩn hóa mô tả
+    public function getFormattedDescriptionAttribute()
+    {
+        if (!$this->mo_ta) {
+            return 'Chưa có mô tả cho cuốn sách này.';
+        }
+        return trim($this->mo_ta);
+    }
+
+    // Chuẩn hóa số lượng
+    public function getFormattedQuantityAttribute()
+    {
+        $quantity = $this->so_luong ?? 0;
+        return number_format($quantity, 0, ',', '.');
+    }
+
+    // Chuẩn hóa số lượt xem
+    public function getFormattedViewsAttribute()
+    {
+        $views = $this->so_luot_xem ?? 0;
+        return number_format($views, 0, ',', '.');
+    }
+
+    // Chuẩn hóa số lượng bán
+    public function getFormattedSalesAttribute()
+    {
+        $sales = $this->so_luong_ban ?? 0;
+        return number_format($sales, 0, ',', '.');
+    }
+
+    // Chuẩn hóa đánh giá
+    public function getFormattedRatingAttribute()
+    {
+        $rating = $this->danh_gia_trung_binh ?? 0;
+        return number_format($rating, 1, ',', '.');
     }
 
     // Format trạng thái
@@ -156,30 +232,11 @@ class Book extends Model
         return "<span class='badge {$class}'>{$this->status_text}</span>";
     }
 
-    // Get image URL - simple and reliable
-    public function getImageUrlAttribute()
-    {
-        if (!$this->hinh_anh) {
-            return null;
-        }
-
-        // Check if it's already a full URL
-        if (filter_var($this->hinh_anh, FILTER_VALIDATE_URL)) {
-            return $this->hinh_anh;
-        }
-
-        // Clean path - normalize slashes and remove leading slashes
-        $path = ltrim(str_replace(['\\', '//'], '/', $this->hinh_anh), '/');
-        
-        // Use asset() - most reliable and consistent way
-        return asset('storage/' . $path);
-    }
-
     // Get image URL with fallback
     public function getImageUrlOrPlaceholderAttribute()
     {
         $url = $this->image_url;
-        if ($url && Storage::disk('public')->exists($this->hinh_anh)) {
+        if ($url && file_exists(public_path($this->hinh_anh))) {
             return $url;
         }
         return asset('images/placeholder-book.png'); // Placeholder image path

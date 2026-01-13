@@ -329,12 +329,39 @@
                 <div class="info-row">
                     <div class="info-label">Trạng thái:</div>
                     <div class="info-value">
-                        @if($borrow->trang_thai === 'Cho duyet')
-                            <span class="status-badge status-Cho-duyet">⏳ Đang chờ xử lí</span>
+                        @php
+                            $detailStatus = $borrow->trang_thai_chi_tiet;
+                        @endphp
+                        @if($detailStatus === 'giao_hang_that_bai')
+                            <span class="status-badge" style="background-color: #dc3545; color: #fff;">❌ Giao hàng Thất bại</span>
+                        @elseif($detailStatus === 'dang_van_chuyen_tra_ve')
+                            <span class="status-badge" style="background-color: #cff4fc; color: #055160;">🚚 Vận chuyển trả về</span>
+                        @elseif($detailStatus === 'da_nhan_va_kiem_tra')
+                            <span class="status-badge" style="background-color: #fff3cd; color: #664d03;">📦 Đã nhận & Kiểm tra</span>
+                        @elseif($detailStatus === 'hoan_tat_don_hang')
+                            <span class="status-badge" style="background-color: #d4edda; color: #155724;">✅ Đã hoàn tiền</span>
+                        @elseif($detailStatus === 'dang_chuan_bi_sach')
+                            <span class="status-badge" style="background-color: #e0f2fe; color: #0369a1;">📦 Đang chuẩn bị sách</span>
+                        @elseif($detailStatus === 'cho_ban_giao_van_chuyen')
+                            <span class="status-badge" style="background-color: #fef9c3; color: #854d0e;">🚚 Chờ bàn giao vận chuyển</span>
+                        @elseif($detailStatus === 'dang_giao_hang')
+                            <span class="status-badge" style="background-color: #cffafe; color: #155e75;">🚚 Đang giao hàng</span>
+                        @elseif($detailStatus === 'giao_hang_thanh_cong')
+                            <span class="status-badge" style="background-color: #e0f2fe; color: #1d4ed8;">✅ Đã giao hàng</span>
+                        @elseif($borrow->trang_thai === 'Cho duyet')
+                            @if($detailStatus === \App\Models\Borrow::STATUS_DON_HANG_MOI)
+                                <span class="status-badge" style="background-color: #d4edda; color: #155724;">✅ Đã được duyệt</span>
+                            @else
+                                <span class="status-badge status-Cho-duyet">⏳ Đang chờ xử lí</span>
+                            @endif
                         @elseif($borrow->trang_thai === 'Dang muon')
                             <span class="status-badge status-Dang-muon">📖 Đang mượn</span>
                         @elseif($borrow->trang_thai === 'Da tra')
-                            <span class="status-badge status-Da-tra">✅ Đã trả</span>
+                            @if($detailStatus === 'hoan_tat_don_hang')
+                                <span class="status-badge" style="background-color: #d4edda; color: #155724;">✅ Đã hoàn tiền</span>
+                            @else
+                                <span class="status-badge status-Da-tra">✅ Đã trả</span>
+                            @endif
                         @elseif($borrow->trang_thai === 'Huy')
                             <span class="status-badge status-Huy">❌ Đã hủy</span>
                         @elseif($borrow->trang_thai === 'Qua han')
@@ -349,10 +376,55 @@
                     <div class="info-value">{{ \Carbon\Carbon::parse($borrow->ngay_muon)->format('d/m/Y') }}</div>
                 </div>
                 @if($borrow->ghi_chu)
-                    <div class="info-row">
-                        <div class="info-label">Ghi chú:</div>
-                        <div class="info-value">{{ $borrow->ghi_chu }}</div>
+                <div class="info-row">
+                    <div class="info-label">Ghi chú:</div>
+                    <div class="info-value">{{ $borrow->ghi_chu }}</div>
+                </div>
+                @endif
+                
+                @php
+                    // Lấy thông tin giao hàng thất bại nếu có
+                    $failureShippingLog = $borrow->shippingLogs->where('status', 'giao_hang_that_bai')->first();
+                    $failureReason = $failureShippingLog->failure_reason ?? null;
+                    $failureProofImage = ($failureShippingLog && $failureShippingLog->failure_proof_image)
+                        ? asset('storage/' . $failureShippingLog->failure_proof_image)
+                        : null;
+                @endphp
+                
+                @if($borrow->trang_thai_chi_tiet === 'giao_hang_that_bai' && $failureReason)
+                <div class="info-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #dc3545;">
+                    <div style="width: 100%;">
+                        <div class="info-label" style="color: #dc3545; font-weight: 600; margin-bottom: 15px; font-size: 16px;">Lý do giao hàng thất bại:</div>
+                        <div style="padding: 15px; background: {{ $failureReason === 'loi_khach_hang' ? '#fff3cd' : '#d4edda' }}; border-radius: 8px; border-left: 4px solid {{ $failureReason === 'loi_khach_hang' ? '#ffc107' : '#28a745' }};">
+                            <strong style="color: {{ $failureReason === 'loi_khach_hang' ? '#856404' : '#155724' }}; font-size: 15px;">
+                                {{ $failureReason === 'loi_khach_hang' ? 'Lỗi do Khách hàng' : 'Lỗi do Sách/Thư viện' }}
+                            </strong>
+                            @if($failureReason === 'loi_khach_hang')
+                            <div style="margin-top: 12px; font-size: 0.95em; color: #856404;">
+                                <p style="margin: 6px 0;">• <strong>Lý do:</strong> Đổi ý, không nghe máy, từ chối nhận hàng...</p>
+                                <p style="margin: 6px 0;">• <strong>Hoàn:</strong> Phí thuê (100%)</p>
+                                <p style="margin: 6px 0;">• <strong>Hoàn:</strong> 80% tiền cọc (trừ 20% phí phạt)</p>
+                                <p style="margin: 6px 0; color: #dc3545;">• <strong>Khách mất:</strong> Phí ship (100%)</p>
+                                <p style="margin: 6px 0; color: #dc3545;">• <strong>Khách mất:</strong> 20% tiền cọc (phí phạt)</p>
+                            </div>
+                            @else
+                            <div style="margin-top: 12px; font-size: 0.95em; color: #155724;">
+                                <p style="margin: 6px 0;">• <strong>Lý do:</strong> Sách rách, bẩn, sai tên sách, thiếu sách...</p>
+                                <p style="margin: 6px 0;">• <strong>Hoàn:</strong> 100% tiền cọc</p>
+                                <p style="margin: 6px 0;">• <strong>Hoàn:</strong> 100% phí thuê</p>
+                                <p style="margin: 6px 0;">• <strong>Hoàn:</strong> 100% phí ship</p>
+                                <p style="margin: 6px 0; font-weight: 600;">→ Khách được hoàn toàn bộ 100%</p>
+                            </div>
+                            @endif
+                        </div>
+                        @if($failureProofImage)
+                        <div style="margin-top: 12px;">
+                            <span class="info-label" style="display: block; margin-bottom: 6px;">Ảnh minh chứng:</span>
+                            <img src="{{ $failureProofImage }}" alt="Ảnh minh chứng giao hàng thất bại" style="max-width: 240px; border-radius: 6px; border: 1px solid #ddd;">
+                        </div>
+                        @endif
                     </div>
+                </div>
                 @endif
             </div>
 
@@ -363,7 +435,7 @@
                 @foreach($borrow->items as $item)
                     <div class="book-item">
                         @if($item->book)
-                            <img src="{{ $item->book->hinh_anh ? asset('storage/' . $item->book->hinh_anh) : asset('images/default-book.png') }}"
+                            <img src="{{ $item->book->image_url ?? asset('images/default-book.png') }}"
                                 alt="{{ $item->book->ten_sach }}" class="book-image">
                             <div class="book-info">
                                 <div class="book-title">{{ $item->book->ten_sach }}</div>
@@ -411,7 +483,20 @@
                     </div>
                     <div class="price-row">
                         <span>Tiền ship:</span>
-                        <span>{{ number_format($borrow->tien_ship, 0, ',', '.') }}₫</span>
+                        <span>
+                            @php
+                                // Tính tổng phí ship từ items nếu borrow->tien_ship = 0
+                                $shippingFeeDisplay = $borrow->tien_ship ?? 0;
+                                if ($shippingFeeDisplay == 0 && $borrow->items) {
+                                    $shippingFeeDisplay = $borrow->items->sum('tien_ship');
+                                }
+                                // Nếu vẫn = 0, mặc định là 20k
+                                if ($shippingFeeDisplay == 0) {
+                                    $shippingFeeDisplay = 20000;
+                                }
+                            @endphp
+                            {{ number_format($shippingFeeDisplay, 0, ',', '.') }}₫
+                        </span>
                     </div>
                     @if($borrow->voucher)
                         <div class="price-row">
@@ -419,10 +504,109 @@
                             <span>-{{ number_format($borrow->voucher->gia_tri, 0, ',', '.') }}{{ $borrow->voucher->loai === 'phan_tram' ? '%' : '₫' }}</span>
                         </div>
                     @endif
-                    <div class="price-row">
-                        <span>Tổng cộng:</span>
-                        <span>{{ number_format($borrow->tong_tien, 0, ',', '.') }}₫</span>
-                    </div>
+                    @if($borrow->trang_thai_chi_tiet === 'giao_hang_that_bai' && $failureReason === 'loi_khach_hang')
+                        @php
+                            // Tính toán chi tiết cho trường hợp lỗi khách hàng
+                            $tienCoc = $borrow->tien_coc ?? 0;
+                            $tienThue = $borrow->tien_thue ?? 0;
+                            $tienShip = $shippingFeeDisplay;
+                            $tongTienGoc = $tienCoc + $tienThue + $tienShip;
+                            
+                            // Tính phí phạt
+                            $phiPhat = $tienCoc * 0.20; // 20% tiền cọc
+                            $tienCocHoan = $tienCoc * 0.80; // 80% tiền cọc
+                            $tongTienKhachMat = $phiPhat + $tienShip; // Phí phạt + phí ship
+                            $tongTienHoan = $tienThue + $tienCocHoan; // Phí thuê + 80% cọc
+                            $tongTienCuoi = $tongTienGoc - $tongTienKhachMat; // Tổng sau khi trừ
+                        @endphp
+                        <div class="price-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #ffc107;">
+                            <div style="width: 100%;">
+                                <div style="color: #dc3545; font-weight: 600; margin-bottom: 10px;">Chi tiết hoàn tiền (Lỗi khách hàng):</div>
+                                <div style="padding: 12px; background: #fff3cd; border-radius: 6px; margin-bottom: 10px;">
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #28a745;">✓ Hoàn phí thuê:</span>
+                                        <span style="float: right; font-weight: 600;">{{ number_format($tienThue, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #28a745;">✓ Hoàn tiền cọc (80%):</span>
+                                        <span style="float: right; font-weight: 600;">{{ number_format($tienCocHoan, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-bottom: 8px; color: #dc3545;">
+                                        <span>✗ Trừ phí phạt (20% cọc):</span>
+                                        <span style="float: right; font-weight: 600;">- {{ number_format($phiPhat, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-bottom: 8px; color: #dc3545;">
+                                        <span>✗ Không hoàn phí ship:</span>
+                                        <span style="float: right; font-weight: 600;">- {{ number_format($tienShip, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0;">
+                                        <span style="font-weight: 600;">Tổng khách mất:</span>
+                                        <span style="float: right; color: #dc3545; font-weight: 600;">{{ number_format($tongTienKhachMat, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        <span style="font-weight: 600;">Tổng hoàn lại:</span>
+                                        <span style="float: right; color: #28a745; font-weight: 600;">{{ number_format($tongTienHoan, 0, ',', '.') }}₫</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="price-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e9ecef;">
+                            <span style="text-decoration: line-through; color: #999;">Tổng tiền ban đầu:</span>
+                            <span style="text-decoration: line-through; color: #999;">{{ number_format($tongTienGoc, 0, ',', '.') }}₫</span>
+                        </div>
+                        <div class="price-row">
+                            <span style="font-weight: 600; color: #dc3545;">Tổng tiền sau khi trừ:</span>
+                            <span style="font-weight: 600; color: #dc3545;">{{ number_format($tongTienCuoi, 0, ',', '.') }}₫</span>
+                        </div>
+                    @elseif($borrow->trang_thai_chi_tiet === 'giao_hang_that_bai' && $failureReason === 'loi_thu_vien')
+                        @php
+                            $tienCoc = $borrow->tien_coc ?? 0;
+                            $tienThue = $borrow->tien_thue ?? 0;
+                            $tienShip = $shippingFeeDisplay;
+                            $tongTienHoan = $tienCoc + $tienThue + $tienShip;
+                        @endphp
+                        <div class="price-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px dashed #28a745;">
+                            <div style="width: 100%;">
+                                <div style="color: #28a745; font-weight: 600; margin-bottom: 10px;">Chi tiết hoàn tiền (Lỗi thư viện):</div>
+                                <div style="padding: 12px; background: #d4edda; border-radius: 6px;">
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #28a745;">✓ Hoàn 100% phí thuê:</span>
+                                        <span style="float: right; font-weight: 600;">{{ number_format($tienThue, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #28a745;">✓ Hoàn 100% tiền cọc:</span>
+                                        <span style="float: right; font-weight: 600;">{{ number_format($tienCoc, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #28a745;">✓ Hoàn 100% phí ship:</span>
+                                        <span style="float: right; font-weight: 600;">{{ number_format($tienShip, 0, ',', '.') }}₫</span>
+                                    </div>
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e0e0e0;">
+                                        <span style="font-weight: 600;">Tổng hoàn lại:</span>
+                                        <span style="float: right; color: #28a745; font-weight: 600;">{{ number_format($tongTienHoan, 0, ',', '.') }}₫</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="price-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e9ecef;">
+                            <span style="font-weight: 600; color: #28a745;">Tổng tiền hoàn lại:</span>
+                            <span style="font-weight: 600; color: #28a745;">{{ number_format($tongTienHoan, 0, ',', '.') }}₫</span>
+                        </div>
+                    @else
+                        <div class="price-row">
+                            <span>Tổng cộng:</span>
+                            <span>
+                                @php
+                                    // Tính lại tổng tiền = cọc + thuê + ship
+                                    $tienCoc = $borrow->tien_coc ?? 0;
+                                    $tienThue = $borrow->tien_thue ?? 0;
+                                    $tienShip = $shippingFeeDisplay; // Đã tính ở trên
+                                    $tongTien = $tienCoc + $tienThue + $tienShip;
+                                @endphp
+                                {{ number_format($tongTien, 0, ',', '.') }}₫
+                            </span>
+                        </div>
+                    @endif
                 </div>
 
                 @if($borrow->payments->count() > 0)
@@ -443,10 +627,59 @@
                 <a href="{{ route('orders.index') }}" class="btn-custom btn-back">
                     <i class="fas fa-arrow-left"></i> Quay lại
                 </a>
-                @if($borrow->trang_thai === 'Cho duyet')
+                @php
+                    // Không cho phép hủy khi đang vận chuyển
+                    $canCancel = $borrow->trang_thai === 'Cho duyet' 
+                        && !in_array($borrow->trang_thai_chi_tiet, [
+                            'cho_ban_giao_van_chuyen',
+                            'dang_giao_hang',
+                            'giao_hang_thanh_cong',
+                            'dang_van_chuyen_tra_ve'
+                        ]);
+                @endphp
+                @if($canCancel)
                     <button class="btn-custom btn-cancel" onclick="showCancelModal()">
                         <i class="fas fa-times-circle"></i> Hủy đơn mượn
                     </button>
+                @elseif(in_array($borrow->trang_thai_chi_tiet, ['cho_ban_giao_van_chuyen', 'dang_giao_hang', 'giao_hang_thanh_cong']))
+                    <div style="padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; color: #856404; font-size: 14px;">
+                        <strong>❌ Không thể hủy đơn:</strong> Đơn hàng đã được bàn giao cho đơn vị vận chuyển.
+                    </div>
+                @endif
+                
+                {{-- Hiển thị nút "Nhận sách" khi đang giao hàng --}}
+                @if(in_array($borrow->trang_thai_chi_tiet, ['dang_giao_hang', 'giao_hang_thanh_cong']) && !$borrow->customer_confirmed_delivery)
+                    <div style="margin-top: 20px; padding: 20px; background: #e7f3ff; border: 2px solid #2196f3; border-radius: 8px;">
+                        <h4 style="margin-top: 0; color: #1976d2; margin-bottom: 15px;">
+                            <i class="fas fa-box-open"></i> Xác nhận nhận sách
+                        </h4>
+                        <p style="color: #555; margin-bottom: 15px;">
+                            Bạn đã nhận được sách chưa? Vui lòng xác nhận sau khi đã kiểm tra sách.
+                        </p>
+                        <form action="{{ route('account.borrows.confirm-delivery', $borrow->id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Bạn có chắc chắn đã nhận được sách và muốn xác nhận không?');">
+                            @csrf
+                            <button type="submit" class="btn-custom" style="background: #4caf50; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                <i class="fas fa-check-circle"></i> Tôi đã nhận được sách
+                            </button>
+                        </form>
+                    </div>
+                @elseif($borrow->customer_confirmed_delivery)
+                    <div style="margin-top: 20px; padding: 15px; background: #d4edda; border: 2px solid #28a745; border-radius: 8px;">
+                        <p style="margin: 0; color: #155724; font-weight: 600;">
+                            <i class="fas fa-check-circle"></i> Bạn đã xác nhận nhận sách vào 
+                            @if($borrow->customer_confirmed_delivery_at)
+                                @php
+                                    $confirmedAt = $borrow->customer_confirmed_delivery_at;
+                                    if (!$confirmedAt instanceof \Carbon\Carbon) {
+                                        $confirmedAt = \Carbon\Carbon::parse($confirmedAt);
+                                    }
+                                @endphp
+                                {{ $confirmedAt->format('d/m/Y H:i') }}
+                            @else
+                                N/A
+                            @endif
+                        </p>
+                    </div>
                 @endif
             </div>
         </div>

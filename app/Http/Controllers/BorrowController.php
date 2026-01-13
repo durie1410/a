@@ -28,7 +28,7 @@ class BorrowController extends Controller
     public function index(Request $request)
     {
         // Sử dụng fresh() để đảm bảo load dữ liệu mới nhất từ database
-        $query = Borrow::with(['reader', 'librarian', 'items', 'voucher']);
+        $query = Borrow::with(['reader', 'librarian', 'items.book', 'voucher']);
 
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
@@ -82,7 +82,7 @@ class BorrowController extends Controller
         // Đảm bảo refresh lại items cho mỗi borrow để có dữ liệu mới nhất từ database
         $borrows->getCollection()->transform(function ($borrow) {
             // Reload hoàn toàn từ database để tránh cache
-            $borrow = Borrow::with(['reader', 'librarian', 'items', 'voucher'])->find($borrow->id);
+            $borrow = Borrow::with(['reader', 'librarian', 'items.book', 'voucher'])->find($borrow->id);
 
             // Đồng bộ tien_ship từ items lên borrow nếu borrow->tien_ship = 0
             if ($borrow && $borrow->items && $borrow->items->count() > 0) {
@@ -239,6 +239,17 @@ class BorrowController extends Controller
     {
         $borrow = Borrow::with(['reader', 'librarian', 'items.book'])
             ->findOrFail($id);
+        
+        // Đảm bảo tien_ship được đồng bộ từ items nếu borrow->tien_ship = 0
+        if (($borrow->tien_ship ?? 0) == 0 && $borrow->items && $borrow->items->count() > 0) {
+            $tienShipFromItems = $borrow->items->sum('tien_ship');
+            if ($tienShipFromItems > 0) {
+                $borrow->tien_ship = $tienShipFromItems;
+                // 重新计算总金额
+                $borrow->tong_tien = ($borrow->tien_coc ?? 0) + ($borrow->tien_thue ?? 0) + $tienShipFromItems;
+                $borrow->save();
+            }
+        }
 
         return view('admin.borrows.show', [
             'borrow' => $borrow,
@@ -476,12 +487,14 @@ class BorrowController extends Controller
             'shipper_note' => 'Phiếu mượn đã được duyệt và chuyển sang đang mượn.',
         ]);
 
-        // Cập nhật trạng thái của borrow sang "Dang muon"
+        // Cập nhật trạng thái của borrow:
+        // Khi admin duyệt phiếu, phía User sẽ thấy luôn trạng thái "Đang chuẩn bị sách"
         $borrow->update([
-            'trang_thai' => 'Dang muon'
+            'trang_thai' => 'Cho duyet',
+            'trang_thai_chi_tiet' => \App\Models\Borrow::STATUS_DANG_CHUAN_BI_SACH,
         ]);
 
-        return back()->with('success', 'Đã duyệt phiếu mượn thành công! Các sách đã chuyển sang trạng thái "Đang mượn".');
+        return back()->with('success', 'Đã duyệt phiếu mượn thành công! Đơn hàng chuyển sang trạng thái \"Đang chuẩn bị sách\".');
     }
 
     /* ============================================================
@@ -531,11 +544,12 @@ class BorrowController extends Controller
         $trangThaiKhongChoPhepHuy = [
             Borrow::STATUS_CHO_BAN_GIAO_VAN_CHUYEN,  // Chờ bàn giao vận chuyển
             Borrow::STATUS_DANG_GIAO_HANG,           // Đang giao hàng
+            Borrow::STATUS_GIAO_HANG_THANH_CONG,     // Giao hàng thành công (chờ khách xác nhận)
             Borrow::STATUS_DANG_VAN_CHUYEN_TRA_VE,   // Đang vận chuyển trả về
         ];
 
         if (in_array($trangThaiChiTiet, $trangThaiKhongChoPhepHuy)) {
-            return back()->with('error', 'Không thể hủy đơn khi đang vận chuyển.');
+            return back()->with('error', '❌ Không thể hủy đơn khi đang vận chuyển. Đơn hàng đã được bàn giao cho đơn vị vận chuyển.');
         }
 
         // Chỉ cho phép hủy khi đơn ở trạng thái "Cho duyet" (đơn hàng mới)
@@ -689,8 +703,11 @@ class BorrowController extends Controller
 
     /**
      * Khách hàng xác nhận đã nhận sách
+     *
+     * Theo quy định mới: KHÔNG bắt buộc upload ảnh, khách chỉ cần bấm nút xác nhận.
+     * Ảnh tình trạng sách khi giao sẽ do Admin upload ở màn hình vận chuyển.
      */
-    public function customerConfirmDelivery($id)
+    public function customerConfirmDelivery(Request $request, $id)
     {
         $borrow = Borrow::findOrFail($id);
 
@@ -727,7 +744,7 @@ class BorrowController extends Controller
                 'reader_id' => $borrow->reader_id
             ]);
 
-            // Đánh dấu đã xác nhận
+            // Đánh dấu đã xác nhận (không lưu ảnh từ khách hàng)
             $borrow->customer_confirmed_delivery = true;
             $borrow->customer_confirmed_delivery_at = now();
 
@@ -848,14 +865,19 @@ class BorrowController extends Controller
             return back()->with('info', 'Bạn đã từ chối nhận sách trước đó.');
         }
 
-        // Validate lý do từ chối
+        // Validate lý do từ chối + ảnh bắt buộc (bằng chứng khiếu nại)
         $request = request();
         $request->validate([
             'rejection_reason' => 'required|string|min:10|max:1000',
+            'rejection_image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ], [
             'rejection_reason.required' => 'Vui lòng nhập lý do từ chối nhận sách.',
             'rejection_reason.min' => 'Lý do từ chối phải có ít nhất 10 ký tự.',
             'rejection_reason.max' => 'Lý do từ chối không được vượt quá 1000 ký tự.',
+            'rejection_image.required' => 'Vui lòng upload ảnh minh chứng khi từ chối nhận sách.',
+            'rejection_image.image' => 'File minh chứng phải là ảnh.',
+            'rejection_image.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
+            'rejection_image.max' => 'Kích thước ảnh không được vượt quá 5MB.',
         ]);
 
         try {
@@ -864,6 +886,16 @@ class BorrowController extends Controller
             // Refresh lại borrow từ database để đảm bảo có dữ liệu mới nhất
             $borrow->refresh();
             $borrow->load(['reader', 'payments']);
+
+            // Upload ảnh minh chứng khi khách từ chối nhận sách
+            $rejectionImageUrl = null;
+            if ($request->hasFile('rejection_image')) {
+                $uploadResult = FileUploadService::uploadToCloudinary(
+                    $request->file('rejection_image'),
+                    'reject_delivery'
+                );
+                $rejectionImageUrl = $uploadResult['url'] ?? null;
+            }
 
             $oldStatus = $borrow->trang_thai_chi_tiet;
 
@@ -878,6 +910,12 @@ class BorrowController extends Controller
             $borrow->customer_rejected_delivery = true;
             $borrow->customer_rejected_delivery_at = now();
             $borrow->customer_rejection_reason = $request->rejection_reason;
+            if ($rejectionImageUrl) {
+                // Lưu ảnh minh chứng vào anh_hoan_tra (dùng chung để admin xem bằng chứng)
+                $existingImages = is_array($borrow->anh_hoan_tra) ? $borrow->anh_hoan_tra : [];
+                $existingImages[] = $rejectionImageUrl;
+                $borrow->anh_hoan_tra = $existingImages;
+            }
 
             // Chuyển trạng thái sang "Giao hàng Thất bại"
             $borrow->trang_thai_chi_tiet = Borrow::STATUS_GIAO_HANG_THAT_BAI;
@@ -1014,21 +1052,13 @@ class BorrowController extends Controller
             return back()->with('error', 'Chỉ có thể hoàn trả sách khi đơn đang ở trạng thái mượn hoặc chờ trả sách.');
         }
         try {
-            // Validate tình trạng sách
+            // Validate tình trạng sách (không bắt buộc ảnh từ khách hàng khi trả sách)
             $request->validate([
                 'tinh_trang_sach' => 'required|in:binh_thuong,hong_nhe,hong_nang,mat_sach',
-                'anh_hoan_tra' => 'required|array|min:1',
-                'anh_hoan_tra.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120', // Max 5MB
                 'ghi_chu' => 'nullable|string|max:1000',
             ], [
                 'tinh_trang_sach.required' => 'Vui lòng chọn tình trạng sách.',
                 'tinh_trang_sach.in' => 'Tình trạng sách không hợp lệ.',
-                'anh_hoan_tra.required' => 'Vui lòng tải lên ảnh minh chứng hoàn trả.',
-                'anh_hoan_tra.array' => 'Định dạng ảnh không hợp lệ.',
-                'anh_hoan_tra.min' => 'Vui lòng tải lên ít nhất 1 ảnh.',
-                'anh_hoan_tra.*.image' => 'File phải là ảnh.',
-                'anh_hoan_tra.*.mimes' => 'Ảnh phải có định dạng: jpeg, png, jpg, gif, webp.',
-                'anh_hoan_tra.*.max' => 'Kích thước mỗi ảnh không được vượt quá 5MB.',
             ]);
 
             $tinhTrangSach = $request->input('tinh_trang_sach');

@@ -171,20 +171,50 @@ public function show($id)
      */
 public function updateStatus(Request $request, $id)
 {
-    $log = ShippingLog::findOrFail($id);
+    try {
+        \Log::info('updateStatus called', [
+            'id' => $id,
+            'status' => $request->status,
+            'all_data' => $request->all()
+        ]);
+        
+        $log = ShippingLog::findOrFail($id);
+        
+        if (!$log) {
+            \Log::error('ShippingLog not found', ['id' => $id]);
+            return redirect()->back()->withErrors(['error' => 'Không tìm thấy đơn hàng!']);
+        }
 
-    // Validate với 11 trạng thái mới
-    $request->validate([
-        'status' => 'required|string|in:don_hang_moi,dang_chuan_bi_sach,cho_ban_giao_van_chuyen,dang_giao_hang,giao_hang_thanh_cong,giao_hang_that_bai,da_muon_dang_luu_hanh,cho_tra_sach,dang_van_chuyen_tra_ve,da_nhan_va_kiem_tra,hoan_tat_don_hang',
-        'tinh_trang_sach' => 'nullable|in:binh_thuong,hong_nhe,hong_nang,mat_sach',
-        'ghi_chu_kiem_tra' => 'nullable|string',
-        'ghi_chu_hoan_coc' => 'nullable|string',
-        'receiver_note' => 'nullable|string',
-        'delivered_at'  => 'nullable|date',
-        'proof_image'   => 'nullable|image|max:2048',
-        'ma_van_don' => 'nullable|string|max:100',
-        'don_vi_van_chuyen' => 'nullable|string|max:100',
-    ]);
+        // Validate với 11 trạng thái mới
+        $validated = $request->validate([
+            'status' => 'required|string|in:don_hang_moi,dang_chuan_bi_sach,cho_ban_giao_van_chuyen,dang_giao_hang,giao_hang_thanh_cong,giao_hang_that_bai,da_muon_dang_luu_hanh,cho_tra_sach,dang_van_chuyen_tra_ve,da_nhan_va_kiem_tra,hoan_tat_don_hang',
+            'tinh_trang_sach' => 'nullable|in:binh_thuong,hong_nhe,hong_nang,mat_sach',
+            'ghi_chu_kiem_tra' => 'nullable|string',
+            'ghi_chu_hoan_coc' => 'nullable|string',
+            'receiver_note' => 'nullable|string',
+            'delivered_at'  => 'nullable|date',
+            'proof_image'   => 'nullable|image|max:2048',
+            'ma_van_don' => 'nullable|string|max:100',
+            'don_vi_van_chuyen' => 'nullable|string|max:100',
+            'failure_reason' => 'nullable|in:loi_khach_hang,loi_thu_vien',
+            'failure_proof_image' => 'nullable|image|max:2048',
+        ]);
+        
+        \Log::info('Validation passed', ['validated' => $validated]);
+    
+    // Nếu trạng thái là giao_hang_that_bai, yêu cầu failure_reason
+    if ($request->status === 'giao_hang_that_bai') {
+        $request->validate([
+            'failure_reason' => 'required|in:loi_khach_hang,loi_thu_vien',
+        ]);
+        
+        // Nếu lỗi do thư viện, yêu cầu ảnh
+        if ($request->failure_reason === 'loi_thu_vien') {
+            $request->validate([
+                'failure_proof_image' => 'required|image|max:2048',
+            ]);
+        }
+    }
 
     // Nếu trạng thái là 'da_giao', có thể yêu cầu ảnh minh chứng (tùy chọn)
     // if ($request->status === 'da_giao' && !$request->hasFile('proof_image') && !$log->proof_image) {
@@ -219,6 +249,35 @@ public function updateStatus(Request $request, $id)
                 ->withInput();
         }
     }
+    
+    // Xử lý ảnh minh chứng giao hàng thất bại
+    if ($request->hasFile('failure_proof_image')) {
+        try {
+            // Xóa ảnh cũ nếu có
+            if ($log->failure_proof_image && Storage::disk('public')->exists($log->failure_proof_image)) {
+                FileUploadService::deleteFile($log->failure_proof_image, 'public');
+            }
+            
+            // Upload ảnh mới sử dụng FileUploadService
+            $result = FileUploadService::uploadImage(
+                $request->file('failure_proof_image'),
+                'failure_proofs', // Directory name
+                [
+                    'max_size' => 2048, // 2MB
+                    'resize' => true,
+                    'width' => 800,
+                    'height' => 800,
+                    'disk' => 'public',
+                ]
+            );
+            $log->failure_proof_image = $result['path'];
+        } catch (\Exception $e) {
+            \Log::error('Upload failure proof image error:', ['message' => $e->getMessage()]);
+            return redirect()->back()
+                ->withErrors(['failure_proof_image' => $e->getMessage()])
+                ->withInput();
+        }
+    }
 
     // Cập nhật các trường
     $log->status = $request->status;
@@ -242,21 +301,30 @@ public function updateStatus(Request $request, $id)
             $log->nguoi_chuan_bi_id = auth()->id();
             // Cập nhật trạng thái chi tiết của borrow
             if ($log->borrow) {
-                $log->borrow->update(['trang_thai_chi_tiet' => 'dang_chuan_bi_sach']);
+                $log->borrow->update([
+                    'trang_thai_chi_tiet' => 'dang_chuan_bi_sach',
+                    'trang_thai' => 'Cho duyet' // Đảm bảo trang_thai là 'Cho duyet' để user端能正确显示
+                ]);
             }
             break;
             
         case 'cho_ban_giao_van_chuyen':
             $log->ngay_dong_goi_xong = now();
             if ($log->borrow) {
-                $log->borrow->update(['trang_thai_chi_tiet' => 'cho_ban_giao_van_chuyen']);
+                $log->borrow->update([
+                    'trang_thai_chi_tiet' => 'cho_ban_giao_van_chuyen',
+                    'trang_thai' => 'Cho duyet'
+                ]);
             }
             break;
             
         case 'dang_giao_hang':
             $log->ngay_bat_dau_giao = now();
             if ($log->borrow) {
-                $log->borrow->update(['trang_thai_chi_tiet' => 'dang_giao_hang']);
+                $log->borrow->update([
+                    'trang_thai_chi_tiet' => 'dang_giao_hang',
+                    'trang_thai' => 'Dang muon' // Chuyển sang Dang muon khi bắt đầu giao hàng
+                ]);
             }
             break;
             
@@ -273,6 +341,8 @@ public function updateStatus(Request $request, $id)
                 // Reset trạng thái xác nhận từ khách hàng (nếu có)
                 $log->borrow->customer_confirmed_delivery = false;
                 $log->borrow->customer_confirmed_delivery_at = null;
+                // Lưu thời gian chuyển sang trạng thái "Chờ khách xác nhận"
+                $log->borrow->ngay_cho_xac_nhan_nhan = now();
                 $log->borrow->save();
                 
                 // ✅ Tự động cập nhật trạng thái thanh toán
@@ -303,19 +373,82 @@ public function updateStatus(Request $request, $id)
             
         case 'giao_hang_that_bai':
             $log->ngay_that_bai_giao_hang = now();
+            $log->failure_reason = $request->failure_reason;
+            
             if ($log->borrow) {
                 $log->borrow->update(['trang_thai_chi_tiet' => 'giao_hang_that_bai']);
                 
-                // ✅ Đảm bảo các khoản COD vẫn ở trạng thái pending
-                $log->borrow->payments()
-                    ->where('payment_method', 'offline')
-                    ->where('payment_status', 'success')
-                    ->whereIn('payment_type', ['deposit', 'borrow_fee', 'shipping_fee'])
-                    ->update([
-                        'payment_status' => 'pending',
-                        'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Chuyển về chưa thanh toán do giao hàng thất bại')"),
-                        'updated_at' => now()
-                    ]);
+                // Xử lý hoàn tiền theo lý do thất bại
+                if ($request->failure_reason === 'loi_khach_hang') {
+                    // Lỗi do khách hàng: 
+                    // - Hoàn 80% tiền cọc (trừ 20% phí phạt)
+                    // - Hoàn 100% phí thuê
+                    // - Không hoàn phí ship (khách mất 100% phí ship)
+                    // - Khách mất 20% tiền cọc (phí phạt)
+                    
+                    $borrow = $log->borrow;
+                    $totalDeposit = $borrow->tien_coc ?? 0;
+                    $penaltyAmount = $totalDeposit * 0.20; // 20% phí phạt
+                    $refundDeposit = $totalDeposit - $penaltyAmount; // 80% hoàn lại
+                    
+                    // 1. Xử lý tiền cọc: Hoàn 80%, trừ 20% phí phạt
+                    $depositPayments = $borrow->payments()
+                        ->where('payment_type', 'deposit')
+                        ->where('payment_status', 'success')
+                        ->get();
+                    
+                    $totalRefundDeposit = 0;
+                    foreach ($depositPayments as $payment) {
+                        $paymentAmount = $payment->amount ?? 0;
+                        $refundAmount = $paymentAmount * 0.80; // Hoàn 80%
+                        $penalty = $paymentAmount * 0.20; // Phí phạt 20%
+                        $totalRefundDeposit += $refundAmount;
+                        
+                        // Cập nhật payment: chỉ hoàn 80%
+                        $payment->update([
+                            'payment_status' => 'refunded',
+                            'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Hoàn 80% tiền cọc (', " . number_format($refundAmount, 0, '.', '') . " VNĐ) do giao hàng thất bại (Lỗi khách hàng). Trừ 20% phí phạt: ', " . number_format($penalty, 0, '.', '') . " VNĐ')"),
+                            'updated_at' => now()
+                        ]);
+                    }
+                    
+                    // 2. Xử lý phí thuê: Hoàn 100%
+                    $borrow->payments()
+                        ->where('payment_type', 'borrow_fee')
+                        ->where('payment_status', 'success')
+                        ->update([
+                            'payment_status' => 'refunded',
+                            'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Hoàn 100% phí thuê do giao hàng thất bại (Lỗi khách hàng)')"),
+                            'updated_at' => now()
+                        ]);
+                    
+                    // 3. Xử lý phí ship: Không hoàn (khách mất 100%)
+                    $borrow->payments()
+                        ->where('payment_type', 'shipping_fee')
+                        ->where('payment_status', 'success')
+                        ->update([
+                            'payment_status' => 'failed',
+                            'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Không hoàn phí ship do giao hàng thất bại (Lỗi khách hàng). Khách mất 100% phí ship.')"),
+                            'updated_at' => now()
+                        ]);
+                    
+                    // 4. Lưu thông tin phí phạt và tiền hoàn vào borrow
+                    $borrow->phi_hong_sach = ($borrow->phi_hong_sach ?? 0) + $penaltyAmount;
+                    $borrow->tien_coc_hoan_tra = $totalRefundDeposit; // Tổng tiền cọc hoàn lại (80%)
+                    $borrow->save();
+                    
+                } elseif ($request->failure_reason === 'loi_thu_vien') {
+                    // Lỗi do thư viện: Hoàn 100% (Cọc + Phí thuê + Phí ship)
+                    // Hoàn tất cả các khoản thanh toán
+                    $log->borrow->payments()
+                        ->where('payment_status', 'success')
+                        ->whereIn('payment_type', ['deposit', 'borrow_fee', 'shipping_fee'])
+                        ->update([
+                            'payment_status' => 'refunded',
+                            'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Hoàn 100% do giao hàng thất bại (Lỗi thư viện)')"),
+                            'updated_at' => now()
+                        ]);
+                }
             }
             break;
             
@@ -379,12 +512,43 @@ public function updateStatus(Request $request, $id)
         case 'hoan_tat_don_hang':
             $log->ngay_hoan_coc = now();
             $log->nguoi_hoan_coc_id = auth()->id();
+            $earlyRefundBorrowFee = 0;
             
             if ($request->filled('ghi_chu_hoan_coc')) {
                 $log->ghi_chu_hoan_coc = $request->ghi_chu_hoan_coc;
             }
             
             if ($log->borrow) {
+                // Kiểm tra trả sớm: nếu hoàn tất trước hạn trả -> hoàn 30% phí thuê
+                try {
+                    $borrow = $log->borrow;
+                    $dueDate = $borrow->items->min('ngay_hen_tra');
+                    if ($dueDate) {
+                        $due = \Carbon\Carbon::parse($dueDate)->endOfDay();
+                        if (now()->lt($due)) {
+                            // Hoàn 30% phí thuê cho các payment borrow_fee đã success
+                            $borrowFeePayments = $borrow->payments()
+                                ->where('payment_type', 'borrow_fee')
+                                ->where('payment_status', 'success')
+                                ->get();
+                            foreach ($borrowFeePayments as $payment) {
+                                $refundAmount = ($payment->amount ?? 0) * 0.3;
+                                $earlyRefundBorrowFee += $refundAmount;
+                                $payment->update([
+                                    'payment_status' => 'refunded',
+                                    'note' => \DB::raw("CONCAT(COALESCE(note, ''), ' - Hoàn 30% phí thuê do trả sách sớm (', " . number_format($refundAmount, 0, '.', '') . " VNĐ)')"),
+                                    'updated_at' => now(),
+                                ]);
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Early return refund error', [
+                        'borrow_id' => $log->borrow->id ?? null,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
                 $log->borrow->items()->update([
                     'trang_thai' => 'Da tra', 
                     'ngay_tra_thuc_te' => now()
@@ -435,7 +599,7 @@ public function updateStatus(Request $request, $id)
     // Tạo thông báo với thông tin chi tiết
     $message = 'Cập nhật trạng thái đơn hàng thành công!';
     
-    if ($request->status === 'giao_hang_thanh_cong') {
+            if ($request->status === 'giao_hang_thanh_cong') {
         if ($log->borrow) {
             $updatedPayments = $log->borrow->payments()
                 ->where('payment_status', 'success')
@@ -458,9 +622,35 @@ public function updateStatus(Request $request, $id)
         if (isset($updatedFinesCount) && $updatedFinesCount > 0) {
             $message .= " Đã tự động đánh dấu {$updatedFinesCount} khoản phạt là đã thanh toán.";
         }
+        if (isset($earlyRefundBorrowFee) && $earlyRefundBorrowFee > 0) {
+            $message .= ' Hoàn trả sớm: hoàn thêm 30% phí thuê (' . number_format($earlyRefundBorrowFee, 0, ',', '.') . ' VNĐ).';
+        }
     }
 
-    return redirect()->route('admin.shipping_logs.edit', $log->id)->with('success', $message);
+        return redirect()->route('admin.shipping_logs.edit', $log->id)->with('success', $message);
+        
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('Validation error in updateStatus', [
+            'errors' => $e->errors(),
+            'id' => $id,
+            'request_data' => $request->all()
+        ]);
+        return redirect()->back()
+            ->withErrors($e->errors())
+            ->withInput();
+            
+    } catch (\Exception $e) {
+        \Log::error('Error updating status', [
+            'id' => $id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all()
+        ]);
+        
+        return redirect()->back()
+            ->withErrors(['error' => 'Có lỗi xảy ra khi cập nhật trạng thái: ' . $e->getMessage()])
+            ->withInput();
+    }
 }
 
     /**

@@ -213,14 +213,19 @@ class UserAccountController extends Controller
             $borrows = Borrow::where('reader_id', $reader->id)
                 ->where(function ($query) {
                     $query->where('trang_thai', 'Dang muon')
-                        ->orWhere('trang_thai_chi_tiet', 'giao_hang_thanh_cong');
+                        ->orWhere('trang_thai_chi_tiet', 'giao_hang_thanh_cong')
+                        ->orWhere('trang_thai_chi_tiet', 'giao_hang_that_bai');
                 })
-                ->with(['borrowItems.book', 'borrowItems.inventory', 'librarian', 'reader'])
+                ->with(['borrowItems.book', 'borrowItems.inventory', 'librarian', 'reader', 'shippingLogs' => function($query) {
+                    $query->where('status', 'giao_hang_that_bai')->latest()->first();
+                }])
                 ->orderBy('ngay_muon', 'desc')
                 ->paginate(12);
 
-            // Tính toán lại tien_coc và tien_thue nếu chưa có (từ thông tin sách/inventory)
+            // Tính toán lại tien_coc, tien_thue và tien_ship nếu chưa có (từ thông tin sách/inventory)
             foreach ($borrows as $borrow) {
+                $needsRecalculate = false;
+                
                 foreach ($borrow->borrowItems as $item) {
                     // Nếu tien_coc hoặc tien_thue = 0, tính toán lại từ thông tin sách
                     if (($item->tien_coc == 0 || $item->tien_thue == 0) && $item->book && $item->inventory) {
@@ -243,10 +248,21 @@ class UserAccountController extends Controller
                         // Lưu lại vào database nếu giá trị đã thay đổi
                         if ($item->isDirty(['tien_coc', 'tien_thue'])) {
                             $item->save();
-                            // Tính lại tổng tiền của borrow
-                            $borrow->recalculateTotals();
+                            $needsRecalculate = true;
                         }
                     }
+                }
+                
+                // Đảm bảo tien_ship được đồng bộ từ items
+                $tienShipFromItems = $borrow->borrowItems()->sum('tien_ship');
+                if (($borrow->tien_ship ?? 0) == 0 && $tienShipFromItems > 0) {
+                    $borrow->tien_ship = $tienShipFromItems;
+                    $needsRecalculate = true;
+                }
+                
+                // Tính lại tổng tiền của borrow nếu cần
+                if ($needsRecalculate) {
+                    $borrow->recalculateTotals();
                 }
             }
 
@@ -329,4 +345,5 @@ class UserAccountController extends Controller
         return view('account.reader-info', compact('reader'));
     }
 }
+
 

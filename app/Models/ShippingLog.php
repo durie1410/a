@@ -40,6 +40,8 @@ class ShippingLog extends Model
         'nguoi_hoan_coc_id',
         'ma_van_don',
         'don_vi_van_chuyen',
+        'failure_reason',
+        'failure_proof_image',
     ];
 
     public function borrow()

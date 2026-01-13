@@ -1035,7 +1035,14 @@
             <button class="mobile-menu-toggle" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-            <div class="logo"><span style="color: #dc2626;">THƯ VIỆN</span> <span style="color: #000000;">LIBHUB</span>
+            <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e51d2e 0%, #c41e2f 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    📚
+                </div>
+                <div>
+                    <span style="color: #dc2626;">THƯ VIỆN</span> <span style="color: #000000;">LIBHUB</span>
+                </div>
+            </div>
             </div>
         </div>
 

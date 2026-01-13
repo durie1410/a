@@ -68,7 +68,7 @@
                                         break; // Tối đa 5 banner
                                     if ($book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh))) {
                                         $bannerImages[] = [
-                                            'image' => asset('storage/' . $book->hinh_anh),
+                                            'image' => $book->image_url ?? asset('images/default-book.png'),
                                             'title' => $book->ten_sach,
                                             'link' => route('books.show', $book->id)
                                         ];
@@ -228,8 +228,8 @@
                             <div class="book-item">
                                 <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                     <div class="book-cover">
-                                        @if(isset($book->hinh_anh) && !empty($book->hinh_anh) && file_exists(public_path('storage/' . $book->hinh_anh)))
-                                            <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                        @if($book->image_url)
+                                            <img src="{{ $book->image_url }}"
                                                 alt="{{ $book->ten_sach ?? 'Sách' }}">
                                         @else
                                             <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -262,7 +262,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                             <div class="book-cover">
                                                 @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -319,7 +319,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                             <div class="book-cover">
                                                 @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -350,7 +350,7 @@
                                                 <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                                     <div class="book-cover">
                                                         @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                            <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                            <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                                 alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                         @else
                                                             <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -393,7 +393,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                             <div class="book-cover">
                                                 @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -424,7 +424,7 @@
                                                 <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                                     <div class="book-cover">
                                                         @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                            <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                            <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                                 alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                         @else
                                                             <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -467,7 +467,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                             <div class="book-cover">
                                                 @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -498,7 +498,7 @@
                                                 <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                                     <div class="book-cover">
                                                         @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                            <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                            <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                                 alt="{{ $book->ten_sach ?? 'Sách' }}">
                                                         @else
                                                             <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -542,7 +542,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="bestbook-link">
                                             <div class="bestbook-cover">
                                                 @if(isset($book->hinh_anh) && $book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh)))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -579,7 +579,7 @@
                                         <a href="{{ route('books.show', $book->id) }}" class="bestbook-link">
                                             <div class="bestbook-cover">
                                                 @if(isset($book->hinh_anh) && $book->hinh_anh && file_exists(public_path('storage/' . $book->hinh_anh)))
-                                                    <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                    <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                         alt="{{ $book->ten_sach }}">
                                                 @else
                                                     <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -626,7 +626,7 @@
                                     <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                         <div class="book-cover">
                                             @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                     alt="{{ $book->ten_sach ?? 'Sách' }}">
                                             @else
                                                 <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -680,7 +680,7 @@
                                     <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                         <div class="book-cover">
                                             @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                     alt="{{ $book->ten_sach ?? 'Sách' }}">
                                             @else
                                                 <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -734,7 +734,7 @@
                                     <a href="{{ route('books.show', $book->id) }}" class="book-link">
                                         <div class="book-cover">
                                             @if(isset($book->hinh_anh) && !empty($book->hinh_anh))
-                                                <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                     alt="{{ $book->ten_sach ?? 'Sách' }}">
                                             @else
                                                 <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
@@ -942,7 +942,7 @@
                                                         <img src="{{ $diemSachImages[$i] }}"
                                                             alt="{{ $book->ten_sach ?? 'Điểm sách ' . $i }}">
                                                     @elseif($book && isset($book->hinh_anh) && !empty($book->hinh_anh) && file_exists(public_path('storage/' . $book->hinh_anh)))
-                                                        <img src="{{ asset('storage/' . $book->hinh_anh) }}"
+                                                        <img src="{{ $book->image_url ?? asset('images/default-book.png') }}"
                                                             alt="{{ $book->ten_sach }}">
                                                     @else
                                                         <svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg">
